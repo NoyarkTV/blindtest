@@ -223,6 +223,9 @@ fetch(GSheetURL)
     console.error("Erreur lors du chargement Google Sheets :", err);
   });
 
+  app.get("/all-tracks", (req, res) => {
+  res.json(allTracks);
+});
 
   
 
