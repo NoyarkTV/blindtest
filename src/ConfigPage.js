@@ -9,6 +9,9 @@ function ConfigPage() {
   const [anneeMin, setAnneeMin] = useState(1925);
   const [anneeMax, setAnneeMax] = useState(2025);
   const [emoji, setEmoji] = useState("🟠");
+  const [allTracks, setAllTracks] = useState([]);
+  const [filteredCount, setFilteredCount] = useState(0);
+
 
   const [media, setMedia] = useState(["Animé", "Film", "Série", "Dessin Animé", "Jeux vidéo"]);
   const [categorie, setCategorie] = useState([
@@ -34,6 +37,21 @@ function ConfigPage() {
       document.body.style.fontFamily = "";
     };
   }, []);
+
+  useEffect(() => {
+  const count = allTracks.filter(track => {
+    return selectedMedia.includes(track.media)
+      && selectedCategorie.includes(track.categorie)
+      && selectedDifficulte.includes(track.difficulte)
+      && selectedPays.includes(track.pays)
+      && track.annee >= anneeMin
+      && track.annee <= anneeMax;
+  }).length;
+
+  setFilteredCount(count);
+}, [allTracks, selectedMedia, selectedCategorie, selectedDifficulte, selectedPays, anneeMin, anneeMax]);
+
+
 
   const toggleSelection = (value, selectedList, setter) => {
     setter(
@@ -108,6 +126,13 @@ function ConfigPage() {
               <label><input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} /> Bonus compositeur</label>
             </div>
             <input type="number" min="1" max="100" value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
+
+            <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1e2a38" }}>
+  {filteredCount === 0
+    ? "Aucun morceau disponible avec ces filtres"
+    : `${filteredCount} morceaux disponibles`}
+</div>
+
           </div>
           <div>
             <div style={{ fontWeight: "bold" }}>Temps par manche</div>
