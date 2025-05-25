@@ -135,9 +135,12 @@ app.post("/set-filters", (req, res) => {
 
 
 
-app.listen(8888, () => {
-  console.log("🚀 Serveur HTTP sur http://localhost:8888");
+const PORT = process.env.PORT || 8888;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur HTTP sur http://localhost:${PORT}`);
 });
+
 
 
 async function fetchSpotifyImage(uri, token) {
