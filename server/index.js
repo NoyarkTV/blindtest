@@ -223,12 +223,12 @@ fetch(GSheetURL)
     console.error("Erreur lors du chargement Google Sheets :", err);
   });
 
-  app.get("/all-tracks", (req, res) => {
+app.get("/all-tracks", (req, res) => {
+  if (!allTracks.length) {
+    return res.status(503).json({ error: "Morceaux non encore chargés" });
+  }
   res.json(allTracks);
 });
-
-  
-
 
 
 

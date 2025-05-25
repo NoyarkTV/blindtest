@@ -47,6 +47,7 @@ function ConfigPage() {
     })
     .catch(err => {
       console.error("Erreur lors du chargement des morceaux :", err);
+      setAllTracks([]);
     });
 }, []);
 
