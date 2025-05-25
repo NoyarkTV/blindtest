@@ -39,6 +39,18 @@ function ConfigPage() {
   }, []);
 
   useEffect(() => {
+  fetch("http://localhost:8888/all-tracks")
+    .then(res => res.json())
+    .then(data => {
+      setAllTracks(data);
+      console.log("🎵 Morceaux reçus :", data);
+    })
+    .catch(err => {
+      console.error("Erreur lors du chargement des morceaux :", err);
+    });
+}, []);
+
+  useEffect(() => {
   const count = allTracks.filter(track => {
     return selectedMedia.includes(track.media)
       && selectedCategorie.includes(track.categorie)
