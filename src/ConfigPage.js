@@ -51,14 +51,30 @@ function ConfigPage() {
 }, []);
 
   useEffect(() => {
-  const count = allTracks.filter(track => {
-    return selectedMedia.includes(track.media)
-      && selectedCategorie.includes(track.categorie)
-      && selectedDifficulte.includes(track.difficulte)
-      && selectedPays.includes(track.pays)
-      && track.annee >= anneeMin
-      && track.annee <= anneeMax;
-  }).length;
+const count = allTracks.filter(track => {
+  const okMedia = selectedMedia.includes(track.media);
+  const okCategorie = selectedCategorie.includes(track.categorie);
+  const okDiff = selectedDifficulte.includes(track.difficulte);
+  const okPays = selectedPays.includes(track.pays);
+  const okAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
+
+  const keep = okMedia && okCategorie && okDiff && okPays && okAnnee;
+
+  if (!keep) {
+    console.log("❌ rejeté :", {
+      titre: track.titre,
+      media: track.media,
+      categorie: track.categorie,
+      difficulte: track.difficulte,
+      pays: track.pays,
+      annee: track.annee,
+      détails: { okMedia, okCategorie, okDiff, okPays, okAnnee }
+    });
+  }
+
+  return keep;
+}).length;
+
 
   setFilteredCount(count);
 }, [allTracks, selectedMedia, selectedCategorie, selectedDifficulte, selectedPays, anneeMin, anneeMax]);
