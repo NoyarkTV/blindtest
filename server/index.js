@@ -29,9 +29,10 @@ app.get("/login", (req, res) => {
     scope
   )}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 
-  open(authURL);
-  res.send("Redirection vers Spotify...");
+  // ✅ Redirection vers Spotify dans le navigateur de l'utilisateur
+  res.redirect(authURL);
 });
+
 
 app.get("/callback", async (req, res) => {
   const code = req.query.code;
