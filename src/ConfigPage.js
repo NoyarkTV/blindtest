@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+console.log("✅ ConfigPage.js chargé !");
+
 function ConfigPage() {
   const navigate = useNavigate();
   const [time, setTime] = useState(30);
