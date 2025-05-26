@@ -1,12 +1,21 @@
 import { useEffect, useRef } from "react";
 
-let sdkInitialized = false; // ← clé : éviter de créer plusieurs players
+let sdkInitialized = false;
 
 function SpotifyPlayer({ token, onReady, onError }) {
   const playerRef = useRef(null);
 
   useEffect(() => {
     if (!token || sdkInitialized) return;
+
+    // 🔁 Charger dynamiquement le SDK Spotify
+    if (!document.getElementById("spotify-sdk")) {
+      const script = document.createElement("script");
+      script.id = "spotify-sdk";
+      script.src = "https://sdk.scdn.co/spotify-player.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
 
     const waitForSpotify = () => {
       if (!window.Spotify) {
