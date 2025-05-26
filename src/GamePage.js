@@ -67,7 +67,7 @@ function showEndPopup({ success, points }) {
   useEffect(() => {
     document.body.style.backgroundColor = "#1e2a38";
     document.body.style.color = "white";
-    fetch("http://localhost:8888/get-token")
+    fetch("https://blindtest-69h7.onrender.com/get-token")
       .then(res => res.json())
       .then(data => {
         if (data.access_token) {
@@ -100,7 +100,7 @@ useEffect(() => {
   }, [track, accessToken, deviceId, autoPlay]);
 
   function fetchNewTrack() {
-    fetch("http://localhost:8888/random-track")
+    fetch("https://blindtest-69h7.onrender.com/random-track")
       .then((res) => res.json())
       .then((data) => {
         console.log("🎧 Nouveau track reçu :", data);

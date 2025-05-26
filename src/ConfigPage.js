@@ -39,7 +39,7 @@ function ConfigPage() {
   }, []);
 
   useEffect(() => {
-  fetch("http://localhost:8888/all-tracks")
+  fetch("https://blindtest-69h7.onrender.com/all-tracks")
     .then(res => res.json())
     .then(data => {
       setAllTracks(data);
@@ -105,7 +105,7 @@ const count = allTracks.filter(track => {
     };
     localStorage.setItem("blindtestParams", JSON.stringify(params));
 
-    fetch("http://localhost:8888/set-filters", {
+    fetch("https://blindtest-69h7.onrender.com/set-filters", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params)
