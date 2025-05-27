@@ -23,8 +23,7 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
     const [spotifyToken, setSpotifyToken] = useState(null);
 
   useEffect(() => {
-    const hash = window.location.hash || window.location.search;
-    const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash);
+    const params = new URLSearchParams(window.location.search);
     const token = params.get("access_token");
 
     if (token) {
