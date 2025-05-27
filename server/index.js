@@ -172,6 +172,23 @@ app.post("/start-game", (req, res) => {
   res.status(200).send({ success: true });
 });
 
+app.post("/submit-score", (req, res) => {
+  const { id, player, score } = req.body;
+  if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
+
+  if (!games[id].scores) games[id].scores = [];
+
+  const existing = games[id].scores.find(s => s.name === player);
+  if (existing) {
+    existing.score = score;
+  } else {
+    games[id].scores.push({ name: player, score });
+  }
+
+  io.to(id).emit("score-update", games[id].scores); // 🔁 broadcast
+  res.send({ success: true });
+});
+
 
 app.get("/game/:id", (req, res) => {
   const game = games[req.params.id];

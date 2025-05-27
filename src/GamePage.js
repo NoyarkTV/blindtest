@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 
 function GamePage() {
   const navigate = useNavigate();
@@ -35,6 +36,106 @@ function GamePage() {
   const wrongAttemptsRef = useRef(0);
   const { id } = useParams();
   const [playlist, setPlaylist] = useState([]);
+  const socket = io("https://blindtest-69h7.onrender.com");
+  const playerName = localStorage.getItem("playerName") || "Joueur";
+  const [scoreboard, setScoreboard] = useState([]);
+
+  const buzzButtonStyle = {
+  padding: "15px 40px",
+  fontSize: 24,
+  borderRadius: 30,
+  background: "#f7b733",
+  color: "#1e2a38",
+  border: "none",
+  cursor: "pointer"
+};
+
+const inputStyle = {
+  padding: 10,
+  fontSize: 16,
+  borderRadius: 10,
+  width: 300
+};
+
+const validateButtonStyle = {
+  marginRight: 10,
+  padding: "10px 20px",
+  borderRadius: 10,
+  background: "#4caf50",
+  color: "white",
+  border: "none",
+  fontWeight: "bold",
+  cursor: "pointer"
+};
+
+const cancelButtonStyle = {
+  padding: "10px 20px",
+  borderRadius: 10,
+  background: "#f44336",
+  color: "white",
+  border: "none",
+  fontWeight: "bold",
+  cursor: "pointer"
+};
+
+const indiceBoxStyle = {
+  background: "#fff",
+  color: "#1e2a38",
+  borderRadius: "20px",
+  padding: "6px 12px",
+  display: "flex",
+  alignItems: "center",
+  fontSize: 14,
+  fontWeight: 500,
+  boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+};
+
+const indiceButtonStyle = {
+  border: "none",
+  background: "transparent",
+  cursor: "pointer"
+};
+
+const popupOverlayStyle = {
+  position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+  background: "rgba(0,0,0,0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999
+};
+
+const popupStyle = {
+  background: "#fff",
+  padding: "30px 40px",
+  borderRadius: "20px",
+  textAlign: "center",
+  color: "#1e2a38",
+  maxWidth: 480,
+  width: "90%",
+  boxShadow: "0 0 20px rgba(0,0,0,0.4)",
+  fontFamily: "Arial, sans-serif"
+};
+
+const nextButtonStyle = {
+  marginTop: 30,
+  padding: "12px 30px",
+  fontSize: 16,
+  borderRadius: 10,
+  background: "#f7b733",
+  color: "#1e2a38",
+  fontWeight: "bold",
+  border: "none",
+  cursor: "pointer",
+  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+};
+
+
+  useEffect(() => {
+  socket.emit("join-room", id);
+
+  socket.on("score-update", updatedScores => {
+    setScoreboard(updatedScores);
+  });
+
+  return () => socket.disconnect();
+}, [id]);
 
 
 function computeBasePoints() {
@@ -67,6 +168,13 @@ function showEndPopup({ success, points }) {
   setPopupInfo(data);
   setShowPopup(true);
 }
+
+fetch("https://blindtest-69h7.onrender.com/submit-score", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ id, player: playerName, score })
+});
+
 
 useEffect(() => {
   document.body.style.backgroundColor = "#1e2a38";
@@ -305,9 +413,49 @@ function nextRound() {
       .trim();
   }
 
-  return (
-    <div style={{ textAlign: "center", paddingTop: 50 }}>
-      <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>Round {currentRound} / {totalRounds}</h1>
+return (
+  <div style={{ display: "flex", minHeight: "100vh", position: "relative", background: "#1e2a38" }}>
+    
+    {/* SCOREBOARD */}
+    <div style={{
+      position: "fixed",
+      right: 20,
+      top: 20,
+      background: "#fff",
+      color: "#1e2a38",
+      padding: 12,
+      borderRadius: 12,
+      width: 200,
+      boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+      fontSize: 14,
+      zIndex: 10
+    }}>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Scoreboard</div>
+      {scoreboard.map((p, i) => (
+        <div
+          key={i}
+          style={{
+            fontWeight: p.name === playerName ? "bold" : "normal",
+            backgroundColor: p.name === playerName ? "#f7b733" : "transparent",
+            padding: "4px 6px",
+            borderRadius: 6,
+            display: "flex",
+            justifyContent: "space-between"
+          }}
+        >
+          <span>{p.name}</span>
+          <span>{p.score}</span>
+        </div>
+      ))}
+    </div>
+
+    {/* ZONE CENTRALE */}
+    <div style={{ flex: 1, paddingTop: 60, textAlign: "center", color: "white" }}>
+      <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
+        Round {currentRound} / {totalRounds}
+      </h1>
+
+      {/* TIMER */}
       <div
         style={{
           width: 120,
@@ -326,169 +474,124 @@ function nextRound() {
         {timeLeft}
       </div>
 
-      {!answerVisible ? (
-        <button
-          onClick={handleBuzz}
-          style={{ padding: "15px 40px", fontSize: 24, borderRadius: 30, background: "#f7b733", color: "#1e2a38", border: "none", cursor: "pointer" }}
-        >
-          BUZZ
-        </button>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <input
-  type="text"
-  placeholder="Votre réponse"
-  value={answer}
-  onChange={(e) => setAnswer(e.target.value)}
-  onKeyDown={(e) => {
-    if (e.key === "Enter") submitAnswer();
-  }}
-  ref={answerInputRef}
-  style={{ padding: 10, fontSize: 16, borderRadius: 10, width: 300 }}
-/>
-          {includeComposer && (
+      {/* INDICES */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
+        {/* Média */}
+        <div style={indiceBoxStyle}>
+          <span style={{ marginRight: 8 }}>Média :</span>
+          {!showIndiceMedia ? (
+            <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
+          ) : (
+            <span>{track?.media || "?"}</span>
+          )}
+        </div>
+
+        {/* Année */}
+        <div style={indiceBoxStyle}>
+          <span style={{ marginRight: 8 }}>Année :</span>
+          {!showIndiceAnnee ? (
+            <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
+          ) : (
+            <span>{track?.annee || "?"}</span>
+          )}
+        </div>
+      </div>
+
+      {/* BUZZER / REPONSE */}
+      <div style={{ marginTop: 40 }}>
+        {!answerVisible ? (
+          <button
+            onClick={handleBuzz}
+            style={buzzButtonStyle}
+          >
+            BUZZ
+          </button>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
             <input
               type="text"
-              placeholder="Compositeur (facultatif)"
-              value={composer}
-              onChange={(e) => setComposer(e.target.value)}
-              style={{ padding: 10, fontSize: 16, borderRadius: 10, width: 300 }}
+              placeholder="Votre réponse"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitAnswer()}
+              ref={answerInputRef}
+              style={inputStyle}
+            />
+            {includeComposer && (
+              <input
+                type="text"
+                placeholder="Compositeur (facultatif)"
+                value={composer}
+                onChange={(e) => setComposer(e.target.value)}
+                style={inputStyle}
+              />
+            )}
+            <div>
+              <button
+                onClick={submitAnswer}
+                disabled={!answer && (!includeComposer || !composer)}
+                style={validateButtonStyle}
+              >
+                Valider
+              </button>
+              <button
+                onClick={cancelAnswer}
+                style={cancelButtonStyle}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SCORE PERSO */}
+      <div style={{ marginTop: 40, fontSize: 20 }}>Score : {score} pts</div>
+    </div>
+
+    {/* POPUP */}
+    {showPopup && popupInfo && (
+      <div style={popupOverlayStyle}>
+        <div style={popupStyle}>
+          <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
+          <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
+            {popupInfo.points}
+          </h1>
+
+          {popupInfo.image && (
+            <img
+              src={popupInfo.image}
+              alt="Pochette album"
+              style={{
+                width: 160, height: 160, borderRadius: 12, objectFit: "cover",
+                marginBottom: 20, boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+              }}
             />
           )}
-          <div>
-            <button
-              onClick={submitAnswer}
-              disabled={!answer && (!includeComposer || !composer)}
-              style={{ marginRight: 10, padding: "10px 20px", borderRadius: 10, background: "#4caf50", color: "white", border: "none", fontWeight: "bold", cursor: "pointer" }}
-            >
-              Valider
-            </button>
-            <button
-              onClick={cancelAnswer}
-              style={{ padding: "10px 20px", borderRadius: 10, background: "#f44336", color: "white", border: "none", fontWeight: "bold", cursor: "pointer" }}
-            >
-              Annuler
-            </button>
-          </div>
+
+          <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
+            {popupInfo.theme ? `${popupInfo.theme} de ` : ""}{popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
+          </p>
+          {popupInfo.compositeur && (
+            <p style={{ fontStyle: "italic", color: "#555", marginTop: 6 }}>
+              par {popupInfo.compositeur}
+            </p>
+          )}
+
+          <button onClick={handleNextRoundPopup} style={nextButtonStyle}>
+            🎵 Round suivant
+          </button>
         </div>
-      )}
-
-      <div style={{ marginTop: 40, fontSize: 20 }}>Score : {score} pts</div>
-
-<div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
-  {/* Média */}
-  <div style={{
-    background: "#fff", color: "#1e2a38", borderRadius: "20px", padding: "6px 12px", display: "flex",
-    alignItems: "center", fontSize: 14, fontWeight: 500, boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-  }}>
-    <span style={{ marginRight: 8 }}>Média :</span>
-    {!showIndiceMedia ? (
-      <button onClick={() => setShowIndiceMedia(true)} style={{ border: "none", background: "transparent", cursor: "pointer" }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z"/>
-          <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829"/>
-          <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/>
-        </svg>
-      </button>
-    ) : (
-      <span>{track?.media || "?"}</span>
+      </div>
     )}
+
+    <SpotifyPlayer
+      token={accessToken}
+      onReady={(id) => setDeviceId(id)}
+      onError={(err) => console.error("Erreur SDK :", err)}
+    />
   </div>
-
-  {/* Année */}
-  <div style={{
-    background: "#fff", color: "#1e2a38", borderRadius: "20px", padding: "6px 12px", display: "flex",
-    alignItems: "center", fontSize: 14, fontWeight: 500, boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-  }}>
-    <span style={{ marginRight: 8 }}>Année :</span>
-    {!showIndiceAnnee ? (
-      <button onClick={() => setShowIndiceAnnee(true)} style={{ border: "none", background: "transparent", cursor: "pointer" }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z"/>
-          <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829"/>
-          <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/>
-        </svg>
-      </button>
-    ) : (
-      <span>{track?.annee || "?"}</span>
-    )}
-  </div>
-</div>
-
-
-
-{showPopup && popupInfo && (
-  <div style={{
-    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-    background: "rgba(0,0,0,0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999
-  }}>
-    <div style={{
-      background: "#fff",
-      padding: "30px 40px",
-      borderRadius: "20px",
-      textAlign: "center",
-      color: "#1e2a38",
-      maxWidth: 480,
-      width: "90%",
-      boxShadow: "0 0 20px rgba(0,0,0,0.4)",
-      fontFamily: "Arial, sans-serif"
-    }}>
-      <h2 style={{ margin: "0 0 10px", fontSize: 26 }}>{popupInfo.title}</h2>
-      <h1 style={{ margin: "0 0 20px", fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
-        {popupInfo.points}
-      </h1>
-
-      {popupInfo.image && (
-        <img
-          src={popupInfo.image}
-          alt="Pochette album"
-          style={{
-            width: 160,
-            height: 160,
-            borderRadius: 12,
-            objectFit: "cover",
-            marginBottom: 20,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-          }}
-        />
-      )}
-
-      <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
-        {popupInfo.theme ? `${popupInfo.theme} de ` : ""}{popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
-      </p>
-      {popupInfo.compositeur && (
-        <p style={{ fontStyle: "italic", color: "#555", marginTop: 6 }}>
-          par {popupInfo.compositeur}
-        </p>
-      )}
-
-      <button onClick={handleNextRoundPopup} style={{
-        marginTop: 30,
-        padding: "12px 30px",
-        fontSize: 16,
-        borderRadius: 10,
-        background: "#f7b733",
-        color: "#1e2a38",
-        fontWeight: "bold",
-        border: "none",
-        cursor: "pointer",
-        boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
-      }}>
-        🎵 Round suivant
-      </button>
-    </div>
-  </div>
-)}
-
-
-
-      <SpotifyPlayer
-        token={accessToken}
-        onReady={(id) => setDeviceId(id)}
-        onError={(err) => console.error("Erreur SDK :", err)}
-      />
-    </div>
-  );
+);
 }
 
 export default GamePage;
