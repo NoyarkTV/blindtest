@@ -250,6 +250,7 @@ function submitAnswer() {
   function nextRound() {
     if (currentRound >= totalRounds) {
       alert("Partie terminée ! Score : " + score);
+      localStorage.setItem("spotify_token", accessToken);
       navigate("/config");
     } else {
       wrongAttemptsRef.current = 0;
