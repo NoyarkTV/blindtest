@@ -10,7 +10,7 @@ function GamePage() {
   const [timer, setTimer] = useState(savedParams.time || 30);
   const [timeLeft, setTimeLeft] = useState(savedParams.time || 30);
   const [currentRound, setCurrentRound] = useState(1);
-  const [totalRounds] = useState(savedParams.nbRounds || 10);
+  const [totalRounds, setTotalRounds] = useState(0);
   const [answerVisible, setAnswerVisible] = useState(false);
   const [answer, setAnswer] = useState("");
   const [composer, setComposer] = useState("");
@@ -84,8 +84,10 @@ useEffect(() => {
       console.log("🎮 Données de la partie :", data);
       setPlaylist(data.playlist || []);
       setTrack(data.playlist?.[0] || null); // premier morceau
+      setAutoPlay(true);
       setTimer(data.config.time || 30);
       setTimeLeft(data.config.time || 30);
+      setTotalRounds(data.config.nbRounds || 10);
     })
     .catch(err => {
       console.error("Erreur récupération partie :", err);
