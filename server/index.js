@@ -174,6 +174,18 @@ app.get("/game/:id", (req, res) => {
   res.send(game);
 });
 
+app.post("/join-game", (req, res) => {
+  const { id, player } = req.body;
+  if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
+
+  // éviter doublons
+  if (!games[id].players.find(p => p.name === player.name)) {
+    games[id].players.push(player);
+  }
+
+  res.send({ success: true });
+});
+
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {

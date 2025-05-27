@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 
 console.log("✅ ConfigPage.js chargé !");
 
@@ -16,6 +17,7 @@ function ConfigPage() {
   const [emoji, setEmoji] = useState("🟠");
   const [allTracks, setAllTracks] = useState([]);
   const [filteredCount, setFilteredCount] = useState(0);
+  const [players, setPlayers] = useState([]);
 
 
   const [media, setMedia] = useState(["Animé", "Film", "Série", "Dessin Animé", "Jeux vidéo"]);
@@ -44,6 +46,28 @@ function ConfigPage() {
   }, []);
 
   useEffect(() => {
+  const socket = io("https://blindtest-69h7.onrender.com");
+
+  socket.emit("join-room", id);
+
+  socket.on("player-joined", (updatedPlayers) => {
+    console.log("🔁 Mise à jour reçue :", updatedPlayers);
+    setPlayers(updatedPlayers);
+  });
+
+  return () => socket.disconnect();
+}, [id]);
+
+
+  useEffect(() => {
+  fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      setPlayers(data.players || []);
+    });
+}, [id]);
+
+  useEffect(() => {
   fetch("https://blindtest-69h7.onrender.com/all-tracks")
     .then(res => res.json())
     .then(data => {
@@ -55,6 +79,22 @@ function ConfigPage() {
       setAllTracks([]);
     });
 }, []);
+
+useEffect(() => {
+  const playerName = localStorage.getItem("playerName") || "Joueur";
+  const player = { name: playerName };
+
+  fetch("https://blindtest-69h7.onrender.com/join-game", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, player })
+  }).then(() => {
+    // recharger liste après ajout
+    fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
+      .then(res => res.json())
+      .then(data => setPlayers(data.players || []));
+  });
+}, [id]);
 
   useEffect(() => {
 const count = allTracks.filter(track => {
@@ -141,12 +181,18 @@ const validerPartie = () => {
 
   // 🎲 Tirer aléatoirement les morceaux
   const shuffled = [...filteredTracks].sort(() => Math.random() - 0.5);
-  const selectedTracks = shuffled.slice(0, nbRounds);
+  const enrichedTracks = shuffled.slice(0, nbRounds).map(track => {
+    const original = allTracks.find(t => t.uri === track.uri);
+    return {
+      ...track,
+      image: original?.image || null
+    };
+  });
 
   const payload = {
     id,                   // ID de la partie
     params,               // paramètres de jeu
-    playlist: selectedTracks, // morceaux choisis
+    playlist: enrichedTracks, // morceaux choisis
   };
 
   fetch("https://blindtest-69h7.onrender.com/start-game", {
@@ -227,16 +273,33 @@ const validerPartie = () => {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
           <div className="section-title" style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Partie</div>
           <div style={{ background: "#f2f2f2", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "5px" }}>
-            <div style={{ fontWeight: "bold", backgroundColor: "#fff3cd", padding: "5px 10px", borderRadius: "10px" }}>
-              {playerName}
-              <select value={emoji} onChange={e => setEmoji(e.target.value)} style={{ marginLeft: "10px" }}>
-                <option value="🟠">🟠</option>
-                <option value="🟣">🟣</option>
-                <option value="🟢">🟢</option>
-                <option value="🔵">🔵</option>
-                <option value="🟡">🟡</option>
-              </select>
-            </div>
+{players.map((p, i) => (
+  <div
+    key={i}
+    style={{
+      fontWeight: "bold",
+      backgroundColor: p.name === playerName ? "#fff3cd" : "#e2e3e5",
+      padding: "5px 10px",
+      borderRadius: "10px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between"
+    }}
+  >
+    <span>{p.name}</span>
+    {p.name === playerName && (
+      <select value={emoji} onChange={e => setEmoji(e.target.value)} style={{ marginLeft: "10px" }}>
+        <option value="🟠">🟠</option>
+        <option value="🟣">🟣</option>
+        <option value="🟢">🟢</option>
+        <option value="🔵">🔵</option>
+        <option value="🟡">🟡</option>
+      </select>
+    )}
+  </div>
+))}
+
+
           </div>
           <div className="code-box" style={{ display: "flex", gap: 10 }}>
             <input value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold" }} />
