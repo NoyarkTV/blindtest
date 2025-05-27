@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const navigate = useNavigate();
@@ -14,11 +15,31 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
     setEditing(false);
   };
 
-  const handleCreateGame = async () => {
-    // 🔧 Tu lanceras ici ta vraie logique de création de partie
-    // et tu pourras passer l’ID en paramètre si nécessaire
-    navigate("/config");
+const handleCreateGame = async () => {
+  const gameId = uuidv4();
+  const playerName = localStorage.getItem("playerName") || "Thibault";
+
+  const game = {
+    id: gameId,
+    admin: playerName,
+    players: [{ name: playerName }],
+    // plus tard : playlist, settings, etc.
   };
+
+  try {
+    const res = await fetch("http://localhost:8888/create-game", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(game)
+    });
+
+    if (!res.ok) throw new Error("Erreur création partie");
+
+    navigate(`/config/${gameId}`);
+  } catch (err) {
+    console.error("Erreur création de partie :", err);
+  }
+};
 
     const [spotifyToken, setSpotifyToken] = useState(null);
 
