@@ -168,6 +168,11 @@ app.post("/start-game", (req, res) => {
   res.status(200).send({ success: true });
 });
 
+app.get("/game/:id", (req, res) => {
+  const game = games[req.params.id];
+  if (!game) return res.status(404).send({ error: "Partie introuvable" });
+  res.send(game);
+});
 
 const PORT = process.env.PORT;
 

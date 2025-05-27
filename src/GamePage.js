@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
+import { useParams } from "react-router-dom";
 
 function GamePage() {
   const navigate = useNavigate();
@@ -32,6 +33,9 @@ function GamePage() {
   const basePointsRef = useRef(0);
   const roundEndedRef = useRef(false);
   const wrongAttemptsRef = useRef(0);
+  const { id } = useParams();
+  const [playlist, setPlaylist] = useState([]);
+
 
 function computeBasePoints() {
   const ratio = Math.min(1, timeLeft / timer); // timer restant
@@ -68,15 +72,25 @@ useEffect(() => {
   document.body.style.backgroundColor = "#1e2a38";
   document.body.style.color = "white";
 
-  // 🔑 récupère le token localStorage
   const token = localStorage.getItem("spotify_token");
   if (token) {
     setAccessToken(token);
-  } else {
-    console.warn("⚠️ Aucun token Spotify trouvé dans localStorage !");
   }
 
-  fetchNewTrack();
+  // 🔽 Récupération des infos de partie
+  fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("🎮 Données de la partie :", data);
+      setPlaylist(data.playlist || []);
+      setTrack(data.playlist?.[0] || null); // premier morceau
+      setTimer(data.params.time || 30);
+      setTimeLeft(data.params.time || 30);
+    })
+    .catch(err => {
+      console.error("Erreur récupération partie :", err);
+      navigate("/"); // fallback si erreur
+    });
 }, []);
 
 
@@ -103,29 +117,25 @@ useEffect(() => {
 }, [track, accessToken, deviceId, autoPlay]);
 
 
-function fetchNewTrack() {
-  fetch("https://blindtest-69h7.onrender.com/random-track")
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("🎧 Nouveau track reçu :", data);
-      setTrack(data);
+function updateTrack(roundNumber) {
+  const next = playlist[roundNumber - 1];
+  if (!next) return alert("❌ Aucun morceau trouvé pour ce round");
 
-      // 🔐 active autoPlay uniquement si le player est prêt
+  setTrack(next);
+
+  if (accessToken && deviceId) {
+    setAutoPlay(true);
+  } else {
+    const interval = setInterval(() => {
       if (accessToken && deviceId) {
         setAutoPlay(true);
-      } else {
-        // 🕒 sinon on attend que deviceId soit prêt
-        const interval = setInterval(() => {
-          if (accessToken && deviceId) {
-            setAutoPlay(true);
-            clearInterval(interval);
-          }
-        }, 200);
-        setTimeout(() => clearInterval(interval), 5000); // timeout sécurité
+        clearInterval(interval);
       }
-    })
-    .catch((err) => console.error("Erreur musique :", err));
+    }, 200);
+    setTimeout(() => clearInterval(interval), 5000);
+  }
 }
+
 
   function pausePlayback() {
   fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
@@ -261,25 +271,28 @@ function submitAnswer() {
     resumePlayback();
   }
 
-  function nextRound() {
-    if (currentRound >= totalRounds) {
-      alert("Partie terminée ! Score : " + score);
-      localStorage.setItem("spotify_token", accessToken);
-      navigate("/config");
-    } else {
-      wrongAttemptsRef.current = 0;
-      setCurrentRound((r) => r + 1);
-      setTimeLeft(timer);
-      setAnswerVisible(false);
-      setPaused(false);
-      setMusicPaused(false);
-      setShowIndiceMedia(false);
-      setShowIndiceAnnee(false);
-      setAnswer("");
-      setComposer("");
-      fetchNewTrack();
-    }
+function nextRound() {
+  if (currentRound >= totalRounds) {
+    alert("Partie terminée ! Score : " + score);
+    localStorage.setItem("spotify_token", accessToken);
+    navigate("/config");
+  } else {
+    wrongAttemptsRef.current = 0;
+    const next = currentRound + 1;
+
+    setCurrentRound(next);
+    setTimeLeft(timer);
+    setAnswerVisible(false);
+    setPaused(false);
+    setMusicPaused(false);
+    setShowIndiceMedia(false);
+    setShowIndiceAnnee(false);
+    setAnswer("");
+    setComposer("");
+
+    updateTrack(next);
   }
+}
 
   function normalize(str) {
     return str
