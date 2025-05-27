@@ -84,8 +84,8 @@ useEffect(() => {
       console.log("🎮 Données de la partie :", data);
       setPlaylist(data.playlist || []);
       setTrack(data.playlist?.[0] || null); // premier morceau
-      setTimer(data.params.time || 30);
-      setTimeLeft(data.params.time || 30);
+      setTimer(data.config.time || 30);
+      setTimeLeft(data.config.time || 30);
     })
     .catch(err => {
       console.error("Erreur récupération partie :", err);
