@@ -41,8 +41,10 @@ function SpotifyPlayer({ token, onReady, onError }) {
   })
   .then(() => {
     console.log("📡 Transfert vers Web Playback effectué");
+  setTimeout(() => {
     onReady(device_id);
-  })
+  }, 1000); // 1 seconde suffit
+})
   .catch(err => {
     console.error("❌ Erreur transfert lecteur :", err);
     onError(err);
