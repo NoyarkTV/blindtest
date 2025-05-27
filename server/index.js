@@ -125,8 +125,6 @@ app.get("/random-track", async (req, res) => {
 });
 
 
-
-
 app.post("/set-filters", (req, res) => {
   const {
     media, categories, difficulte, pays,
