@@ -56,7 +56,13 @@ function ConfigPage() {
   useEffect(() => {
 const count = allTracks.filter(track => {
   const okMedia = selectedMedia.includes(track.media);
-  const okCategorie = selectedCategorie.includes(track.categorie);
+  const okCategorie =
+  !selectedCategorie.length || selectedCategorie.some(cat =>
+    (track.categorie || "")
+      .split(",")
+      .map(c => c.trim())
+      .includes(cat)
+  );
   const okDiff = selectedDifficulte.includes(track.difficulte);
   const okPays = selectedPays.includes(track.pays);
   const okAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
