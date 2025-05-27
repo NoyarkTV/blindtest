@@ -94,24 +94,38 @@ useEffect(() => {
 }, [timeLeft, paused, answerVisible]);
 
 
-  useEffect(() => {
-    if (track && accessToken && deviceId && autoPlay) {
-      console.log("🧠 AutoPlay lancé avec :", track.uri);
-      playTrack(track.uri);
-      setAutoPlay(false);
-    }
-  }, [track, accessToken, deviceId, autoPlay]);
-
-  function fetchNewTrack() {
-    fetch("https://blindtest-69h7.onrender.com/random-track")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("🎧 Nouveau track reçu :", data);
-        setTrack(data);
-        setAutoPlay(true);
-      })
-      .catch((err) => console.error("Erreur musique :", err));
+useEffect(() => {
+  if (track && accessToken && deviceId && autoPlay) {
+    console.log("▶️ Lecture demandée pour :", track.uri);
+    playTrack(track.uri);
+    setAutoPlay(false);
   }
+}, [track, accessToken, deviceId, autoPlay]);
+
+
+function fetchNewTrack() {
+  fetch("https://blindtest-69h7.onrender.com/random-track")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("🎧 Nouveau track reçu :", data);
+      setTrack(data);
+
+      // 🔐 active autoPlay uniquement si le player est prêt
+      if (accessToken && deviceId) {
+        setAutoPlay(true);
+      } else {
+        // 🕒 sinon on attend que deviceId soit prêt
+        const interval = setInterval(() => {
+          if (accessToken && deviceId) {
+            setAutoPlay(true);
+            clearInterval(interval);
+          }
+        }, 200);
+        setTimeout(() => clearInterval(interval), 5000); // timeout sécurité
+      }
+    })
+    .catch((err) => console.error("Erreur musique :", err));
+}
 
   function pausePlayback() {
   fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
