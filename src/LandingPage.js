@@ -20,6 +20,27 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
     navigate("/config");
   };
 
+    const [spotifyToken, setSpotifyToken] = useState(null);
+
+  useEffect(() => {
+    const hash = window.location.hash || window.location.search;
+    const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash);
+    const token = params.get("access_token");
+
+    if (token) {
+      localStorage.setItem("spotify_token", token);
+      setSpotifyToken(token);
+      window.history.replaceState({}, document.title, "/"); // Nettoie l'URL
+    } else {
+      const stored = localStorage.getItem("spotify_token");
+      if (stored) setSpotifyToken(stored);
+    }
+  }, []);
+
+  const handleSpotifyConnect = () => {
+    window.location.href = "https://blindtest-69h7.onrender.com/login";
+  };
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -97,21 +118,21 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
           )}
 
           <button
-            className="btn"
-            onClick={onConnectSpotify}
-            style={{
-              backgroundColor: isSpotifyConnected ? "#1db954" : "#f7b733",
-              color: "#1e2a38",
-              fontWeight: "bold",
-              padding: "10px 20px",
-              fontSize: "1rem",
-              border: "none",
-              borderRadius: "50px",
-              cursor: "pointer"
-            }}
-          >
-            {isSpotifyConnected ? "Connecté à Spotify" : "Se connecter à Spotify"}
-          </button>
+        className="btn"
+          onClick={handleSpotifyConnect}
+          style={{
+            backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
+            color: "#1e2a38",
+            fontWeight: "bold",
+            padding: "10px 20px",
+            fontSize: "1rem",
+            border: "none",
+            borderRadius: "50px",
+            cursor: "pointer"
+          }}
+>
+          {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+        </button>
         </div>
 
         {/* Boutons à droite */}
