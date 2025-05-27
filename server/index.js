@@ -34,9 +34,22 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/create-game", (req, res) => {
-  const game = req.body;
-  games[game.id] = game; // Tu stockes dans un objet en mémoire
-  res.status(201).send({ success: true });
+  try {
+    const { id, admin, players } = req.body;
+
+    if (!id || !admin || !Array.isArray(players)) {
+      return res.status(400).send({ error: "Requête incomplète" });
+    }
+
+    // Exemple de stockage temporaire
+    games[id] = { id, admin, players };
+
+    console.log("✅ Partie créée :", id);
+    res.status(201).send({ success: true });
+  } catch (e) {
+    console.error("❌ Erreur serveur :", e);
+    res.status(500).send({ error: "Erreur serveur" });
+  }
 });
 
 app.get("/callback", async (req, res) => {
