@@ -57,7 +57,7 @@ app.get("/callback", async (req, res) => {
 
     storedAccessToken = access_token;
     storedRefreshToken = refresh_token;
-    res.redirect("https://blindtest-1.onrender.com/");
+    res.redirect(`https://blindtest-1.onrender.com/?access_token=${access_token}`);
     console.log("Access token :", access_token);
     console.log("Refresh token :", refresh_token);
   } catch (err) {
