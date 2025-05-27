@@ -64,18 +64,21 @@ function showEndPopup({ success, points }) {
   setShowPopup(true);
 }
 
-  useEffect(() => {
-    document.body.style.backgroundColor = "#1e2a38";
-    document.body.style.color = "white";
-    fetch("https://blindtest-69h7.onrender.com/get-token")
-      .then(res => res.json())
-      .then(data => {
-        if (data.access_token) {
-          setAccessToken(data.access_token);
-        }
-      });
-    fetchNewTrack();
-  }, []);
+useEffect(() => {
+  document.body.style.backgroundColor = "#1e2a38";
+  document.body.style.color = "white";
+
+  // 🔑 récupère le token localStorage
+  const token = localStorage.getItem("spotify_token");
+  if (token) {
+    setAccessToken(token);
+  } else {
+    console.warn("⚠️ Aucun token Spotify trouvé dans localStorage !");
+  }
+
+  fetchNewTrack();
+}, []);
+
 
 useEffect(() => {
   if (!paused && !answerVisible && timeLeft > 0) {
