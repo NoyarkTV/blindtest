@@ -25,9 +25,30 @@ function SpotifyPlayer({ token, onReady, onError }) {
       });
 
       player.addListener("ready", ({ device_id }) => {
-        console.log("✅ SDK prêt avec device_id :", device_id);
-        onReady(device_id);
-      });
+  console.log("✅ SDK prêt avec device_id :", device_id);
+
+  // ⬇️ Activation obligatoire du lecteur web côté compte utilisateur
+  fetch("https://api.spotify.com/v1/me/player", {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      device_ids: [device_id],
+      play: false
+    })
+  })
+  .then(() => {
+    console.log("📡 Transfert vers Web Playback effectué");
+    onReady(device_id);
+  })
+  .catch(err => {
+    console.error("❌ Erreur transfert lecteur :", err);
+    onError(err);
+  });
+});
+
 
       player.addListener("initialization_error", ({ message }) => {
         console.error("Erreur init :", message);
