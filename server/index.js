@@ -33,6 +33,11 @@ app.get("/login", (req, res) => {
   res.redirect(authURL);
 });
 
+app.post("/create-game", (req, res) => {
+  const game = req.body;
+  games[game.id] = game; // Tu stockes dans un objet en mémoire
+  res.status(201).send({ success: true });
+});
 
 app.get("/callback", async (req, res) => {
   const code = req.query.code;
