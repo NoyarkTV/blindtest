@@ -82,7 +82,6 @@ const handleCreateGame = async () => {
       }}>
         Blindtest
       </header>
-
       <div style={{
         display: "flex",
         justifyContent: "center",
