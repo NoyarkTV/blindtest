@@ -8,7 +8,6 @@ function SpotifyPlayer({ token, onReady, onError }) {
   useEffect(() => {
     if (!token || sdkInitialized) return;
 
-    // 🔁 Charger dynamiquement le SDK Spotify
     if (!document.getElementById("spotify-sdk")) {
       const script = document.createElement("script");
       script.id = "spotify-sdk";
@@ -17,12 +16,8 @@ function SpotifyPlayer({ token, onReady, onError }) {
       document.body.appendChild(script);
     }
 
-    const waitForSpotify = () => {
-      if (!window.Spotify) {
-        setTimeout(waitForSpotify, 100);
-        return;
-      }
-
+    // ✅ Fonction exigée par Spotify
+    window.onSpotifyWebPlaybackSDKReady = () => {
       const player = new window.Spotify.Player({
         name: "Blindtest Player",
         getOAuthToken: cb => cb(token),
@@ -58,8 +53,6 @@ function SpotifyPlayer({ token, onReady, onError }) {
       playerRef.current = player;
       sdkInitialized = true;
     };
-
-    waitForSpotify();
   }, [token, onReady, onError]);
 
   return null;
