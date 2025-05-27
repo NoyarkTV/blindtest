@@ -15,6 +15,7 @@ app.use(express.json());
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
+const games = {};
 
 app.get("/login", (req, res) => {
   const scope = [

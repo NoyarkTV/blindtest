@@ -8,7 +8,7 @@ function SpotifyPlayer({ token, onReady, onError }) {
   useEffect(() => {
     if (!token || sdkInitialized) return;
 
-    // ✅ 1. DÉFINIR la fonction en amont
+    // ✅ DÉFINIR D'ABORD la fonction globale
     window.onSpotifyWebPlaybackSDKReady = () => {
       const player = new window.Spotify.Player({
         name: "Blindtest Player",
@@ -18,7 +18,6 @@ function SpotifyPlayer({ token, onReady, onError }) {
 
       player.addListener("ready", ({ device_id }) => {
         console.log("✅ SDK prêt avec device_id :", device_id);
-
         fetch("https://api.spotify.com/v1/me/player", {
           method: "PUT",
           headers: {
@@ -47,12 +46,14 @@ function SpotifyPlayer({ token, onReady, onError }) {
       sdkInitialized = true;
     };
 
-    // ✅ 2. CHARGER le script SEULEMENT APRÈS
-    const script = document.createElement("script");
-    script.id = "spotify-sdk";
-    script.src = "https://sdk.scdn.co/spotify-player.js";
-    script.async = true;
-    document.body.appendChild(script);
+    // ✅ CHARGER le SDK seulement une fois
+    if (!document.getElementById("spotify-sdk")) {
+      const script = document.createElement("script");
+      script.id = "spotify-sdk";
+      script.src = "https://sdk.scdn.co/spotify-player.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
 
     return () => {
       delete window.onSpotifyWebPlaybackSDKReady;
