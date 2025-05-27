@@ -4,12 +4,12 @@ import { v4 as uuidv4 } from "uuid";
 
 function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const navigate = useNavigate();
-  const [playerName, setPlayerName] = useState(localStorage.getItem("playerName") || "Thibault");
+  const [playerName, setPlayerName] = useState(localStorage.getItem("playerName") || "");
   const [editing, setEditing] = useState(false);
   const [inputName, setInputName] = useState(playerName);
 
   const handleSaveName = () => {
-    const name = inputName.trim() || "Thibault";
+    const name = inputName.trim() || "";
     setPlayerName(name);
     localStorage.setItem("playerName", name);
     setEditing(false);
@@ -17,7 +17,7 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
 
 const handleCreateGame = async () => {
   const gameId = uuidv4();
-  const playerName = localStorage.getItem("playerName") || "Thibault";
+  const playerName = localStorage.getItem("playerName") || "";
 
   const game = {
     id: gameId,
@@ -43,19 +43,34 @@ const handleCreateGame = async () => {
 
     const [spotifyToken, setSpotifyToken] = useState(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("access_token");
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("access_token");
 
-    if (token) {
-      localStorage.setItem("spotify_token", token);
-      setSpotifyToken(token);
-      window.history.replaceState({}, document.title, "/"); // Nettoie l'URL
-    } else {
-      const stored = localStorage.getItem("spotify_token");
-      if (stored) setSpotifyToken(stored);
-    }
-  }, []);
+  if (token) {
+    localStorage.setItem("spotify_token", token);
+    setSpotifyToken(token);
+    window.history.replaceState({}, document.title, "/");
+
+    // 🔍 Récupération du nom Spotify
+    fetch("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.display_name) {
+          setPlayerName(data.display_name); // Remplit automatiquement le champ
+          localStorage.setItem("playerName", data.display_name);
+        }
+      })
+      .catch(err => console.error("Erreur récupération profil Spotify :", err));
+
+  } else {
+    const stored = localStorage.getItem("spotify_token");
+    if (stored) setSpotifyToken(stored);
+  }
+}, []);
+
 
   const handleSpotifyConnect = () => {
     window.location.href = "https://blindtest-69h7.onrender.com/login";
@@ -152,6 +167,26 @@ const handleCreateGame = async () => {
 >
           {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
         </button>
+        {spotifyToken && (
+  <button
+    onClick={() => {
+      localStorage.removeItem("spotify_token");
+      setSpotifyToken(null);
+    }}
+    style={{
+      marginTop: "10px",
+      backgroundColor: "#444",
+      color: "#fff",
+      padding: "6px 12px",
+      borderRadius: "20px",
+      cursor: "pointer",
+      border: "none"
+    }}
+  >
+    Se déconnecter
+  </button>
+)}
+
         </div>
 
         {/* Boutons à droite */}
