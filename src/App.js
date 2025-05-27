@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import LandingPage from "./LandingPage";
 import GamePage from "./GamePage";
 import ConfigPage from "./ConfigPage";
+import RoomPage from "./RoomPage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/config/:id" element={<ConfigPage />} />  {/* ✅ fix ici */}
         <Route path="/game/:id" element={<GamePage />} />      {/* ✅ fix ici */}
+        <Route path="/room/:id" element={<RoomPage />} />      {/* ✅ fix ici */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

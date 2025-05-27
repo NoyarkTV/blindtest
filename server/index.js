@@ -165,8 +165,13 @@ app.post("/start-game", (req, res) => {
   };
 
   console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux`);
+
+  // 🟡 Broadcast aux sockets
+  io.to(id).emit("game-started");
+
   res.status(200).send({ success: true });
 });
+
 
 app.get("/game/:id", (req, res) => {
   const game = games[req.params.id];
@@ -178,9 +183,9 @@ app.post("/join-game", (req, res) => {
   const { id, player } = req.body;
   if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
 
-  // éviter doublons
   if (!games[id].players.find(p => p.name === player.name)) {
     games[id].players.push(player);
+    io.to(id).emit("player-joined", games[id].players); // 🔥 broadcast live
   }
 
   res.send({ success: true });
@@ -188,9 +193,27 @@ app.post("/join-game", (req, res) => {
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur en ligne sur le port ${PORT}`);
+const http = require("http");
+const { Server } = require("socket.io");
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" } // autoriser tous les domaines (à restreindre plus tard)
 });
+
+server.listen(PORT, () => {
+  console.log(`🚀 Serveur en ligne avec Socket.IO sur le port ${PORT}`);
+});
+
+io.on("connection", (socket) => {
+  console.log("📡 Socket connecté :", socket.id);
+
+  socket.on("join-room", (gameId) => {
+    socket.join(gameId);
+    console.log(`🧩 Socket ${socket.id} a rejoint la room ${gameId}`);
+  });
+});
+
 
 
 async function fetchSpotifyImage(uri, token) {

@@ -19,6 +19,10 @@ useEffect(() => {
     console.log("🧑‍🤝‍🧑 Mise à jour des joueurs :", updatedPlayers);
     setPlayers(updatedPlayers);
   });
+   socket.on("game-started", () => {
+    console.log("🚀 Partie lancée !");
+    navigate(`/game/${id}`);
+  });
 
   return () => socket.disconnect();
 }, [id]);

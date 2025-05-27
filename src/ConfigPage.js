@@ -54,6 +54,10 @@ function ConfigPage() {
     console.log("🔁 Mise à jour reçue :", updatedPlayers);
     setPlayers(updatedPlayers);
   });
+  socket.on("game-started", () => {
+    console.log("🚀 Partie lancée !");
+    navigate(`/game/${id}`);
+  });
 
   return () => socket.disconnect();
 }, [id]);
