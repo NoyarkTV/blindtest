@@ -187,8 +187,6 @@ const count = allTracks.filter(track => {
           {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie)}
           {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte)}
           {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays)}
-
-          <button style={{ backgroundColor: "#f7b733", color: "#1e2a38", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: "bold", cursor: "pointer", marginTop: 8 }}>Importer un tableur</button>
         </div>
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
           <div className="section-title" style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Partie</div>
