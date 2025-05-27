@@ -27,7 +27,7 @@ const handleCreateGame = async () => {
   };
 
   try {
-    const res = await fetch("http://localhost:8888/create-game", {
+    const res = await fetch("https://blindtest-69h7.onrender.com/create-game", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(game)
