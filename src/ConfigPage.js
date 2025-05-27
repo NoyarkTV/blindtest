@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 console.log("✅ ConfigPage.js chargé !");
 
 function ConfigPage() {
+  const { id } = useParams();
+  const playerName = localStorage.getItem("playerName") || "Joueur";
   const navigate = useNavigate();
   const [time, setTime] = useState(30);
   const [nbRounds, setNbRounds] = useState(10);
@@ -98,30 +101,63 @@ const count = allTracks.filter(track => {
     );
   };
 
-  const validerPartie = () => {
-    const params = {
-      bonusCompositeur,
-      nbRounds,
-      time,
-      anneeMin,
-      anneeMax,
-      media: selectedMedia,
-      categories: selectedCategorie,
-      difficulte: selectedDifficulte,
-      pays: selectedPays,
-      emoji
-    };
-    localStorage.setItem("blindtestParams", JSON.stringify(params));
+  const copierCode = () => {
+  navigator.clipboard.writeText(id)
+    .then(() => console.log("✅ Code copié :", id))
+    .catch(err => console.error("❌ Erreur copie :", err));
+};
 
-    fetch("https://blindtest-69h7.onrender.com/set-filters", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(params)
-    })
-      .then(res => res.json())
-      .then(() => navigate("/game"))
-      .catch(err => console.error("Erreur filtre :", err));
+
+const validerPartie = () => {
+  const params = {
+    bonusCompositeur,
+    nbRounds,
+    time,
+    anneeMin,
+    anneeMax,
+    media: selectedMedia,
+    categories: selectedCategorie,
+    difficulte: selectedDifficulte,
+    pays: selectedPays,
+    emoji
   };
+
+  // 🔎 Filtrer les morceaux selon les critères
+  const filteredTracks = allTracks.filter(track => {
+    const okMedia = selectedMedia.includes(track.media);
+    const okCategorie =
+      !selectedCategorie.length || selectedCategorie.some(cat =>
+        (track.categorie || "")
+          .split(",")
+          .map(c => c.trim())
+          .includes(cat)
+      );
+    const okDiff = selectedDifficulte.includes(track.difficulte);
+    const okPays = selectedPays.includes(track.pays);
+    const okAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
+
+    return okMedia && okCategorie && okDiff && okPays && okAnnee;
+  });
+
+  // 🎲 Tirer aléatoirement les morceaux
+  const shuffled = [...filteredTracks].sort(() => Math.random() - 0.5);
+  const selectedTracks = shuffled.slice(0, nbRounds);
+
+  const payload = {
+    id,                   // ID de la partie
+    params,               // paramètres de jeu
+    playlist: selectedTracks, // morceaux choisis
+  };
+
+  fetch("https://blindtest-69h7.onrender.com/start-game", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(() => navigate(`/game/${id}`))
+    .catch(err => console.error("Erreur lancement partie :", err));
+};
 
   const renderCheckboxGroup = (label, list, selected, setter) => (
     <div>
@@ -162,7 +198,7 @@ const count = allTracks.filter(track => {
               <div style={{ fontWeight: "bold" }}>Nombre de rounds</div>
               <label><input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} /> Bonus compositeur</label>
             </div>
-            <input type="number" min="1" max="100" value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
+            <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
 
             <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1e2a38" }}>
   {filteredCount === 0
@@ -191,7 +227,8 @@ const count = allTracks.filter(track => {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
           <div className="section-title" style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Partie</div>
           <div style={{ background: "#f2f2f2", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "5px" }}>
-            <div style={{ fontWeight: "bold", backgroundColor: "#fff3cd", padding: "5px 10px", borderRadius: "10px" }}>Thibault
+            <div style={{ fontWeight: "bold", backgroundColor: "#fff3cd", padding: "5px 10px", borderRadius: "10px" }}>
+              {playerName}
               <select value={emoji} onChange={e => setEmoji(e.target.value)} style={{ marginLeft: "10px" }}>
                 <option value="🟠">🟠</option>
                 <option value="🟣">🟣</option>
@@ -200,15 +237,27 @@ const count = allTracks.filter(track => {
                 <option value="🟡">🟡</option>
               </select>
             </div>
-            <div>Margaux 🟣</div>
           </div>
           <div className="code-box" style={{ display: "flex", gap: 10 }}>
-            <input value="ABC12" readOnly style={{ fontSize: "1rem", fontWeight: "bold" }} />
-            <button style={{ backgroundColor: "#f7b733", color: "#1e2a38", border: "none", borderRadius: "8px", padding: "6px 12px", fontWeight: "bold" }}>Copier</button>
+            <input value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold" }} />
+            <button
+            onClick={copierCode}
+            style={{
+              backgroundColor: "#f7b733",
+              color: "#1e2a38",
+              border: "none",
+              borderRadius: "8px",
+              padding: "6px 12px",
+              fontWeight: "bold",
+              cursor: "pointer"
+            }}
+>
+               Copier
+            </button>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#ccc", color: "#333" }} onClick={() => navigate("/")}>Annuler</button>
-            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#f7b733", color: "#1e2a38" }} onClick={validerPartie}>Lancer la partie</button>
+            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#ccc", color: "#333", cursor: "pointer" }} onClick={() => navigate("/")}>Annuler</button>
+            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#f7b733", color: "#1e2a38", cursor: "pointer" }} onClick={validerPartie}>Lancer la partie</button>
           </div>
         </div>
       </div>

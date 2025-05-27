@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/config/:id" element={<ConfigPage />} />  {/* ✅ fix ici */}
-        <Route path="/game" element={<GamePage />} />
+        <Route path="/game/:id" element={<GamePage />} />      {/* ✅ fix ici */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

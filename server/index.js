@@ -151,6 +151,22 @@ app.post("/set-filters", (req, res) => {
   res.json({ ok: true });
 });
 
+app.post("/start-game", (req, res) => {
+  const { id, params, playlist } = req.body;
+
+  if (!id || !Array.isArray(playlist)) {
+    return res.status(400).send({ error: "Requête invalide" });
+  }
+
+  games[id] = {
+    ...(games[id] || {}),
+    config: params,
+    playlist
+  };
+
+  console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux`);
+  res.status(200).send({ success: true });
+});
 
 
 const PORT = process.env.PORT;
