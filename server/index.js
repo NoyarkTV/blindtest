@@ -34,22 +34,20 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/create-game", (req, res) => {
-  try {
-    const { id, admin, players } = req.body;
+  console.log("🎯 Reçu :", req.body);
 
-    if (!id || !admin || !Array.isArray(players)) {
-      return res.status(400).send({ error: "Requête incomplète" });
-    }
+  const { id, admin, players } = req.body;
 
-    // Exemple de stockage temporaire
-    games[id] = { id, admin, players };
-
-    console.log("✅ Partie créée :", id);
-    res.status(201).send({ success: true });
-  } catch (e) {
-    console.error("❌ Erreur serveur :", e);
-    res.status(500).send({ error: "Erreur serveur" });
+  if (!id || !admin || !Array.isArray(players)) {
+    return res.status(400).send({ error: "Champs manquants" });
   }
+
+  // Stockage en mémoire (ou en DB plus tard)
+  games[id] = { id, admin, players };
+
+  console.log("✅ Partie créée :", games[id]);
+
+  res.status(201).send({ success: true });
 });
 
 app.get("/callback", async (req, res) => {

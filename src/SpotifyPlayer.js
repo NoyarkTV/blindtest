@@ -8,7 +8,7 @@ function SpotifyPlayer({ token, onReady, onError }) {
   useEffect(() => {
     if (!token || sdkInitialized) return;
 
-    // ✅ Définir la fonction AVANT le chargement du SDK
+    // ✅ 1. DÉFINIR la fonction en amont
     window.onSpotifyWebPlaybackSDKReady = () => {
       const player = new window.Spotify.Player({
         name: "Blindtest Player",
@@ -25,10 +25,7 @@ function SpotifyPlayer({ token, onReady, onError }) {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            device_ids: [device_id],
-            play: false
-          })
+          body: JSON.stringify({ device_ids: [device_id], play: false })
         })
           .then(() => {
             console.log("📡 Transfert vers Web Playback effectué");
@@ -40,41 +37,23 @@ function SpotifyPlayer({ token, onReady, onError }) {
           });
       });
 
-      player.addListener("initialization_error", ({ message }) => {
-        console.error("Erreur init :", message);
-        onError(message);
-      });
-
-      player.addListener("authentication_error", ({ message }) => {
-        console.error("Erreur auth :", message);
-        onError(message);
-      });
-
-      player.addListener("account_error", ({ message }) => {
-        console.error("Erreur compte :", message);
-        onError(message);
-      });
-
-      player.addListener("playback_error", ({ message }) => {
-        console.error("Erreur lecture :", message);
-        onError(message);
-      });
+      player.addListener("initialization_error", ({ message }) => onError(message));
+      player.addListener("authentication_error", ({ message }) => onError(message));
+      player.addListener("account_error", ({ message }) => onError(message));
+      player.addListener("playback_error", ({ message }) => onError(message));
 
       player.connect();
       playerRef.current = player;
       sdkInitialized = true;
     };
 
-    // 🧠 Ensuite, charge le script
-    if (!document.getElementById("spotify-sdk")) {
-      const script = document.createElement("script");
-      script.id = "spotify-sdk";
-      script.src = "https://sdk.scdn.co/spotify-player.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
+    // ✅ 2. CHARGER le script SEULEMENT APRÈS
+    const script = document.createElement("script");
+    script.id = "spotify-sdk";
+    script.src = "https://sdk.scdn.co/spotify-player.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-    // 🔁 Nettoyage (facultatif)
     return () => {
       delete window.onSpotifyWebPlaybackSDKReady;
     };
