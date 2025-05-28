@@ -313,6 +313,7 @@ function resumePlayback() {
   }
   
 function handleNextRoundPopup() {
+  console.log("📦 handleNextRoundPopup() appelée");
   roundEndedRef.current = false;
   setShowPopup(false);
   setStartTime(Date.now());
@@ -402,11 +403,15 @@ function submitAnswer() {
   }
 
 function nextRound() {
+  console.log("🟢 nextRound() appelée — currentRound =", currentRound, "totalRounds =", totalRounds);
+
   if (currentRound >= totalRounds) {
+    console.log("🔴 Partie terminée, redirection");
     alert("Partie terminée ! Score : " + score);
     localStorage.setItem("spotify_token", accessToken);
     navigate("/config");
   } else {
+    console.log("➡️ Passage au round", currentRound + 1);
     wrongAttemptsRef.current = 0;
     const next = currentRound + 1;
 
@@ -424,7 +429,7 @@ function nextRound() {
   }
 }
 
-  function normalize(str) {
+function normalize(str) {
     return str
       .toLowerCase()
       .normalize("NFD")
