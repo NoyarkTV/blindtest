@@ -355,7 +355,7 @@ function handleNextRoundPopup() {
   setStartTime(Date.now());
 
   if (isAdmin) {
-    socket.emit("next-round", roomId);
+    socket.emit("next-round", id);
   }
 }
 
