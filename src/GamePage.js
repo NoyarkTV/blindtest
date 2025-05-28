@@ -9,7 +9,7 @@ function GamePage() {
   const savedParams = JSON.parse(localStorage.getItem("blindtestParams")) || {};
   const [timer, setTimer] = useState(savedParams.time || 30);
   const [timeLeft, setTimeLeft] = useState(savedParams.time || 30);
-  const [currentRound, setCurrentRound] = useState(1);
+  const [currentRound, setCurrentRound] = useState(0);
   const [totalRounds, setTotalRounds] = useState(0);
   const [answerVisible, setAnswerVisible] = useState(false);
   const [answer, setAnswer] = useState("");
@@ -247,7 +247,7 @@ useEffect(() => {
 
 
 function updateTrack(roundNumber) {
-  const next = playlist[roundNumber - 1];
+  const next = playlist[roundNumber];
   if (!next) return alert("❌ Aucun morceau trouvé pour ce round");
 
   setTrack(next);
@@ -403,15 +403,15 @@ function submitAnswer() {
 function nextRound() {
   const next = currentRound + 1;
 
-  if (next > totalRounds) {
-    // 👉 Maintenant on vérifie que le prochain round dépasserait le total
+  if (next >= totalRounds) {
+    // 🛑 Partie finie après le dernier index de morceau
     fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
       .then(res => res.json())
       .then(data => {
         const sorted = [...data].sort((a, b) => b.score - a.score);
         setFinalRanking(sorted);
-        setGameOver(true);      // ✅ Affichage du popup final
-        setShowPopup(false);    // ✅ Masquer le popup de fin de round
+        setGameOver(true);
+        setShowPopup(false);
       })
       .catch(err => {
         console.error("Erreur récupération scores finaux :", err);
@@ -430,9 +430,10 @@ function nextRound() {
     setAnswer("");
     setComposer("");
 
-    updateTrack(next);
+    updateTrack(next); // ⬅️ next = index réel du morceau suivant
   }
 }
+
 
   function normalize(str) {
     return str
@@ -482,7 +483,7 @@ return (
     {/* ZONE CENTRALE */}
     <div style={{ flex: 1, paddingTop: 60, textAlign: "center", color: "white" }}>
       <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
-        Round {currentRound} / {totalRounds}
+        Round {currentRound + 1} / {totalRounds}
       </h1>
 
       {/* TIMER */}
