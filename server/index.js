@@ -161,6 +161,14 @@ app.post("/start-game", (req, res) => {
     config: params,
     playlist
   };
+  games[id].currentRound = 1;
+  games[id].nbRounds = playlist.length; 
+
+  io.to(id).emit("round-update", { 
+  round: 1, 
+  track: playlist[0],        // première piste de la playlist
+  isLast: false              // false car la partie n’est pas encore terminée
+});
 
   console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux`);
 
@@ -252,8 +260,30 @@ io.on("connection", (socket) => {
     socket.join(gameId);
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${gameId}`);
   });
-  socket.on("next-round", roomId => {
-    io.to(roomId).emit("force-next-round");
+  socket.on("next-round", ({ roomId, player }) => {
+    const game = games[roomId];
+    if (!game) return;  
+
+    if (player !== game.admin) return;
+
+    if (game.currentRound < game.config.nbRounds) {
+      game.currentRound += 1;
+      const roundNum = game.currentRound;
+      const track = game.playlist[roundNum - 1];
+      const isLastRound = roundNum >= game.config.nbRounds;
+
+      io.to(roomId).emit("round-update", { 
+        round: roundNum, 
+        track: track, 
+        isLast: false
+      });
+    } else {
+      io.to(roomId).emit("round-update", { 
+        round: game.currentRound, 
+        track: null,
+        isLast: true 
+      });
+    }
   });
 });
 

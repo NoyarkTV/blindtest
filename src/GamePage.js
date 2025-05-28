@@ -143,6 +143,43 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
+// À placer dans GamePage.js, à l’intérieur du composant (par ex. juste après l’émission de join-room)
+useEffect(() => {
+  socket.on("round-update", ({ round, track, isLast }) => {
+    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
+
+    // Mettre à jour le state avec le round et la piste reçus
+    setCurrentRound(round);
+    setTrack(track);
+
+    // Réinitialiser l’état de l’interface pour le nouveau round
+    setTimeLeft(timer);
+    setAnswerVisible(false);
+    setPaused(false);
+    setMusicPaused(false);
+    setShowIndiceMedia(false);
+    setShowIndiceAnnee(false);
+    setAnswer("");
+    setComposer("");
+
+    // Lancer automatiquement la lecture du nouveau morceau si Spotify est prêt
+    setAutoPlay(true);
+
+    // Si la partie est terminée, afficher le classement final
+    if (isLast) {
+      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
+      setFinalRanking(finalScores);
+      setGameOver(true);
+    }
+  });
+
+  // Nettoyer l'écouteur à la fin
+  return () => {
+    socket.off("round-update");
+  };
+}, [timer, scoreboard]);
+
+
 useEffect(() => {
   socket.on("force-next-round", () => {
     handleNextRoundPopup();
@@ -317,7 +354,7 @@ function handleNextRoundPopup() {
   roundEndedRef.current = false;
   setShowPopup(false);
   setStartTime(Date.now());
-  nextRound();
+  // nextRound();
 }
 
   function handleKeyDown(e) {
@@ -402,32 +439,32 @@ function submitAnswer() {
     resumePlayback();
   }
 
-function nextRound() {
-  console.log("🟢 nextRound() appelée — currentRound =", currentRound, "totalRounds =", totalRounds);
+// function nextRound() {
+//   console.log("🟢 nextRound() appelée — currentRound =", currentRound, "totalRounds =", totalRounds);
 
-  if (currentRound >= totalRounds) {
-    console.log("🔴 Partie terminée, redirection");
-    alert("Partie terminée ! Score : " + score);
-    localStorage.setItem("spotify_token", accessToken);
-    navigate("/config");
-  } else {
-    console.log("➡️ Passage au round", currentRound + 1);
-    wrongAttemptsRef.current = 0;
-    const next = currentRound + 1;
+//   if (currentRound >= totalRounds) {
+//     console.log("🔴 Partie terminée, redirection");
+//     alert("Partie terminée ! Score : " + score);
+//     localStorage.setItem("spotify_token", accessToken);
+//     navigate("/config");
+//   } else {
+//     console.log("➡️ Passage au round", currentRound + 1);
+//     wrongAttemptsRef.current = 0;
+//     const next = currentRound + 1;
 
-    setCurrentRound(next);
-    setTimeLeft(timer);
-    setAnswerVisible(false);
-    setPaused(false);
-    setMusicPaused(false);
-    setShowIndiceMedia(false);
-    setShowIndiceAnnee(false);
-    setAnswer("");
-    setComposer("");
+//     setCurrentRound(next);
+//     setTimeLeft(timer);
+//     setAnswerVisible(false);
+//     setPaused(false);
+//     setMusicPaused(false);
+//     setShowIndiceMedia(false);
+//     setShowIndiceAnnee(false);
+//     setAnswer("");
+//     setComposer("");
 
-    updateTrack(next);
-  }
-}
+//     updateTrack(next);
+//   }
+// }
 
 function normalize(str) {
     return str
@@ -604,7 +641,7 @@ return (
           )}
 {isAdmin && (
   <button 
-    onClick={() => socket.emit("next-round", id)} 
+    onClick={() => socket.emit("next-round", { roomId: id, player: playerName })} 
     style={nextButtonStyle}
     disabled={roundEndedRef.current === false}
   >
