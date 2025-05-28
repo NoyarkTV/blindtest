@@ -175,18 +175,6 @@ useEffect(() => {
   };
 }, [socket, timer, scoreboard]); // ✅ socket est maintenant une dépendance
 
-useEffect(() => {
-  socket.on("force-next-round", () => {
-    handleNextRoundPopup();
-  });
-
-  return () => {
-    socket.off("force-next-round");
-  };
-}, []);
-
-
-
 function computeBasePoints() {
   const ratio = Math.min(1, timeLeft / timer); // timer restant
   let points = 100 * ratio;
