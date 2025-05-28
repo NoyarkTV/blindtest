@@ -402,25 +402,14 @@ function submitAnswer() {
   }
 
 function nextRound() {
-  const next = currentRound + 1;
-
-  if (next > totalRounds) {
-    // 🛑 Partie finie après le dernier index de morceau
-    fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        const sorted = [...data].sort((a, b) => b.score - a.score);
-        setFinalRanking(sorted);
-        setGameOver(true);
-        setShowPopup(false);
-      })
-      .catch(err => {
-        console.error("Erreur récupération scores finaux :", err);
-        alert("Erreur lors de l'affichage du classement.");
-        navigate("/");
-      });
+  if (currentRound >= totalRounds) {
+    alert("Partie terminée ! Score : " + score);
+    localStorage.setItem("spotify_token", accessToken);
+    navigate("/config");
   } else {
     wrongAttemptsRef.current = 0;
+    const next = currentRound + 1;
+
     setCurrentRound(next);
     setTimeLeft(timer);
     setAnswerVisible(false);
@@ -431,10 +420,9 @@ function nextRound() {
     setAnswer("");
     setComposer("");
 
-    updateTrack(next); // ⬅️ next = index réel du morceau suivant
+    updateTrack(next);
   }
 }
-
 
   function normalize(str) {
     return str
