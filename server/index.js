@@ -215,6 +215,22 @@ app.post("/join-game", (req, res) => {
   res.send({ success: true });
 });
 
+app.get("/scores/:id", (req, res) => {
+  const { id } = req.params;
+  const game = games[id];
+
+  if (!game) {
+    return res.status(404).send({ error: "Partie introuvable" });
+  }
+
+  if (!Array.isArray(game.scores)) {
+    return res.status(400).send({ error: "Scores invalides ou manquants" });
+  }
+
+  res.send(game.scores);
+});
+
+
 const PORT = process.env.PORT;
 
 const http = require("http");
