@@ -132,8 +132,12 @@ const nextButtonStyle = {
   socket.emit("join-room", id);
 
   socket.on("score-update", updatedScores => {
+  if (Array.isArray(updatedScores)) {
     setScoreboard(updatedScores);
-  });
+  } else {
+    console.warn("⚠️ Données de score malformées :", updatedScores);
+  }
+});
 
   return () => socket.disconnect();
 }, [id]);

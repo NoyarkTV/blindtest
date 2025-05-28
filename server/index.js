@@ -174,16 +174,24 @@ app.post("/submit-score", (req, res) => {
   const { id, player, score } = req.body;
   if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
 
-  if (!games[id].scores) games[id].scores = [];
+  // Initialise les scores si absents
+  if (!Array.isArray(games[id].scores)) games[id].scores = [];
 
   const existing = games[id].scores.find(s => s.name === player);
+
   if (!existing || existing.score !== score) {
     if (existing) {
       existing.score = score;
     } else {
       games[id].scores.push({ name: player, score });
     }
-    io.to(id).emit("score-update", games[id].scores);
+
+    // Ne fais le emit que si le tableau est valide
+    if (Array.isArray(games[id].scores)) {
+      io.to(id).emit("score-update", games[id].scores);
+    } else {
+      console.warn(`⚠️ games[${id}].scores n'est pas un tableau :`, games[id].scores);
+    }
   }
 
   res.send({ success: true });
