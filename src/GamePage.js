@@ -143,35 +143,47 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
-
 useEffect(() => {
   if (!socket) return;
 
   socket.on("round-update", ({ round, track, isLast }) => {
-    console.log("🎯 Reçu 'round-update' => Round:", round, "Track:", track?.titre, "isLast:", isLast);
-    
+    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
+
     setCurrentRound(round);
-    setCurrentTrack(track);
-    setIsLastRound(isLast);
+    setTrack(track);
 
-    console.log("✅ States mis à jour");
-
-    setShowPopup(false);
-    setAnswerVisible(false);
     setTimeLeft(timer);
+    setAnswerVisible(false);
     setPaused(false);
     setMusicPaused(false);
     setShowIndiceMedia(false);
     setShowIndiceAnnee(false);
     setAnswer("");
     setComposer("");
-    setStartTime(Date.now());
+
+    setAutoPlay(true);
+
+    if (isLast) {
+      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
+      setFinalRanking(finalScores);
+      setGameOver(true);
+    }
   });
 
   return () => {
     socket.off("round-update");
   };
-}, [socket]);
+}, [socket, timer, scoreboard]); // ✅ socket est maintenant une dépendance
+
+useEffect(() => {
+  socket.on("force-next-round", () => {
+    handleNextRoundPopup();
+  });
+
+  return () => {
+    socket.off("force-next-round");
+  };
+}, []);
 
 
 
