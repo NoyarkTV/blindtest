@@ -350,12 +350,14 @@ function resumePlayback() {
   }
   
 function handleNextRoundPopup() {
+  console.log("✅ handleNextRoundPopup déclenché");
   roundEndedRef.current = false;
   setShowPopup(false);
   setStartTime(Date.now());
 
   if (isAdmin) {
-    socket.emit("next-round", id);
+    console.log("📡 Envoi socket next-round depuis admin, roomId :", id);
+    socket.emit("next-round", { roomId: id, player: localStorage.getItem("playerName") });
   }
 }
 
@@ -643,7 +645,7 @@ return (
           )}
 {isAdmin && (
   <button 
-    onClick={() => socket.emit("next-round", { roomId: id, player: playerName })} 
+    onClick={handleNextRoundPopup}
     style={nextButtonStyle}
     disabled={roundEndedRef.current === false}
   >

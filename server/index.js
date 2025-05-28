@@ -261,30 +261,40 @@ io.on("connection", (socket) => {
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${gameId}`);
   });
   socket.on("next-round", ({ roomId, player }) => {
-    const game = games[roomId];
-    if (!game) return;  
+  console.log(`📨 Reçu 'next-round' de ${player} pour la room ${roomId}`);
 
-    if (player !== game.admin) return;
+  const game = games[roomId];
+  if (!game) {
+    console.warn("❌ Partie introuvable pour roomId :", roomId);
+    return;
+  }
 
-    if (game.currentRound < game.config.nbRounds) {
-      game.currentRound += 1;
-      const roundNum = game.currentRound;
-      const track = game.playlist[roundNum - 1];
-      const isLastRound = roundNum >= game.config.nbRounds;
+  if (player !== game.admin) {
+    console.warn(`🔒 Accès refusé : ${player} n'est pas l'admin (${game.admin})`);
+    return;
+  }
 
-      io.to(roomId).emit("round-update", { 
-        round: roundNum, 
-        track: track, 
-        isLast: false
-      });
-    } else {
-      io.to(roomId).emit("round-update", { 
-        round: game.currentRound, 
-        track: null,
-        isLast: true 
-      });
-    }
+  if (typeof game.currentRound !== "number") {
+    game.currentRound = 1; // 🔧 Initialisation manquante
+    console.log("🛠️ Initialisation du round à 1");
+  } else {
+    game.currentRound += 1;
+  }
+
+  const roundNum = game.currentRound;
+  const totalRounds = game.config?.nbRounds || 1;
+
+  const isLastRound = roundNum >= totalRounds;
+  const track = game.playlist?.[roundNum - 1];
+
+  console.log(`➡️ Round ${roundNum}/${totalRounds} | isLast: ${isLastRound} | Track: ${track?.titre || "Aucun"}`);
+
+  io.to(roomId).emit("round-update", {
+    round: roundNum,
+    track: isLastRound ? null : track,
+    isLast: isLastRound
   });
+});
 });
 
 
