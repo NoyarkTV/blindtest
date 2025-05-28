@@ -484,7 +484,7 @@ return (
     {/* ZONE CENTRALE */}
     <div style={{ flex: 1, paddingTop: 60, textAlign: "center", color: "white" }}>
       <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
-        Round {currentRound + 1} / {totalRounds}
+        Round {currentRound} / {totalRounds}
       </h1>
 
       {/* TIMER */}
@@ -609,9 +609,12 @@ return (
               par {popupInfo.compositeur}
             </p>
           )}
-
-          {isAdmin && (
-  <button onClick={() => socket.emit("next-round", id)} style={nextButtonStyle}>
+{isAdmin && (
+  <button 
+    onClick={() => socket.emit("next-round", id)} 
+    style={nextButtonStyle}
+    disabled={roundEndedRef.current === false}
+  >
     🎵 Round suivant
   </button>
 )}
