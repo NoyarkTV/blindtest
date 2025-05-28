@@ -619,6 +619,33 @@ return (
       </div>
     )}
 
+    {/* POPUP FIN DE PARTIE */}
+    {gameOver && finalRanking && (
+  <div style={popupOverlayStyle}>
+    <div style={popupStyle}>
+      <h2 style={{ fontSize: 26 }}>🏁 Fin de la partie !</h2>
+      <h3 style={{ fontSize: 20, marginBottom: 20 }}>Classement final</h3>
+      <div style={{ textAlign: "left", maxHeight: 300, overflowY: "auto", marginBottom: 20 }}>
+        {finalRanking.map((p, i) => (
+          <div key={i} style={{
+            backgroundColor: p.name === playerName ? "#f7b733" : "transparent",
+            fontWeight: p.name === playerName ? "bold" : "normal",
+            padding: "6px 10px",
+            borderRadius: 6,
+            display: "flex",
+            justifyContent: "space-between"
+          }}>
+            <span>{i + 1}. {p.name}</span>
+            <span>{p.score} pts</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={() => navigate("/")} style={nextButtonStyle}>
+        🔙 Quitter
+      </button>
+    </div>
+  </div>
+)}
 
 
     <SpotifyPlayer
