@@ -177,16 +177,17 @@ app.post("/submit-score", (req, res) => {
   if (!games[id].scores) games[id].scores = [];
 
   const existing = games[id].scores.find(s => s.name === player);
-  if (existing) {
-    existing.score = score;
-  } else {
-    games[id].scores.push({ name: player, score });
+  if (!existing || existing.score !== score) {
+    if (existing) {
+      existing.score = score;
+    } else {
+      games[id].scores.push({ name: player, score });
+    }
+    io.to(id).emit("score-update", games[id].scores);
   }
 
-  io.to(id).emit("score-update", games[id].scores); // 🔁 broadcast
   res.send({ success: true });
 });
-
 
 app.get("/game/:id", (req, res) => {
   const game = games[req.params.id];
@@ -226,6 +227,9 @@ io.on("connection", (socket) => {
   socket.on("join-room", (gameId) => {
     socket.join(gameId);
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${gameId}`);
+  });
+  socket.on("next-round", roomId => {
+    io.to(roomId).emit("force-next-round");
   });
 });
 

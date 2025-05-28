@@ -1,4 +1,3 @@
-// 🚀 Version GamePage avec gestion du timer + lecture Spotify auto
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
@@ -39,6 +38,8 @@ function GamePage() {
   const socket = io("https://blindtest-69h7.onrender.com");
   const playerName = localStorage.getItem("playerName") || "Joueur";
   const [scoreboard, setScoreboard] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [finalRanking, setFinalRanking] = useState(null);
 
   const buzzButtonStyle = {
   padding: "15px 40px",
@@ -137,6 +138,17 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
+useEffect(() => {
+  socket.on("force-next-round", () => {
+    handleNextRoundPopup();
+  });
+
+  return () => {
+    socket.off("force-next-round");
+  };
+}, []);
+
+
 
 function computeBasePoints() {
   const ratio = Math.min(1, timeLeft / timer); // timer restant
@@ -148,9 +160,6 @@ function computeBasePoints() {
 
   return Math.ceil(points * multiplier);
 }
-
-
-
 
 
   const includeComposer = savedParams.bonusCompositeur || false;
@@ -168,12 +177,16 @@ function showEndPopup({ success, points }) {
   setPopupInfo(data);
   setShowPopup(true);
 }
-
-fetch("https://blindtest-69h7.onrender.com/submit-score", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ id, player: playerName, score })
-});
+useEffect(() => {
+  if (showPopup && popupInfo) {
+    // On envoie le score *actuel* seulement une fois à l'affichage du popup
+    fetch("https://blindtest-69h7.onrender.com/submit-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, player: playerName, score })
+    });
+  }
+}, [showPopup, popupInfo]);
 
 
 useEffect(() => {
@@ -196,6 +209,7 @@ useEffect(() => {
       setTimer(data.config.time || 30);
       setTimeLeft(data.config.time || 30);
       setTotalRounds(data.config.nbRounds || 10);
+      setIsAdmin(data.admin === playerName);
     })
     .catch(err => {
       console.error("Erreur récupération partie :", err);
@@ -382,11 +396,20 @@ function submitAnswer() {
   }
 
 function nextRound() {
-  if (currentRound >= totalRounds) {
-    alert("Partie terminée ! Score : " + score);
-    localStorage.setItem("spotify_token", accessToken);
-    navigate("/config");
-  } else {
+if (currentRound >= totalRounds) {
+  fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      const sorted = [...data].sort((a, b) => b.score - a.score);
+      setFinalRanking(sorted);
+      setShowPopup(true); // Réutilisation du système de popup
+    })
+    .catch(err => {
+      console.error("Erreur récupération scores finaux :", err);
+      alert("Erreur lors de l'affichage du classement.");
+      navigate("/");
+    });
+} else {
     wrongAttemptsRef.current = 0;
     const next = currentRound + 1;
 
@@ -549,7 +572,7 @@ return (
       <div style={{ marginTop: 40, fontSize: 20 }}>Score : {score} pts</div>
     </div>
 
-    {/* POPUP */}
+    {/* POPUP NEXT ROUND */}
     {showPopup && popupInfo && (
       <div style={popupOverlayStyle}>
         <div style={popupStyle}>
@@ -578,12 +601,43 @@ return (
             </p>
           )}
 
-          <button onClick={handleNextRoundPopup} style={nextButtonStyle}>
-            🎵 Round suivant
-          </button>
+          {isAdmin && (
+  <button onClick={() => socket.emit("next-round", id)} style={nextButtonStyle}>
+    🎵 Round suivant
+  </button>
+)}
         </div>
       </div>
     )}
+
+    {/* POPUP FIN DE PARTIE */}
+    {showPopup && finalRanking && (
+  <div style={popupOverlayStyle}>
+    <div style={popupStyle}>
+      <h2 style={{ fontSize: 26 }}>🏁 Fin de la partie !</h2>
+      <h3 style={{ fontSize: 20, marginBottom: 20 }}>Classement final</h3>
+      <div style={{ textAlign: "left", maxHeight: 300, overflowY: "auto", marginBottom: 20 }}>
+        {finalRanking.map((p, i) => (
+          <div key={i} style={{
+            backgroundColor: p.name === playerName ? "#f7b733" : "transparent",
+            fontWeight: p.name === playerName ? "bold" : "normal",
+            padding: "6px 10px",
+            borderRadius: 6,
+            display: "flex",
+            justifyContent: "space-between"
+          }}>
+            <span>{i + 1}. {p.name}</span>
+            <span>{p.score} pts</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={() => navigate("/")} style={nextButtonStyle}>
+        🔙 Quitter
+      </button>
+    </div>
+  </div>
+)}
+
 
     <SpotifyPlayer
       token={accessToken}
