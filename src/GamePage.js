@@ -40,6 +40,7 @@ function GamePage() {
   const [scoreboard, setScoreboard] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [finalRanking, setFinalRanking] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
 
   const buzzButtonStyle = {
   padding: "15px 40px",
@@ -400,20 +401,21 @@ function submitAnswer() {
   }
 
 function nextRound() {
-if (currentRound >= totalRounds) {
-  fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
-    .then(res => res.json())
-    .then(data => {
-      const sorted = [...data].sort((a, b) => b.score - a.score);
-      setFinalRanking(sorted);
-      setShowPopup(true); // Réutilisation du système de popup
-    })
-    .catch(err => {
-      console.error("Erreur récupération scores finaux :", err);
-      alert("Erreur lors de l'affichage du classement.");
-      navigate("/");
-    });
-} else {
+  if (currentRound >= totalRounds) {
+    fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        const sorted = [...data].sort((a, b) => b.score - a.score);
+        setFinalRanking(sorted);
+        setGameOver(true);      // ✅ Affichage du popup final
+        setShowPopup(false);    // ✅ Masquer le popup de fin de round
+      })
+      .catch(err => {
+        console.error("Erreur récupération scores finaux :", err);
+        alert("Erreur lors de l'affichage du classement.");
+        navigate("/");
+      });
+  } else {
     wrongAttemptsRef.current = 0;
     const next = currentRound + 1;
 
@@ -615,7 +617,7 @@ return (
     )}
 
     {/* POPUP FIN DE PARTIE */}
-    {showPopup && finalRanking && (
+    {gameOver && finalRanking && (
   <div style={popupOverlayStyle}>
     <div style={popupStyle}>
       <h2 style={{ fontSize: 26 }}>🏁 Fin de la partie !</h2>
