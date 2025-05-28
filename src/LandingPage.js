@@ -7,6 +7,14 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const [playerName, setPlayerName] = useState(localStorage.getItem("playerName") || "");
   const [editing, setEditing] = useState(false);
   const [inputName, setInputName] = useState(playerName);
+  const [joinCode, setJoinCode] = useState("");
+
+const handleJoinGame = () => {
+  const trimmed = joinCode.trim();
+  if (!trimmed) return;
+
+  navigate(`/room/${trimmed}`);
+};
 
   const handleSaveName = () => {
     const name = inputName.trim() || "";
@@ -202,9 +210,14 @@ useEffect(() => {
             Créer une partie
           </button>
           <div style={{ display: "flex", gap: "10px" }}>
-            <input placeholder="Code de partie" style={inputStyle} />
-            <button className="btn" style={buttonStyle}>Rejoindre</button>
-          </div>
+  <input
+    placeholder="Code de partie"
+    value={joinCode}
+    onChange={(e) => setJoinCode(e.target.value)}
+    style={inputStyle}
+  />
+  <button className="btn" onClick={handleJoinGame} style={buttonStyle}>Rejoindre</button>
+</div>
         </div>
       </div>
     </div>
