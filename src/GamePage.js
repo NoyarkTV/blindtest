@@ -9,7 +9,7 @@ function GamePage() {
   const savedParams = JSON.parse(localStorage.getItem("blindtestParams")) || {};
   const [timer, setTimer] = useState(savedParams.time || 30);
   const [timeLeft, setTimeLeft] = useState(savedParams.time || 30);
-  const [currentRound, setCurrentRound] = useState(0);
+  const [currentRound, setCurrentRound] = useState(1);
   const [totalRounds, setTotalRounds] = useState(0);
   const [answerVisible, setAnswerVisible] = useState(false);
   const [answer, setAnswer] = useState("");
@@ -247,7 +247,8 @@ useEffect(() => {
 
 
 function updateTrack(roundNumber) {
-  const next = playlist[roundNumber];
+  const index = roundNumber - 1; // ✅ conversion round humain → index tableau
+  const next = playlist[index];
   if (!next) return alert("❌ Aucun morceau trouvé pour ce round");
 
   setTrack(next);
@@ -403,7 +404,7 @@ function submitAnswer() {
 function nextRound() {
   const next = currentRound + 1;
 
-  if (next >= totalRounds) {
+  if (next > totalRounds) {
     // 🛑 Partie finie après le dernier index de morceau
     fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
       .then(res => res.json())
@@ -617,6 +618,7 @@ return (
         </div>
       </div>
     )}
+
 
 
     <SpotifyPlayer
