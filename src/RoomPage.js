@@ -62,22 +62,22 @@ function RoomPage() {
       </div>
 
       <div style={{ marginTop: 20 }}>
-        <h2>📋 Paramètres</h2>
-        {Object.keys(config).length === 0 ? (
-          <p>🛠️ En attente de configuration par l'organisateur...</p>
-        ) : (
-          <ul>
-            <li><b>Rounds :</b> {config.nbRounds}</li>
-            <li><b>Temps par manche :</b> {config.time} secondes</li>
-            <li><b>Bonus compositeur :</b> {config.bonusCompositeur ? "Oui" : "Non"}</li>
-            <li><b>Années :</b> {config.anneeMin} à {config.anneeMax}</li>
-            <li><b>Médias :</b> {config.media?.join(", ")}</li>
-            <li><b>Catégories :</b> {config.categories?.join(", ")}</li>
-            <li><b>Difficulté :</b> {config.difficulte?.join(", ")}</li>
-            <li><b>Pays :</b> {config.pays?.join(", ")}</li>
-          </ul>
-        )}
-      </div>
+  <h2>📋 Paramètres</h2>
+  {game.config ? (
+    <ul>
+      <li><b>Rounds :</b> {game.config.nbRounds}</li>
+      <li><b>Temps par manche :</b> {game.config.time} secondes</li>
+      <li><b>Bonus compositeur :</b> {game.config.bonusCompositeur ? "Oui" : "Non"}</li>
+      <li><b>Années :</b> {game.config.anneeMin} à {game.config.anneeMax}</li>
+      <li><b>Médias :</b> {game.config.media?.join(", ")}</li>
+      <li><b>Catégories :</b> {game.config.categories?.join(", ")}</li>
+      <li><b>Difficulté :</b> {game.config.difficulte?.join(", ")}</li>
+      <li><b>Pays :</b> {game.config.pays?.join(", ")}</li>
+    </ul>
+  ) : (
+    <p style={{ fontStyle: "italic" }}>🛠️ En attente de configuration par l'organisateur...</p>
+  )}
+</div>
 
       <div style={{ marginTop: 40, fontSize: 18, background: "#333", padding: 20, borderRadius: 10 }}>
         ⏳ En attente que l'organisateur lance la partie...
