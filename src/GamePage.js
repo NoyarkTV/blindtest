@@ -143,52 +143,35 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
-// À placer dans GamePage.js, à l’intérieur du composant (par ex. juste après l’émission de join-room)
+
 useEffect(() => {
+  if (!socket) return;
+
   socket.on("round-update", ({ round, track, isLast }) => {
-    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
-
-    // Mettre à jour le state avec le round et la piste reçus
+    console.log("🎯 Reçu 'round-update' => Round:", round, "Track:", track?.titre, "isLast:", isLast);
+    
     setCurrentRound(round);
-    setTrack(track);
+    setCurrentTrack(track);
+    setIsLastRound(isLast);
 
-    // Réinitialiser l’état de l’interface pour le nouveau round
-    setTimeLeft(timer);
+    console.log("✅ States mis à jour");
+
+    setShowPopup(false);
     setAnswerVisible(false);
+    setTimeLeft(timer);
     setPaused(false);
     setMusicPaused(false);
     setShowIndiceMedia(false);
     setShowIndiceAnnee(false);
     setAnswer("");
     setComposer("");
-
-    // Lancer automatiquement la lecture du nouveau morceau si Spotify est prêt
-    setAutoPlay(true);
-
-    // Si la partie est terminée, afficher le classement final
-    if (isLast) {
-      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
-      setFinalRanking(finalScores);
-      setGameOver(true);
-    }
+    setStartTime(Date.now());
   });
 
-  // Nettoyer l'écouteur à la fin
   return () => {
     socket.off("round-update");
   };
-}, [timer, scoreboard]);
-
-
-useEffect(() => {
-  socket.on("force-next-round", () => {
-    handleNextRoundPopup();
-  });
-
-  return () => {
-    socket.off("force-next-round");
-  };
-}, []);
+}, [socket]);
 
 
 
