@@ -401,7 +401,10 @@ function submitAnswer() {
   }
 
 function nextRound() {
-  if (currentRound >= totalRounds) {
+  const next = currentRound + 1;
+
+  if (next > totalRounds) {
+    // 👉 Maintenant on vérifie que le prochain round dépasserait le total
     fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
       .then(res => res.json())
       .then(data => {
@@ -417,8 +420,6 @@ function nextRound() {
       });
   } else {
     wrongAttemptsRef.current = 0;
-    const next = currentRound + 1;
-
     setCurrentRound(next);
     setTimeLeft(timer);
     setAnswerVisible(false);
