@@ -40,7 +40,10 @@ useEffect(() => {
         // recharge les joueurs
         fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
           .then(res => res.json())
-          .then(data => setPlayers(data.players || []));
+          .then(data => {
+            setPlayers(data.players || []);
+            setGame(data);
+      });
       });
   }, [id]);
 

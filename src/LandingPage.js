@@ -216,7 +216,9 @@ useEffect(() => {
     onChange={(e) => setJoinCode(e.target.value)}
     style={inputStyle}
   />
-  <button className="btn" onClick={handleJoinGame} style={buttonStyle}>Rejoindre</button>
+  <button className="btn" style={buttonStyle} onClick={() => navigate(`/room/${joinId}`)}>
+  Rejoindre
+</button>
 </div>
         </div>
       </div>
