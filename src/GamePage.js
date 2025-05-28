@@ -350,11 +350,13 @@ function resumePlayback() {
   }
   
 function handleNextRoundPopup() {
-  console.log("📦 handleNextRoundPopup() appelée");
   roundEndedRef.current = false;
   setShowPopup(false);
   setStartTime(Date.now());
-  // nextRound();
+
+  if (isAdmin) {
+    socket.emit("next-round", roomId);
+  }
 }
 
   function handleKeyDown(e) {
