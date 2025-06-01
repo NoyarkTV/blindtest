@@ -298,7 +298,6 @@ io.on("connection", (socket) => {
 });
 
 
-
 async function fetchSpotifyImage(uri, token) {
   try {
     const id = uri.split(":")[2];

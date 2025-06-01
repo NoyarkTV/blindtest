@@ -144,17 +144,16 @@ const nextButtonStyle = {
 }, [id]);
 
 useEffect(() => {
-  if (!socket) {
-    console.warn("⛔ Aucun socket défini au moment du useEffect round-update");
-    return;
-  }
+  if (!socket || !socket.connected || !id) return;
+
+  console.log("🎧 Écoute de 'round-update' activée");
 
   const handleRoundUpdate = ({ round, track, isLast }) => {
-    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
+    console.log("🔄 Nouveau round reçu :", round, track, "Fin de partie ?", isLast);
 
     setCurrentRound(round);
     setTrack(track);
-    console.log("🎯 Nouveau morceau reçu côté client :", track?.titre || "[aucun titre]");
+    console.log("🎯 Nouveau morceau reçu côté client :", track?.title || "inconnu");
 
     setTimeLeft(timer);
     setAnswerVisible(false);
@@ -164,7 +163,6 @@ useEffect(() => {
     setShowIndiceAnnee(false);
     setAnswer("");
     setComposer("");
-
     setAutoPlay(true);
 
     if (isLast) {
@@ -179,7 +177,7 @@ useEffect(() => {
   return () => {
     socket.off("round-update", handleRoundUpdate);
   };
-}, [socket, timer, scoreboard]);
+}, [socket, id, timer, scoreboard]);
 
 
 function computeBasePoints() {
