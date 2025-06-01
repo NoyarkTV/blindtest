@@ -143,39 +143,6 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
-useEffect(() => {
-  if (!socket) return;
-
-  socket.on("round-update", ({ round, track, isLast }) => {
-    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
-
-    setCurrentRound(round);
-    setTrack(track);
-    console.log("🎯 Nouveau morceau reçu côté client :", track);
-
-    setTimeLeft(timer);
-    setAnswerVisible(false);
-    setPaused(false);
-    setMusicPaused(false);
-    setShowIndiceMedia(false);
-    setShowIndiceAnnee(false);
-    setAnswer("");
-    setComposer("");
-
-    setAutoPlay(true);
-
-    if (isLast) {
-      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
-      setFinalRanking(finalScores);
-      setGameOver(true);
-    }
-  });
-
-  return () => {
-    socket.off("round-update");
-  };
-}, [socket, timer, scoreboard]); // ✅ socket est maintenant une dépendance
-
 function computeBasePoints() {
   const ratio = Math.min(1, timeLeft / timer); // timer restant
   let points = 100 * ratio;
@@ -462,6 +429,45 @@ function normalize(str) {
       .replace(/[^a-z0-9]/g, "")
       .trim();
   }
+
+  useEffect(() => {
+  if (!socket) {
+    console.warn("⛔ Aucun socket défini au moment du useEffect round-update");
+    return;
+  }
+
+  const handleRoundUpdate = ({ round, track, isLast }) => {
+    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
+
+    setCurrentRound(round);
+    setTrack(track);
+    console.log("🎯 Nouveau morceau reçu côté client :", track?.titre || "[aucun titre]");
+
+    setTimeLeft(timer);
+    setAnswerVisible(false);
+    setPaused(false);
+    setMusicPaused(false);
+    setShowIndiceMedia(false);
+    setShowIndiceAnnee(false);
+    setAnswer("");
+    setComposer("");
+
+    setAutoPlay(true);
+
+    if (isLast) {
+      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
+      setFinalRanking(finalScores);
+      setGameOver(true);
+    }
+  };
+
+  socket.on("round-update", handleRoundUpdate);
+
+  return () => {
+    socket.off("round-update", handleRoundUpdate);
+  };
+}, [socket, timer, scoreboard]);
+
 
 return (
   <div style={{ display: "flex", minHeight: "100vh", position: "relative", background: "#1e2a38" }}>
