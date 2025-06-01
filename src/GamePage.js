@@ -144,9 +144,10 @@ const nextButtonStyle = {
 }, [id]);
 
 useEffect(() => {
-  if (!socket || !currentGame?.id) return;
-
-  console.log("🎧 Installation écouteur round-update sur socket :", socket.id);
+  if (!socket) {
+    console.warn("⛔ Aucun socket défini au moment du useEffect round-update");
+    return;
+  }
 
   const handleRoundUpdate = ({ round, track, isLast }) => {
     console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
@@ -163,6 +164,7 @@ useEffect(() => {
     setShowIndiceAnnee(false);
     setAnswer("");
     setComposer("");
+
     setAutoPlay(true);
 
     if (isLast) {
@@ -177,7 +179,7 @@ useEffect(() => {
   return () => {
     socket.off("round-update", handleRoundUpdate);
   };
-}, [socket, currentGame?.id, timer, scoreboard]);
+}, [socket, timer, scoreboard]);
 
 
 function computeBasePoints() {
@@ -467,44 +469,7 @@ function normalize(str) {
       .trim();
   }
 
-  useEffect(() => {
-  if (!socket) {
-    console.warn("⛔ Aucun socket défini au moment du useEffect round-update");
-    return;
-  }
-
-  const handleRoundUpdate = ({ round, track, isLast }) => {
-    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
-
-    setCurrentRound(round);
-    setTrack(track);
-    console.log("🎯 Nouveau morceau reçu côté client :", track?.titre || "[aucun titre]");
-
-    setTimeLeft(timer);
-    setAnswerVisible(false);
-    setPaused(false);
-    setMusicPaused(false);
-    setShowIndiceMedia(false);
-    setShowIndiceAnnee(false);
-    setAnswer("");
-    setComposer("");
-
-    setAutoPlay(true);
-
-    if (isLast) {
-      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
-      setFinalRanking(finalScores);
-      setGameOver(true);
-    }
-  };
-
-  socket.on("round-update", handleRoundUpdate);
-
-  return () => {
-    socket.off("round-update", handleRoundUpdate);
-  };
-}, [socket, timer, scoreboard]);
-
+  
 
 return (
   <div style={{ display: "flex", minHeight: "100vh", position: "relative", background: "#1e2a38" }}>
