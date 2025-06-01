@@ -143,6 +143,43 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
+useEffect(() => {
+  if (!socket || !game?.id) return;
+
+  console.log("🎧 Installation écouteur round-update sur socket :", socket.id);
+
+  const handleRoundUpdate = ({ round, track, isLast }) => {
+    console.log("🔄 Nouveau round reçu :", round, track, "fin de partie ?", isLast);
+
+    setCurrentRound(round);
+    setTrack(track);
+    console.log("🎯 Nouveau morceau reçu côté client :", track);
+
+    setTimeLeft(timer);
+    setAnswerVisible(false);
+    setPaused(false);
+    setMusicPaused(false);
+    setShowIndiceMedia(false);
+    setShowIndiceAnnee(false);
+    setAnswer("");
+    setComposer("");
+    setAutoPlay(true);
+
+    if (isLast) {
+      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
+      setFinalRanking(finalScores);
+      setGameOver(true);
+    }
+  };
+
+  socket.on("round-update", handleRoundUpdate);
+
+  return () => {
+    socket.off("round-update", handleRoundUpdate);
+  };
+}, [socket, game?.id, timer, scoreboard]);
+
+
 function computeBasePoints() {
   const ratio = Math.min(1, timeLeft / timer); // timer restant
   let points = 100 * ratio;
