@@ -144,9 +144,9 @@ const nextButtonStyle = {
 }, [id]);
 
 useEffect(() => {
-  if (!socket || !socket.connected || !id) return;
+  if (!socket) return; 
 
-  console.log("🎧 Écoute de 'round-update' activée");
+  socket.on('round-update', ({ round, track, isLast }) => {
 
   const handleRoundUpdate = ({ round, track, isLast }) => {
     console.log("🔄 Nouveau round reçu :", round, track, "Fin de partie ?", isLast);
@@ -171,13 +171,13 @@ useEffect(() => {
       setGameOver(true);
     }
   };
-
-  socket.on("round-update", handleRoundUpdate);
-
+    // (et éventuellement relancer le timer, etc.)
+  });
+  // Cleanup: retirer l'écouteur au démontage du composant
   return () => {
-    socket.off("round-update", handleRoundUpdate);
+    socket.off('round-update');
   };
-}, [socket, id, timer, scoreboard]);
+}, [socket]);
 
 
 function computeBasePoints() {
