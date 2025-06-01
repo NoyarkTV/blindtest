@@ -144,7 +144,7 @@ const nextButtonStyle = {
 }, [id]);
 
 useEffect(() => {
-  if (!socket || !game?.id) return;
+  if (!socket || !currentGame?.id) return;
 
   console.log("🎧 Installation écouteur round-update sur socket :", socket.id);
 
@@ -153,7 +153,7 @@ useEffect(() => {
 
     setCurrentRound(round);
     setTrack(track);
-    console.log("🎯 Nouveau morceau reçu côté client :", track);
+    console.log("🎯 Nouveau morceau reçu côté client :", track?.titre || "[aucun titre]");
 
     setTimeLeft(timer);
     setAnswerVisible(false);
@@ -177,7 +177,7 @@ useEffect(() => {
   return () => {
     socket.off("round-update", handleRoundUpdate);
   };
-}, [socket, game?.id, timer, scoreboard]);
+}, [socket, currentGame?.id, timer, scoreboard]);
 
 
 function computeBasePoints() {
