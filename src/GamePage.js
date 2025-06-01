@@ -151,6 +151,7 @@ useEffect(() => {
 
     setCurrentRound(round);
     setTrack(track);
+    console.log("🎯 Nouveau morceau reçu côté client :", track);
 
     setTimeLeft(timer);
     setAnswerVisible(false);
@@ -503,6 +504,8 @@ return (
       <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
         Round {currentRound} / {totalRounds}
       </h1>
+
+      <h1>Round {currentRound}</h1>
 
       {/* TIMER */}
       <div
