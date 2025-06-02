@@ -188,7 +188,8 @@ app.get("/game-info/:id", (req, res) => {
 
   res.json({
     params: game.params,
-    playlist: game.playlist
+    playlist: game.playlist,
+    admin: game.admin
   });
 });
 

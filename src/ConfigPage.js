@@ -197,6 +197,7 @@ const validerPartie = () => {
     id,                   // ID de la partie
     params,               // paramètres de jeu
     playlist: enrichedTracks, // morceaux choisis
+    admin: playerName
   };
 
   fetch("https://blindtest-69h7.onrender.com/start-game", {
