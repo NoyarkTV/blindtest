@@ -182,32 +182,40 @@ useEffect(() => {
 
 
 useEffect(() => {
-  document.body.style.backgroundColor = "#1e2a38";
-  document.body.style.color = "white";
-
-  const token = localStorage.getItem("spotify_token");
-  if (token) {
-    setAccessToken(token);
-  }
-
-  // 🔽 Récupération des infos de partie
-  fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
+  fetch(`/game-info/${gameId}`)
     .then(res => res.json())
     .then(data => {
-      console.log("🎮 Données de la partie :", data);
-      setPlaylist(data.playlist || []);
-      setTrack(data.playlist?.[0] || null); // premier morceau
-      setAutoPlay(true);
-      setTimer(data.config.time || 30);
-      setTimeLeft(data.config.time || 30);
-      setTotalRounds(data.config.nbRounds || 10);
-      setIsAdmin(data.admin === playerName);
-    })
-    .catch(err => {
-      console.error("Erreur récupération partie :", err);
-      navigate("/"); // fallback si erreur
+      if (data.error) {
+        console.error("Erreur : ", data.error);
+        return;
+      }
+      setPlaylist(data.playlist);
+      setNbRounds(data.nbRounds);
+      setConfig(data.config);
+      setCurrentRound(data.currentRound); // si besoin
     });
 }, []);
+
+  useEffect(() => {
+    document.body.style.backgroundColor = "#1e2a38";
+    document.body.style.color = "white";
+    fetch("https://blindtest-69h7.onrender.com/get-token")
+      .then(res => res.json())
+      .then(data => {
+        if (data.access_token) {
+          setAccessToken(data.access_token);
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+  if (playlist.length > 0 && currentRound !== null) {
+    const currentTrack = playlist[currentRound - 1]; // index 0-based
+    console.log("🎵 Lecture du morceau du round :", currentTrack);
+    setTrack(currentTrack);
+    setAutoPlay(true);
+  }
+}, [playlist, currentRound]);
 
 
 useEffect(() => {
@@ -403,7 +411,6 @@ function nextRound() {
       setShowIndiceAnnee(false);
       setAnswer("");
       setComposer("");
-      fetchNewTrack();
     }
   }
 

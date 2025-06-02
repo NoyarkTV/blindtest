@@ -159,23 +159,36 @@ app.post("/start-game", (req, res) => {
   games[id] = {
     ...(games[id] || {}),
     config: params,
-    playlist
+    playlist,
+    currentRound: 1,
+    nbRounds: playlist.length
   };
-  games[id].currentRound = 1;
-  games[id].nbRounds = playlist.length; 
 
-  io.to(id).emit("round-update", { 
-  round: 1, 
-  track: playlist[0],        // première piste de la playlist
-  isLast: false              // false car la partie n’est pas encore terminée
-});
+  io.to(id).emit("game-started", {
+    playlist: playlist.map((track, i) => ({ index: i + 1, ...track })),
+    nbRounds: playlist.length,
+    config: params
+  });
 
   console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux`);
 
-  // 🟡 Broadcast aux sockets
-  io.to(id).emit("game-started");
-
   res.status(200).send({ success: true });
+});
+
+app.get("/game-info/:id", (req, res) => {
+  const id = req.params.id;
+  const game = games[id];
+
+  if (!game) {
+    return res.status(404).send({ error: "Partie introuvable" });
+  }
+
+  res.send({
+    playlist: game.playlist,
+    nbRounds: game.nbRounds,
+    config: game.config,
+    currentRound: game.currentRound
+  });
 });
 
 app.post("/submit-score", (req, res) => {
