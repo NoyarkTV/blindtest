@@ -20,6 +20,10 @@ function GamePage() {
   const [answer, setAnswer] = useState("");
   const [composerGuess, setComposerGuess] = useState("");
   const [score, setScore] = useState(0); //
+  const timeLimit = params?.Time ?? 30;
+  const bonusCompositeur = params?.BonusCompositeur ?? false;
+  const currentTrack = playlist[currentRound - 1];
+
 
 
 useEffect(() => {
@@ -203,10 +207,6 @@ useEffect(() => {
   };
 
   if (!params || playlist.length === 0 || !token) return <div>Chargement en cours...</div>;
-
-  const timeLimit = params.Time ?? 30;
-  const bonusCompositeur = params.BonusCompositeur ?? false;
-  const currentTrack = playlist[currentRound - 1];
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
