@@ -19,12 +19,7 @@ function GamePage() {
   const [isBuzzed, setIsBuzzed] = useState(false);
   const [answer, setAnswer] = useState("");
   const [composerGuess, setComposerGuess] = useState("");
-  const [score, setScore] = useState(0); //
-  const timeLimit = params?.Time ?? 30;
-  const bonusCompositeur = params?.BonusCompositeur ?? false;
-  const currentTrack = playlist[currentRound - 1];
-
-
+  const [score, setScore] = useState(0);
 
 useEffect(() => {
   const playerName = localStorage.getItem("playerName");
@@ -44,82 +39,6 @@ useEffect(() => {
       navigate("/");
     });
 }, [id, navigate]);
-
-useEffect(() => {
-  if (!playerName || !id) return;
-  socket.emit("join-room", { roomId: id, playerName });
-  console.log("📡 Socket client : a rejoint la room", id);
-}, [playerName, id]);
-
-useEffect(() => {
-  if (currentTrack && !isBuzzed) {
-    setTimeLeft(timeLimit);
-
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }
-}, [currentRound, isBuzzed]);
-
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (e.code === "Space" && !isBuzzed) handleBuzz();
-  };
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [isBuzzed]);
-
-const handleBuzz = () => {
-  setIsBuzzed(true);
-  setTimeLeft(null); // stop le timer
-  handlePause();     // pause la musique
-};
-
-const handleValidate = () => {
-  const normalizedAnswer = answer.trim().toLowerCase();
-  const validAnswers = (currentTrack.answers || []).map(a => a.toLowerCase());
-
-  const isCorrect = validAnswers.includes(normalizedAnswer);
-
-  let bonus = 0;
-  if (bonusCompositeur && currentTrack.compositeur) {
-    const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
-    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
-    if (guessList.some(g => realComposers.includes(g))) bonus = 20;
-  }
-
-  if (isCorrect) {
-    setScore(prev => prev + 100 + bonus);
-    console.log("✅ Bonne réponse !");
-    // ne rien faire, la musique reste en pause
-  } else {
-    console.log("❌ Mauvaise réponse");
-    setIsBuzzed(false);
-    setAnswer("");
-    setComposerGuess("");
-    playCurrentTrack(deviceId);
-  }
-};
-
-
-  const handleReady = (id) => {
-    setDeviceId(id);
-    playCurrentTrack(id);
-  };
-
-  const handleError = (err) => {
-    console.error("Erreur Spotify SDK :", err);
-    alert("Erreur Spotify. Vérifie ta connexion Spotify premium.");
-    navigate("/");
-  };
 
   const playCurrentTrack = (devId) => {
     const track = playlist[currentRound - 1];
@@ -207,6 +126,88 @@ useEffect(() => {
   };
 
   if (!params || playlist.length === 0 || !token) return <div>Chargement en cours...</div>;
+
+  const timeLimit = params.Time ?? 30;
+  const bonusCompositeur = params.BonusCompositeur ?? false;
+  const currentTrack = playlist[currentRound - 1];
+
+  
+useEffect(() => {
+  if (!playerName || !id) return;
+  socket.emit("join-room", { roomId: id, playerName });
+  console.log("📡 Socket client : a rejoint la room", id);
+}, [playerName, id]);
+
+useEffect(() => {
+  if (currentTrack && !isBuzzed) {
+    setTimeLeft(timeLimit);
+
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, [currentRound, isBuzzed]);
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.code === "Space" && !isBuzzed) handleBuzz();
+  };
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [isBuzzed]);
+
+const handleBuzz = () => {
+  setIsBuzzed(true);
+  setTimeLeft(null); // stop le timer
+  handlePause();     // pause la musique
+};
+
+const handleValidate = () => {
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const validAnswers = (currentTrack.answers || []).map(a => a.toLowerCase());
+
+  const isCorrect = validAnswers.includes(normalizedAnswer);
+
+  let bonus = 0;
+  if (bonusCompositeur && currentTrack.compositeur) {
+    const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
+    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
+    if (guessList.some(g => realComposers.includes(g))) bonus = 20;
+  }
+
+  if (isCorrect) {
+    setScore(prev => prev + 100 + bonus);
+    console.log("✅ Bonne réponse !");
+    // ne rien faire, la musique reste en pause
+  } else {
+    console.log("❌ Mauvaise réponse");
+    setIsBuzzed(false);
+    setAnswer("");
+    setComposerGuess("");
+    playCurrentTrack(deviceId);
+  }
+};
+
+
+  const handleReady = (id) => {
+    setDeviceId(id);
+    playCurrentTrack(id);
+  };
+
+  const handleError = (err) => {
+    console.error("Erreur Spotify SDK :", err);
+    alert("Erreur Spotify. Vérifie ta connexion Spotify premium.");
+    navigate("/");
+  };
+
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
