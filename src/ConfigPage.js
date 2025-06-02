@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { io } from "socket.io-client";
+import { socket } from "../socket";
 
 console.log("✅ ConfigPage.js chargé !");
 
@@ -34,16 +34,24 @@ function ConfigPage() {
   const [selectedDifficulte, setSelectedDifficulte] = useState([...difficulte]);
   const [selectedPays, setSelectedPays] = useState([...pays]);
 
-  useEffect(() => {
-    document.body.style.backgroundColor = "#1e2a38";
-    document.body.style.color = "#ffffff";
-    document.body.style.fontFamily = "Poppins, sans-serif";
-    return () => {
-      document.body.style.backgroundColor = "";
-      document.body.style.color = "";
-      document.body.style.fontFamily = "";
-    };
-  }, []);
+useEffect(() => {
+  socket.emit("join-room", id);
+
+  socket.on("player-joined", (updatedPlayers) => {
+    console.log("🔁 Mise à jour reçue :", updatedPlayers);
+    setPlayers(updatedPlayers);
+  });
+
+  socket.on("game-started", () => {
+    console.log("🚀 Partie lancée !");
+    navigate(`/game/${id}`);
+  });
+
+  return () => {
+    socket.off("player-joined");
+    socket.off("game-started");
+  };
+}, [id, navigate]);
 
   useEffect(() => {
   const socket = io("https://blindtest-69h7.onrender.com");
@@ -59,7 +67,10 @@ function ConfigPage() {
     navigate(`/game/${id}`);
   });
 
-  return () => socket.disconnect();
+  return () => {
+  socket.off("player-joined");
+  socket.off("game-started");
+};
 }, [id]);
 
 

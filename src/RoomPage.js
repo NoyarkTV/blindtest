@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { socket } from "../socket"; 
 
 function RoomPage() {
   const { id } = useParams();
@@ -11,9 +11,8 @@ function RoomPage() {
 
   // 🔁 Rejoindre la room et écouter les événements
   useEffect(() => {
-    const socket = io("https://blindtest-69h7.onrender.com");
-
     socket.emit("join-room", id);
+
     socket.on("player-joined", updatedPlayers => {
       console.log("🧑‍🤝‍🧑 Mise à jour des joueurs :", updatedPlayers);
       setPlayers(updatedPlayers);
@@ -24,7 +23,10 @@ function RoomPage() {
       navigate(`/game/${id}`);
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("player-joined");
+      socket.off("game-started");
+    };
   }, [id]);
 
   // 👤 Ajout du joueur à la partie
