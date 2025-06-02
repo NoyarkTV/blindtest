@@ -20,6 +20,22 @@ function GamePage() {
   const [composerGuess, setComposerGuess] = useState("");
   const [score, setScore] = useState(0);
 
+  const playCurrentTrack = (devId) => {
+    const track = playlist[currentRound - 1];
+    if (!track?.uri) return;
+
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ uris: [track.uri] })
+    })
+      .then(() => setIsPlaying(true))
+      .catch(err => console.error("Erreur lecture Spotify :", err));
+  };
+
   useEffect(() => {
     const playerName = localStorage.getItem("playerName");
     setPlayerName(playerName);
@@ -31,10 +47,10 @@ function GamePage() {
         setParams(data.params || {});
         setIsAdmin(data.params?.admin === playerName);
         setCurrentRound(data.currentRound || 1);
-        console.log("\ud83e\udde0 Admin attendu :", data.params?.admin, "| Toi :", playerName);
+        console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", playerName);
       })
       .catch(err => {
-        console.error("Erreur de r\u00e9cup\u00e9ration des infos de la partie :", err);
+        console.error("Erreur de récupération des infos de la partie :", err);
         navigate("/");
       });
   }, [id, navigate]);
@@ -42,7 +58,7 @@ function GamePage() {
   useEffect(() => {
     if (!playerName || !id) return;
     socket.emit("join-room", { roomId: id, playerName });
-    console.log("\ud83d\udce1 Socket client : a rejoint la room", id);
+    console.log("📡 Socket client : a rejoint la room", id);
   }, [playerName, id]);
 
   useEffect(() => {
@@ -59,7 +75,7 @@ function GamePage() {
 
   useEffect(() => {
     socket.on("round-updated", ({ newRound }) => {
-      console.log("\ud83d\udfe3 Nouveau round re\u00e7u :", newRound);
+      console.log("🟣 Nouveau round reçu :", newRound);
       setCurrentRound(newRound);
     });
     return () => socket.off("round-updated");
@@ -67,7 +83,7 @@ function GamePage() {
 
   useEffect(() => {
     socket.on("game-over", () => {
-      alert("\ud83c\udf89 Fin de la partie !");
+      alert("🎉 Fin de la partie !");
       navigate("/");
     });
     return () => socket.off("game-over");
@@ -122,9 +138,9 @@ function GamePage() {
 
     if (isCorrect) {
       setScore(prev => prev + 100 + bonus);
-      console.log("\u2705 Bonne r\u00e9ponse !");
+      console.log("✅ Bonne réponse !");
     } else {
-      console.log("\u274c Mauvaise r\u00e9ponse");
+      console.log("❌ Mauvaise réponse");
       setIsBuzzed(false);
       setAnswer("");
       setComposerGuess("");
@@ -138,7 +154,7 @@ function GamePage() {
   };
 
   const handlePause = () => {
-    fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
+    return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` }
     }).then(() => setIsPlaying(false)).catch(err => console.error("Erreur pause :", err));
@@ -153,12 +169,12 @@ function GamePage() {
 
   const handleNext = () => {
     if (currentRound < playlist.length) {
-      console.log("\ud83d\udfe2 ADMIN : Envoi next-round au serveur");
+      console.log("🟢 ADMIN : Envoi next-round au serveur");
       handlePause().finally(() => {
         socket.emit("next-round", { roomId: id });
       });
     } else {
-      alert("\ud83c\udf89 Fin de la partie !");
+      alert("🎉 Fin de la partie !");
       socket.emit("next-round", { roomId: id });
       navigate("/");
     }
