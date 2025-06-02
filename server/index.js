@@ -272,7 +272,7 @@ io.on("connection", (socket) => {
 
   socket.on("join-room", (gameId) => {
     socket.join(gameId);
-    console.log(`🧩 Socket ${socket.id} a rejoint la room ${id}`);
+    console.log(`🧩 Socket ${socket.id} a rejoint la room ${roomId}`);
     console.log("🌐 Rooms actuelles :", Array.from(socket.rooms));
   });
 socket.on("next-round", ({ roomId }) => {
