@@ -223,20 +223,6 @@ app.post("/submit-score", (req, res) => {
   res.send({ success: true });
 });
 
-app.get('/game-info/:id', (req, res) => {
-  const { id } = req.params;
-  const game = games[id];
-
-  if (!game) {
-    return res.status(404).json({ error: "Partie non trouvée" });
-  }
-
-  res.json({
-    params: game.params,
-    playlist: game.playlist
-  });
-});
-
 app.post("/join-game", (req, res) => {
   const { id, player } = req.body;
   if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
