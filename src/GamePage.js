@@ -15,16 +15,16 @@ function GamePage() {
   const [isAdmin, setIsAdmin] = useState(false);
 
 useEffect(() => {
-  const name = localStorage.getItem("playerName");
-  setPlayerName(name);
+  const playerName = localStorage.getItem("playerName");
+  setPlayerName(playerName);
 
   fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
     .then(res => res.json())
     .then(data => {
       setPlaylist(data.playlist || []);
       setParams(data.params || {});
-      setIsAdmin(data.params?.admin === name);
-      console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", name);
+      setIsAdmin(data.params?.admin === playerName);
+      console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", playerName);
     })
     .catch(err => {
       console.error("Erreur de récupération des infos de la partie :", err);
