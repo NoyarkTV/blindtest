@@ -187,9 +187,11 @@ app.get("/game-info/:id", (req, res) => {
   }
 
   res.json({
-    params: game.params,
-    playlist: game.playlist,
-    admin: game.admin
+    params: {
+      ...game.params,
+      admin: game.admin // 🔁 on ajoute l'admin dans params
+    },
+    playlist: game.playlist
   });
 });
 
