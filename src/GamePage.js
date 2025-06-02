@@ -9,7 +9,7 @@ function GamePage() {
   const [params, setParams] = useState(null);
   const [currentRound, setCurrentRound] = useState(1);
   const [deviceId, setDeviceId] = useState(null);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("spotify_token"));
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -26,14 +26,11 @@ function GamePage() {
   }, [id, navigate]);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("access_token");
-    if (!accessToken) {
+    if (!token) {
       console.error("❌ Token Spotify manquant");
       navigate("/");
-      return;
     }
-    setToken(accessToken);
-  }, [navigate]);
+  }, [token, navigate]);
 
   const handleReady = (id) => {
     setDeviceId(id);
