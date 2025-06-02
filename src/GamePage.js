@@ -79,13 +79,35 @@ useEffect(() => {
   }
 }, [deviceId]);
 
+useEffect(() => {
+  socket.on("round-updated", ({ newRound }) => {
+    setCurrentRound(newRound);
+  });
+
+  return () => {
+    socket.off("round-updated");
+  };
+}, []);
+
+useEffect(() => {
+  socket.on("game-over", () => {
+    alert("🎉 Fin de la partie !");
+    navigate("/");
+  });
+
+  return () => {
+    socket.off("game-over");
+  };
+}, []);
+
+
   const handleNext = () => {
     if (currentRound < playlist.length) {
       fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       }).finally(() => {
-        setCurrentRound(prev => prev + 1);
+        socket.emit("next-round", { roomId: id });
       });
     } else {
       alert("🎉 Fin de la partie !");
