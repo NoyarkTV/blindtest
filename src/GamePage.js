@@ -11,29 +11,34 @@ function GamePage() {
   const [deviceId, setDeviceId] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("spotify_token"));
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playerName, setPlayerName] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const playerName = localStorage.getItem("playerName");
-  const isAdmin = params?.admin === playerName;
+useEffect(() => {
+  const name = localStorage.getItem("playerName");
+  setPlayerName(name);
 
-  useEffect(() => {
-    fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setPlaylist(data.playlist || []);
-        setParams(data.params || {});
-      })
-      .catch(err => {
-        console.error("Erreur de récupération des infos de la partie :", err);
-        navigate("/");
-      });
-  }, [id, navigate]);
-
-  useEffect(() => {
-    if (!token) {
-      console.error("❌ Token Spotify manquant");
+  fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      setPlaylist(data.playlist || []);
+      setParams(data.params || {});
+      setIsAdmin(data.params?.admin === name);
+      console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", name);
+    })
+    .catch(err => {
+      console.error("Erreur de récupération des infos de la partie :", err);
       navigate("/");
-    }
-  }, [token, navigate]);
+    });
+}, [id, navigate]);
+
+
+  // useEffect(() => {
+  //   if (!token) {
+  //     console.error("❌ Token Spotify manquant");
+  //     navigate("/");
+  //   }
+  // }, [token, navigate]);
 
   const handleReady = (id) => {
     setDeviceId(id);
