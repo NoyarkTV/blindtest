@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SpotifyPlayer from "./SpotifyPlayer";
 
 function GamePage() {
   const { id } = useParams();
@@ -7,10 +8,9 @@ function GamePage() {
   const [playlist, setPlaylist] = useState([]);
   const [params, setParams] = useState(null);
   const [currentRound, setCurrentRound] = useState(1);
-  const [audio, setAudio] = useState(null);
+  const [deviceId, setDeviceId] = useState(null);
+  const [token, setToken] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
-  const audioRef = useRef(null);
 
   useEffect(() => {
     fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
@@ -26,48 +26,72 @@ function GamePage() {
   }, [id, navigate]);
 
   useEffect(() => {
-    if (playlist.length > 0 && currentRound <= playlist.length) {
-      const currentTrack = playlist[currentRound - 1];
-      if (currentTrack && currentTrack.uri) {
-        const newAudio = new Audio(`https://open.spotify.com/embed/track/${currentTrack.uri.split(":")[2]}`);
-        audioRef.current = newAudio;
-        setAudio(newAudio);
-        newAudio.play();
-        setIsPlaying(true);
-      }
-    } else if (playlist.length > 0 && currentRound > playlist.length) {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+      console.error("❌ Token Spotify manquant");
+      navigate("/");
+      return;
+    }
+    setToken(accessToken);
+  }, [navigate]);
+
+  const handleReady = (id) => {
+    setDeviceId(id);
+    playCurrentTrack(id);
+  };
+
+  const handleError = (err) => {
+    console.error("Erreur Spotify SDK :", err);
+    alert("Erreur Spotify. Vérifie ta connexion Spotify premium.");
+    navigate("/");
+  };
+
+  const playCurrentTrack = (devId) => {
+    const track = playlist[currentRound - 1];
+    if (!track?.uri) return;
+
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ uris: [track.uri] })
+    })
+      .then(() => setIsPlaying(true))
+      .catch(err => console.error("Erreur lecture Spotify :", err));
+  };
+
+  const handleNext = () => {
+    if (currentRound < playlist.length) {
+      setCurrentRound(prev => prev + 1);
+    } else {
       alert("🎉 Fin de la partie !");
       navigate("/");
     }
-  }, [currentRound, playlist, navigate]);
-
-  const handleNext = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setCurrentRound(prev => prev + 1);
   };
 
   const handlePause = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
+    fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => setIsPlaying(false))
+      .catch(err => console.error("Erreur pause :", err));
   };
 
   const handlePlay = () => {
-    if (audioRef.current) {
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
+    playCurrentTrack(deviceId);
   };
 
-  if (!params || playlist.length === 0) return <div>Chargement en cours...</div>;
+  if (!params || playlist.length === 0 || !token) return <div>Chargement en cours...</div>;
 
   const currentTrack = playlist[currentRound - 1];
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
+      <SpotifyPlayer token={token} onReady={handleReady} onError={handleError} />
+
       <h1>Round {currentRound} / {playlist.length}</h1>
       {currentTrack && (
         <div>
