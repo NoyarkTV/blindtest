@@ -24,6 +24,7 @@ useEffect(() => {
       setPlaylist(data.playlist || []);
       setParams(data.params || {});
       setIsAdmin(data.params?.admin === playerName);
+      setCurrentRound(data.currentRound || 1);
       console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", playerName);
     })
     .catch(err => {
