@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
+import { io } from "socket.io-client";
+
+const socket = io("https://blindtest-69h7.onrender.com");
 
 function GamePage() {
   const { id } = useParams();
