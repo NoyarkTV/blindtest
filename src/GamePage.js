@@ -105,7 +105,7 @@ useEffect(() => {
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
-      <SpotifyPlayer token={token} onReady={handleReady} onError={handleError} />
+      <SpotifyPlayer token={token} onReady={handleReady} />
 
       <h1>Round {currentRound} / {playlist.length}</h1>
       {currentTrack && (
