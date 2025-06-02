@@ -195,7 +195,7 @@ useEffect(() => {
     }
   };
 
-  if (!params || playlist.length === 0 || !token) {
+  if (!params || playlist.length === 0 ) {
     return <div>Chargement en cours...</div>;
   }
 
