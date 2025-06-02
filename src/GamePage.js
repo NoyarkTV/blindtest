@@ -3,8 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import { io } from "socket.io-client";
 
-const socket = io("https://blindtest-69h7.onrender.com");
-
 function GamePage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,6 +35,7 @@ useEffect(() => {
 }, [id, navigate]);
 
 useEffect(() => {
+  const socket = io("https://blindtest-69h7.onrender.com");
   if (!playerName || !id) return;
   socket.emit("join-room", { roomId: id, playerName });
   console.log("📡 Socket client : a rejoint la room", id);
@@ -113,6 +112,7 @@ useEffect(() => {
 
 
   const handleNext = () => {
+    const socket = io("https://blindtest-69h7.onrender.com");
     if (currentRound < playlist.length) {
       console.log("🟢 ADMIN : Envoi next-round au serveur");
       fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
