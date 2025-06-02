@@ -67,6 +67,18 @@ useEffect(() => {
       .catch(err => console.error("Erreur lecture Spotify :", err));
   };
 
+  useEffect(() => {
+  if (deviceId && playlist.length > 0) {
+    playCurrentTrack(deviceId);
+  }
+}, [currentRound]);
+
+useEffect(() => {
+  if (deviceId && playlist.length > 0) {
+    playCurrentTrack(deviceId);
+  }
+}, [deviceId]);
+
   const handleNext = () => {
     if (currentRound < playlist.length) {
       fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
