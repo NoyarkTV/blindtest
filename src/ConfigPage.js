@@ -54,8 +54,6 @@ useEffect(() => {
 }, [id, navigate]);
 
   useEffect(() => {
-  const socket = io("https://blindtest-69h7.onrender.com");
-
   socket.emit("join-room", id);
 
   socket.on("player-joined", (updatedPlayers) => {
