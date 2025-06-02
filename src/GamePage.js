@@ -36,6 +36,12 @@ useEffect(() => {
     });
 }, [id, navigate]);
 
+useEffect(() => {
+  if (!playerName || !id) return;
+  socket.emit("join-room", { roomId: id, playerName });
+  console.log("📡 Socket client : a rejoint la room", id);
+}, [playerName, id]);
+
 
   // useEffect(() => {
   //   if (!token) {
