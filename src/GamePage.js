@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import { useParams } from "react-router-dom";
 
 function GamePage() {
   const navigate = useNavigate();
@@ -129,6 +130,11 @@ const nextButtonStyle = {
 };
 
 
+
+const { id: gameId } = useParams();
+const [nbRounds, setNbRounds] = useState(null);
+const [config, setConfig] = useState(null);
+
   useEffect(() => {
   socket.emit("join-room", id);
 
@@ -182,19 +188,27 @@ useEffect(() => {
 
 
 useEffect(() => {
+  if (!gameId) return;
+
   fetch(`/game-info/${gameId}`)
     .then(res => res.json())
     .then(data => {
       if (data.error) {
-        console.error("Erreur : ", data.error);
+        console.error("Erreur côté serveur :", data.error);
         return;
       }
-      setPlaylist(data.playlist);
-      setNbRounds(data.nbRounds);
-      setConfig(data.config);
-      setCurrentRound(data.currentRound); // si besoin
+      console.log("✅ Données de la partie récupérées :", data);
+
+      if (Array.isArray(data.playlist)) setPlaylist(data.playlist);
+      if (typeof data.nbRounds === "number") setNbRounds(data.nbRounds);
+      if (data.config) setConfig(data.config);
+      if (typeof data.currentRound === "number") setCurrentRound(data.currentRound);
+    })
+    .catch((err) => {
+      console.error("Erreur lors de la récupération des infos de partie :", err);
     });
-}, []);
+}, [gameId]);
+
 
   useEffect(() => {
     document.body.style.backgroundColor = "#1e2a38";
