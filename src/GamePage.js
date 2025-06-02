@@ -85,6 +85,7 @@ useEffect(() => {
 
 useEffect(() => {
   socket.on("round-updated", ({ newRound }) => {
+    console.log("🟣 Nouveau round reçu :", newRound);
     setCurrentRound(newRound);
   });
 
@@ -107,6 +108,7 @@ useEffect(() => {
 
   const handleNext = () => {
     if (currentRound < playlist.length) {
+      console.log("🟢 ADMIN : Envoi next-round au serveur");
       fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
@@ -115,6 +117,7 @@ useEffect(() => {
       });
     } else {
       alert("🎉 Fin de la partie !");
+      socket.emit("next-round", { roomId: id });
       navigate("/");
     }
   };

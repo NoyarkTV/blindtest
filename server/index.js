@@ -275,13 +275,22 @@ io.on("connection", (socket) => {
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${gameId}`);
   });
 socket.on("next-round", ({ roomId }) => {
+  console.log(`📨 Reçu 'next-round' pour room ${roomId}`);
+
   const game = games[roomId];
-  if (!game) return;
+  if (!game) {
+    console.warn("❌ Partie non trouvée :", roomId);
+    return;
+  }
+
+  console.log(`➡️ Round actuel : ${game.currentRound} / ${game.playlist?.length}`);
 
   if (game.currentRound < game.playlist.length) {
     game.currentRound++;
+    console.log(`🆙 Nouveau round : ${game.currentRound}`);
     io.to(roomId).emit("round-updated", { newRound: game.currentRound });
   } else {
+    console.log("🏁 Fin de la partie");
     io.to(roomId).emit("game-over");
   }
 });
