@@ -188,7 +188,7 @@ app.get("/game-info/:id", (req, res) => {
 
   res.json({
     params: {
-      ...game.params,
+      ...game.config,
       admin: game.admin // 🔁 on ajoute l'admin dans params
     },
     playlist: game.playlist,

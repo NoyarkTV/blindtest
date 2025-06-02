@@ -36,6 +36,14 @@ function GamePage() {
       .catch(err => console.error("Erreur lecture Spotify :", err));
   };
 
+  console.log("🔍 DEBUG rendu GamePage", {
+  id,
+  params,
+  playlist,
+  token,
+  currentRound
+});
+
   useEffect(() => {
     const playerName = localStorage.getItem("playerName");
     setPlayerName(playerName);
@@ -43,6 +51,7 @@ function GamePage() {
     fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
       .then(res => res.json())
       .then(data => {
+        console.log("📥 Données reçues du serveur :", data);
         setPlaylist(data.playlist || []);
         setParams(data.params || {});
         setIsAdmin(data.params?.admin === playerName);
@@ -72,6 +81,12 @@ function GamePage() {
       playCurrentTrack(deviceId);
     }
   }, [deviceId]);
+
+useEffect(() => {
+  if (deviceId && playlist.length > 0 && !isPlaying && !isBuzzed) {
+    playCurrentTrack(deviceId);
+  }
+}, [deviceId, playlist]);
 
   useEffect(() => {
     socket.on("round-updated", ({ newRound }) => {
