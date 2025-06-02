@@ -15,6 +15,12 @@ function GamePage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerName, setPlayerName] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [isBuzzed, setIsBuzzed] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [composerGuess, setComposerGuess] = useState("");
+  const [score, setScore] = useState(0); //
+
 
 useEffect(() => {
   const playerName = localStorage.getItem("playerName");
@@ -41,13 +47,64 @@ useEffect(() => {
   console.log("📡 Socket client : a rejoint la room", id);
 }, [playerName, id]);
 
+useEffect(() => {
+  if (currentTrack && !isBuzzed) {
+    setTimeLeft(timeLimit);
 
-  // useEffect(() => {
-  //   if (!token) {
-  //     console.error("❌ Token Spotify manquant");
-  //     navigate("/");
-  //   }
-  // }, [token, navigate]);
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, [currentRound, isBuzzed]);
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.code === "Space" && !isBuzzed) handleBuzz();
+  };
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [isBuzzed]);
+
+const handleBuzz = () => {
+  setIsBuzzed(true);
+  setTimeLeft(null); // stop le timer
+  handlePause();     // pause la musique
+};
+
+const handleValidate = () => {
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const validAnswers = (currentTrack.answers || []).map(a => a.toLowerCase());
+
+  const isCorrect = validAnswers.includes(normalizedAnswer);
+
+  let bonus = 0;
+  if (bonusCompositeur && currentTrack.compositeur) {
+    const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
+    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
+    if (guessList.some(g => realComposers.includes(g))) bonus = 20;
+  }
+
+  if (isCorrect) {
+    setScore(prev => prev + 100 + bonus);
+    console.log("✅ Bonne réponse !");
+    // ne rien faire, la musique reste en pause
+  } else {
+    console.log("❌ Mauvaise réponse");
+    setIsBuzzed(false);
+    setAnswer("");
+    setComposerGuess("");
+    playCurrentTrack(deviceId);
+  }
+};
+
 
   const handleReady = (id) => {
     setDeviceId(id);
@@ -147,6 +204,8 @@ useEffect(() => {
 
   if (!params || playlist.length === 0 || !token) return <div>Chargement en cours...</div>;
 
+  const timeLimit = params.Time ?? 30;
+  const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
 
   return (
@@ -154,16 +213,44 @@ useEffect(() => {
       <SpotifyPlayer token={token} onReady={handleReady} />
 
       <h1>Round {currentRound} / {playlist.length}</h1>
-      {currentTrack && (
-        <div>
-          <p><strong>Oeuvre :</strong> {currentTrack.titre}</p>
-          <p><strong>Compositeur :</strong> {currentTrack.compositeur}</p>
-          <p><strong>Média :</strong> {currentTrack.media}</p>
-          <p><strong>Catégorie :</strong> {currentTrack.categorie}</p>
-          <p><strong>Année :</strong> {currentTrack.annee}</p>
-          <p><strong>Réponses attendues :</strong> {(currentTrack.answers || []).join(", ")}</p>
-        </div>
+      <h2 style={{ fontSize: "48px", textAlign: "center" }}>
+  ⏳ {timeLeft !== null ? timeLeft + "s" : ""}
+</h2>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 20, flexDirection: "column", alignItems: "center" }}>
+  {!isBuzzed ? (
+    <button onClick={handleBuzz} style={buttonStyle}>🔔 Buzz</button>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <input
+        type="text"
+        placeholder="Réponse"
+        value={answer}
+        onChange={e => setAnswer(e.target.value)}
+        style={inputStyle}
+      />
+      {bonusCompositeur && (
+        <input
+          type="text"
+          placeholder="Compositeur"
+          value={composerGuess}
+          onChange={e => setComposerGuess(e.target.value)}
+          style={inputStyle}
+        />
       )}
+      <div style={{ display: "flex", gap: 10 }}>
+        <button onClick={handleValidate} style={buttonStyle}>✅ Valider</button>
+        <button onClick={() => {
+          setIsBuzzed(false);
+          setAnswer("");
+          setComposerGuess("");
+          playCurrentTrack(deviceId);
+        }} style={buttonStyle}>❌ Annuler</button>
+      </div>
+    </div>
+  )}
+</div>
+
 
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
         <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
@@ -184,5 +271,14 @@ const buttonStyle = {
   fontWeight: "bold",
   cursor: "pointer"
 };
+
+const inputStyle = {
+  padding: "10px",
+  fontSize: "16px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  width: "240px"
+};
+
 
 export default GamePage;
