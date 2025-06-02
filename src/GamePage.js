@@ -143,43 +143,6 @@ const nextButtonStyle = {
   return () => socket.disconnect();
 }, [id]);
 
-useEffect(() => {
-  if (!socket) return; 
-
-  socket.on('round-update', ({ round, track, isLast }) => {
-
-  const handleRoundUpdate = ({ round, track, isLast }) => {
-    console.log("🔄 Nouveau round reçu :", round, track, "Fin de partie ?", isLast);
-
-    setCurrentRound(round);
-    setTrack(track);
-    console.log("🎯 Nouveau morceau reçu côté client :", track?.title || "inconnu");
-
-    setTimeLeft(timer);
-    setAnswerVisible(false);
-    setPaused(false);
-    setMusicPaused(false);
-    setShowIndiceMedia(false);
-    setShowIndiceAnnee(false);
-    setAnswer("");
-    setComposer("");
-    setAutoPlay(true);
-
-    if (isLast) {
-      const finalScores = [...scoreboard].sort((a, b) => b.score - a.score);
-      setFinalRanking(finalScores);
-      setGameOver(true);
-    }
-  };
-    // (et éventuellement relancer le timer, etc.)
-  });
-  // Cleanup: retirer l'écouteur au démontage du composant
-  return () => {
-    socket.off('round-update');
-  };
-}, [socket]);
-
-
 function computeBasePoints() {
   const ratio = Math.min(1, timeLeft / timer); // timer restant
   let points = 100 * ratio;
@@ -191,8 +154,7 @@ function computeBasePoints() {
   return Math.ceil(points * multiplier);
 }
 
-
-  const includeComposer = savedParams.bonusCompositeur || false;
+const includeComposer = savedParams.bonusCompositeur || false;
 
 function showEndPopup({ success, points }) {
   const data = {
@@ -338,15 +300,10 @@ function resumePlayback() {
   }
   
 function handleNextRoundPopup() {
-  console.log("✅ handleNextRoundPopup déclenché");
   roundEndedRef.current = false;
   setShowPopup(false);
   setStartTime(Date.now());
-
-  if (isAdmin) {
-    console.log("📡 Envoi socket next-round depuis admin, roomId :", id);
-    socket.emit("next-round", { roomId: id, player: localStorage.getItem("playerName") });
-  }
+  nextRound();
 }
 
   function handleKeyDown(e) {
@@ -431,32 +388,24 @@ function submitAnswer() {
     resumePlayback();
   }
 
-// function nextRound() {
-//   console.log("🟢 nextRound() appelée — currentRound =", currentRound, "totalRounds =", totalRounds);
-
-//   if (currentRound >= totalRounds) {
-//     console.log("🔴 Partie terminée, redirection");
-//     alert("Partie terminée ! Score : " + score);
-//     localStorage.setItem("spotify_token", accessToken);
-//     navigate("/config");
-//   } else {
-//     console.log("➡️ Passage au round", currentRound + 1);
-//     wrongAttemptsRef.current = 0;
-//     const next = currentRound + 1;
-
-//     setCurrentRound(next);
-//     setTimeLeft(timer);
-//     setAnswerVisible(false);
-//     setPaused(false);
-//     setMusicPaused(false);
-//     setShowIndiceMedia(false);
-//     setShowIndiceAnnee(false);
-//     setAnswer("");
-//     setComposer("");
-
-//     updateTrack(next);
-//   }
-// }
+function nextRound() {
+    if (currentRound >= totalRounds) {
+      alert("Partie terminée ! Score : " + score);
+      navigate("/config");
+    } else {
+      wrongAttemptsRef.current = 0;
+      setCurrentRound((r) => r + 1);
+      setTimeLeft(timer);
+      setAnswerVisible(false);
+      setPaused(false);
+      setMusicPaused(false);
+      setShowIndiceMedia(false);
+      setShowIndiceAnnee(false);
+      setAnswer("");
+      setComposer("");
+      fetchNewTrack();
+    }
+  }
 
 function normalize(str) {
     return str
