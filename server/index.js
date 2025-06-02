@@ -17,6 +17,11 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 const games = {};
 
+const cors = require("cors");
+app.use(cors({
+  origin: "https://blindtest-1.onrender.com"
+}));
+
 app.get("/login", (req, res) => {
   const scope = [
     "user-read-private",
@@ -176,20 +181,19 @@ app.post("/start-game", (req, res) => {
 });
 
 app.get("/game-info/:id", (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const game = games[id];
 
   if (!game) {
-    return res.status(404).send({ error: "Partie introuvable" });
+    return res.status(404).json({ error: "Partie non trouvée" });
   }
 
-  res.send({
-    playlist: game.playlist,
-    nbRounds: game.nbRounds,
-    config: game.config,
-    currentRound: game.currentRound
+  res.json({
+    params: game.params,
+    playlist: game.playlist
   });
 });
+
 
 app.post("/submit-score", (req, res) => {
   const { id, player, score } = req.body;
