@@ -12,6 +12,9 @@ function GamePage() {
   const [token, setToken] = useState(localStorage.getItem("spotify_token"));
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const playerName = localStorage.getItem("playerName");
+  const isAdmin = params?.admin === playerName;
+
   useEffect(() => {
     fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
       .then(res => res.json())
@@ -61,7 +64,12 @@ function GamePage() {
 
   const handleNext = () => {
     if (currentRound < playlist.length) {
-      setCurrentRound(prev => prev + 1);
+      fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      }).finally(() => {
+        setCurrentRound(prev => prev + 1);
+      });
     } else {
       alert("🎉 Fin de la partie !");
       navigate("/");
@@ -78,7 +86,12 @@ function GamePage() {
   };
 
   const handlePlay = () => {
-    playCurrentTrack(deviceId);
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => setIsPlaying(true))
+      .catch(err => console.error("Erreur reprise lecture :", err));
   };
 
   if (!params || playlist.length === 0 || !token) return <div>Chargement en cours...</div>;
@@ -104,7 +117,7 @@ function GamePage() {
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
         <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
         <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>
-        <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>
+        {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
       </div>
     </div>
   );
