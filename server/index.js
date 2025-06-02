@@ -270,8 +270,8 @@ server.listen(PORT, () => {
 io.on("connection", (socket) => {
   console.log("📡 Socket connecté :", socket.id);
 
-  socket.on("join-room", (gameId) => {
-    socket.join(gameId);
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${roomId}`);
     console.log("🌐 Rooms actuelles :", Array.from(socket.rooms));
   });
