@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { socket } from "../socket";
+import socket from "./socket";
 
 console.log("✅ ConfigPage.js chargé !");
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { socket } from "../socket"; 
+import socket from "./socket";
 
 function RoomPage() {
   const { id } = useParams();

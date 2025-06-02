@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
-import { socket } from "../socket";
+import socket from "./socket";
 
 
 function GamePage() {
