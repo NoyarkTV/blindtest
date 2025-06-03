@@ -93,7 +93,6 @@ useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
   setShowPopup(false);
-  setIsBuzzed(false);
   basePointsRef.current = 100;
   setTimeLeft(params.time);
   setIsTimerRunning(true);
