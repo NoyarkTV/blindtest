@@ -124,9 +124,20 @@ useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
+  clearInterval(interval);
+  roundEndedRef.current = true;
+  setShowPopup(true);
+  setPopupInfo({
+    title: "⏱ Temps écoulé",
+    points: "+0 point",
+    theme: currentTrack.theme || "",
+    titre: currentTrack.oeuvre || currentTrack.titre || "",
+    annee: currentTrack.annee || "",
+    compositeur: currentTrack.compositeur || "",
+    image: currentTrack.image || null
+  });
+  return 0;
+}
         return prev - 1;
       });
     }, 1000);
@@ -151,6 +162,29 @@ useEffect(() => {
     console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
   }
 }, [params]);
+
+useEffect(() => {
+  const checkPlayback = () => {
+    fetch("https://api.spotify.com/v1/me/player", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.is_playing) {
+          //setIsTrackReady(true); // ✅ maintenant seulement
+        } else {
+          setTimeout(checkPlayback, 500); // 🔁 boucle tant que non prêt
+        }
+      })
+      .catch(err => console.error("Erreur vérif lecture :", err));
+  };
+
+  if (deviceId && playlist.length > 0) {
+    checkPlayback();
+  }
+}, [currentRound]);
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
