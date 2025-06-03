@@ -18,6 +18,7 @@ function ConfigPage() {
   const [allTracks, setAllTracks] = useState([]);
   const [filteredCount, setFilteredCount] = useState(0);
   const [players, setPlayers] = useState([]);
+  const answerInputRef = useRef(null);
 
 
   const [media, setMedia] = useState(["Animé", "Film", "Série", "Dessin Animé", "Jeux vidéo"]);
