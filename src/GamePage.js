@@ -81,6 +81,7 @@ useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
   basePointsRef.current = 100;
+  timeLeft = timer;
   setTimeLeft(null); // Reset pour déclencher le timer
   setIsBuzzed(false); // ✅ Nécessaire pour réactiver le timer
   setShowIndiceMedia(false);
