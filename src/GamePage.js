@@ -55,9 +55,8 @@ const playCurrentTrack = (devId) => {
 
 
   useEffect(() => {
-    const nameFromStorage = localStorage.getItem("playerName");
-    setPlayerName(nameFromStorage);
-    playerNameRef.current = nameFromStorage;
+    const playerName = localStorage.getItem("playerName");
+    setPlayerName(playerName);
 
     fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
       .then(res => res.json())
@@ -255,7 +254,7 @@ const updatedScore = score + totalPoints;
 setScore(updatedScore);
 console.log("🎯 Envoi score :", {
   id,
-  player: playerNameRef.current,
+  player: playerName,
   score: updatedScore
 });
 fetch("/submit-score", {
