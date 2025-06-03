@@ -33,7 +33,6 @@ function GamePage() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const intervalRef = useRef(null);
   const [allScores, setAllScores] = useState([]);
-const playerNameRef = useRef("");
 
 const playCurrentTrack = (devId) => {
   const track = playlist[currentRound - 1];
@@ -183,10 +182,10 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isBuzzed]);
 
-useEffect(() => {
+  useEffect(() => {
   socket.on("score-update", (scores) => {
-    console.log("📊 [CLIENT] Scores reçus :", scores);
-    setAllScores(scores);
+    console.log("📊 Mise à jour des scores :", scores);
+    setAllScores(scores);  // allScores est un useState à créer
   });
 
   return () => {
@@ -201,6 +200,17 @@ useEffect(() => {
     console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
   }
 }, [params]);
+
+useEffect(() => {
+  socket.on("score-update", (scores) => {
+    console.log("📊 Mise à jour des scores :", scores);
+    setAllScores(scores);
+  });
+
+  return () => {
+    socket.off("score-update");
+  };
+}, []);
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
@@ -252,11 +262,6 @@ const handleValidate = () => {
 
 const updatedScore = score + totalPoints;
 setScore(updatedScore);
-console.log("🎯 Envoi score :", {
-  id,
-  player: playerName,
-  score: updatedScore
-});
 fetch("/submit-score", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
