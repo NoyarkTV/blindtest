@@ -259,16 +259,17 @@ const handleValidate = () => {
     const base = ((rawTimeLeft / timer) * 100 * multiplier) - (wrongAttemptsRef.current * 20);
     const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
 
-    setScore(prev => prev + totalPoints);
-    fetch("/submit-score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: id,             // ID de la room
-        player: playerName,     // pseudo ou identifiant du joueur
-        score: score + totalPoints  // score après ajout
-      })
-    });
+const updatedScore = score + totalPoints;
+setScore(updatedScore);
+fetch("/submit-score", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    id,
+    player: playerName,
+    score: updatedScore
+  })
+});
     setTimeLeft(null);
     setShowPopup(true);
     setPopupInfo({
