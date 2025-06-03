@@ -174,6 +174,7 @@ app.post("/start-game", (req, res) => {
   });
 
   console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux`);
+  console.log("📦 Paramètres de la partie :", params);
 
   res.status(200).send({ success: true });
 });

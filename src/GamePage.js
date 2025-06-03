@@ -199,6 +199,14 @@ useEffect(() => {
     return <div>Chargement en cours...</div>;
   }
 
+  useEffect(() => {
+  if (params) {
+    console.log("🧪 params reçus :", params);
+    console.log("⏱️ Time:", params.Time);
+    console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
+  }
+}, [params]);
+
   const timeLimit = params.Time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
