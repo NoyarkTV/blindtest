@@ -235,7 +235,7 @@ useEffect(() => {
   
   const handleNextRoundPopup = () => {
     setShowPopup(false);
-    handlePause
+    handlePause();
   };
 
   return (
