@@ -207,42 +207,31 @@ useEffect(() => {
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
       <SpotifyPlayer token={token} onReady={handleReady} />
-      <h1>Round {currentRound} / {playlist.length}</h1>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-  <svg width="120" height="120">
-    <circle
-      cx="60"
-      cy="60"
-      r="54"
-      stroke="f7b733" // jaune
-      strokeWidth="8"
-      fill="none"
-      style={{ opacity: 0.2 }}
-    />
-    <circle
-      cx="60"
-      cy="60"
-      r="54"
-      stroke="f7b733"
-      strokeWidth="8"
-      fill="f7b733"
-      strokeDasharray={339.292}
-      strokeDashoffset={timeLeft / timeLimit * 339.292}
-      transform="rotate(-90 60 60)"
-      style={{ transition: "stroke-dashoffset 1s linear" }}
-    />
-    <text
-      x="60"
-      y="65"
-      textAnchor="middle"
-      fontSize="32"
-      fill="white"
-      fontWeight="bold"
-    >
-      {timeLeft}
-    </text>
-  </svg>
-</div>
+      
+      
+      <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
+        Round {currentRound} / {playlist.length}
+      </h1>
+            
+      
+      {/* TIMER */}
+      <div
+        style={{
+          width: 120,
+          height: 120,
+          margin: "20px auto",
+          borderRadius: "50%",
+          background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 36,
+          fontWeight: "bold",
+          color: "#1e2a38"
+        }}
+      >
+        {timeLeft}
+      </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 20, flexDirection: "column", alignItems: "center" }}>
         {!isBuzzed ? (
