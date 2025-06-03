@@ -207,7 +207,7 @@ useEffect(() => {
     return <div>Chargement en cours...</div>;
   }
 
-  const timeLimit = params.Time ?? 30;
+  const timeLimit = params.time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
 
@@ -215,7 +215,41 @@ useEffect(() => {
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
       <SpotifyPlayer token={token} onReady={handleReady} />
       <h1>Round {currentRound} / {playlist.length}</h1>
-      <h2 style={{ fontSize: "48px", textAlign: "center" }}>⏳ {timeLeft !== null ? timeLeft + "s" : ""}</h2>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+  <svg width="120" height="120">
+    <circle
+      cx="60"
+      cy="60"
+      r="54"
+      stroke="#FFD700" // jaune
+      strokeWidth="8"
+      fill="none"
+      style={{ opacity: 0.2 }}
+    />
+    <circle
+      cx="60"
+      cy="60"
+      r="54"
+      stroke="#FFD700"
+      strokeWidth="8"
+      fill="none"
+      strokeDasharray={339.292}
+      strokeDashoffset={(1 - timeLeft / timeLimit) * 339.292}
+      transform="rotate(-90 60 60)"
+      style={{ transition: "stroke-dashoffset 1s linear" }}
+    />
+    <text
+      x="60"
+      y="65"
+      textAnchor="middle"
+      fontSize="32"
+      fill="white"
+      fontWeight="bold"
+    >
+      {timeLeft}s
+    </text>
+  </svg>
+</div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 20, flexDirection: "column", alignItems: "center" }}>
         {!isBuzzed ? (
