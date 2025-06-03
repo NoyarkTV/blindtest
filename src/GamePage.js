@@ -28,7 +28,6 @@ function GamePage() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupInfo, setPopupInfo] = useState(null);
   const basePointsRef = useRef(100);
-  const [isTrackReady, setIsTrackReady] = useState(false);
 
 
 const playCurrentTrack = (devId) => {
@@ -78,21 +77,18 @@ const playCurrentTrack = (devId) => {
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
-      setIsTrackReady(false);
       playCurrentTrack(deviceId);
     }
   }, [currentRound]);
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
-      setIsTrackReady(false);
       playCurrentTrack(deviceId);
     }
   }, [deviceId]);
 
 useEffect(() => {
   if (deviceId && playlist.length > 0 && !isPlaying && !isBuzzed) {
-    setIsTrackReady(false);
     playCurrentTrack(deviceId);
   }
 }, [deviceId, playlist]);
@@ -114,7 +110,7 @@ useEffect(() => {
   }, []);
 
 useEffect(() => {
-  if (params && playlist.length > 0 && !isBuzzed && isTrackReady) {
+  if (params && playlist.length > 0 && !isBuzzed ) {
     if (timeLeft === null) { // ✅ uniquement si timeLeft est null
       const timer = params.time ?? 30;
       setTimeLeft(timer);
@@ -161,29 +157,6 @@ useEffect(() => {
     console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
   }
 }, [params]);
-
-useEffect(() => {
-  const checkPlayback = () => {
-    fetch("https://api.spotify.com/v1/me/player", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.is_playing) {
-          setIsTrackReady(true); // ✅ maintenant seulement
-        } else {
-          setTimeout(checkPlayback, 500); // 🔁 boucle tant que non prêt
-        }
-      })
-      .catch(err => console.error("Erreur vérif lecture :", err));
-  };
-
-  if (deviceId && playlist.length > 0) {
-    checkPlayback();
-  }
-}, [currentRound]);
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
