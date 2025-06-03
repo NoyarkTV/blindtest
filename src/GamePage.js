@@ -165,7 +165,7 @@ useEffect(() => {
     useEffect(() => {
   if (params) {
     console.log("🧪 params reçus :", params);
-    console.log("⏱️ Time:", params.Time);
+    console.log("⏱️ Time:", params.time);
     console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
   }
 }, [params]);
@@ -180,7 +180,7 @@ useEffect(() => {
 const handleValidate = () => {
   setIsBuzzed(false);
   const currentTrack = playlist[currentRound - 1];
-  const timer = params.Time ?? 30;
+  const timer = params.time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
 
   // 🔤 Normalisation souple des réponses
