@@ -30,7 +30,8 @@ function GamePage() {
   const basePointsRef = useRef(100);
   const [showIndiceMedia, setShowIndiceMedia] = useState(false);
   const [showIndiceAnnee, setShowIndiceAnnee] = useState(false);
-
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const intervalRef = useRef(null);
 
 const playCurrentTrack = (devId) => {
   const track = playlist[currentRound - 1];
@@ -77,19 +78,31 @@ const playCurrentTrack = (devId) => {
     console.log("📡 Socket client : a rejoint la room", id);
   }, [playerName, id]);
 
+  useEffect(() => {
+  setTimeLeft(params.time);
+  setIsTimerRunning(true); // lance le timer pour tous les joueurs
+}, [currentRound]); // se déclenche à chaque nouveau round
+
+useEffect(() => {
+  if (isTimerRunning) {
+    intervalRef.current = setInterval(() => {
+      setTimeLeft(prev => Math.max(prev - 1, 0));
+    }, 1000);
+  }
+  return () => clearInterval(intervalRef.current);
+}, [isTimerRunning]); 
+
 useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
   basePointsRef.current = 100;
-  setTimeLeft(null); // Reset pour déclencher le timer
-  setIsBuzzed(false); // ✅ Nécessaire pour réactiver le timer
+  setTimeLeft(params.time);
+  setIsTimerRunning(true);
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
   handleNextRoundPopup();
+  playCurrentTrack(deviceId);
 
-  setTimeout(() => {
-    playCurrentTrack(deviceId);
-  }, 200);
 }, [currentRound]);
 
   useEffect(() => {
@@ -120,38 +133,25 @@ useEffect(() => {
     return () => socket.off("game-over");
   }, []);
 
+
 useEffect(() => {
-  if (params && playlist.length > 0 && !isBuzzed ) {
-    if (timeLeft === null) { // ✅ uniquement si timeLeft est null
-      const timer = params.time ?? 30;
-      setTimeLeft(timer);
-    }
+  if (timeLeft === 0) {
+    setIsTimerRunning(false);
+    roundEndedRef.current = true;
 
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-  clearInterval(interval);
-  roundEndedRef.current = true;
-  setShowPopup(true);
-  handlePause();
-  setPopupInfo({
-    title: "⏱ Temps écoulé",
-    points: "+0 point",
-    theme: currentTrack.theme || "",
-    titre: currentTrack.oeuvre || currentTrack.titre || "",
-    annee: currentTrack.annee || "",
-    compositeur: currentTrack.compositeur || "",
-    image: currentTrack.image || null
-  });
-  return 0;
-}
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
+    const currentTrack = playlist[currentRound - 1];
+    setPopupInfo({
+      title: "⏱ Temps écoulé",
+      points: "+0 point",
+      theme: currentTrack.theme || "",
+      titre: currentTrack.oeuvre || currentTrack.titre || "",
+      annee: currentTrack.annee || "",
+      compositeur: currentTrack.compositeur || "",
+      image: currentTrack.image || null
+    });
+    setShowPopup(true);
   }
-}, [params, playlist, currentRound, isBuzzed, timeLeft]);
+}, [timeLeft]);
 
 
   useEffect(() => {
@@ -172,6 +172,7 @@ useEffect(() => {
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
+      setIsTimerRunning(false); // pause le timer
       setIsBuzzed(true);
       handlePause();
   };
@@ -229,6 +230,7 @@ const handleValidate = () => {
     basePointsRef.current = Math.max(0, basePointsRef.current - 20); // ❗ diminue les points potentiels
     console.log("❌ Mauvaise réponse - points restants :", basePointsRef.current);
     handlePlay(); // ▶️ reprend la musique là où elle s’était arrêtée
+    setIsTimerRunning(true)
   }
 
   // Nettoyage
@@ -372,7 +374,7 @@ const handleNext = () => {
             setIsBuzzed(false);
             setAnswer("");
             setComposerGuess("");
-            setTimeLeft(pausedTimeRef.current); // on restaure le temps
+            setIsTimerRunning(true)
             handlePlay(); // on reprend la musique là où elle en était
           }}
           style={cancelButtonStyle}
