@@ -141,70 +141,6 @@ useEffect(() => {
     handlePause();
   };
 
-  function submitAnswer() {
-  // Ne rien faire si aucune réponse n'est saisie (bouton désactivé de toute façon)
-  if (this.state.answer.trim() === "") return;
-
-  const userAnswer = this.state.answer.trim().toLowerCase();
-  const expectedTitle = this.state.currentTitle.trim().toLowerCase();  // titre attendu de la question en cours
-
-  if (userAnswer === expectedTitle) {
-    // **Réponse principale correcte** 
-    const attemptCount = this.state.attempt + 1;               // tentative utilisée
-    let newScore = this.state.score + 3;                       // ex: +3 points pour une bonne réponse (à ajuster selon l’ancienne logique)
-    // (On ajoute les points de base pour une bonne réponse - ici 3 points, si l’ancienne logique utilisait une autre valeur ou formule, utilisez-la)
-
-    // Gérer le bonus Compositeur si activé 
-    if (this.props.bonusCompositeur) {
-      const compGuess = this.state.composer.trim().toLowerCase();
-      if (compGuess !== "") {
-        const expectedComposer = this.state.currentComposer.trim().toLowerCase();
-        if (compGuess === expectedComposer) {
-          newScore += 1;  // ex: +1 point de bonus si le compositeur est correct
-        } else {
-          newScore -= this.state.malus;  // malus si compositeur incorrect (pénalise d'une tentative)
-        }
-      }
-    }
-
-    // Mettre à jour le score et les tentatives, réinitialiser les champs de réponse
-    this.setState({
-      score: newScore,
-      attempt: attemptCount,
-      answer: "",
-      composer: ""
-    });
-
-    // Passer à la question suivante (selon la logique de GamePageOld.js)
-    this.nextQuestion();  // (Appelez ici la fonction qui gérait le passage à la question suivante dans l’ancienne version)
-  } else {
-    // **Réponse principale incorrecte**
-    this.setState({
-      score: this.state.score - this.state.malus,    // appliquer le malus au score
-      attempt: this.state.attempt + 1               // incrémenter le compteur de tentatives
-    });
-    // (Ne pas encore passer à la question suivante, l’utilisateur peut tenter à nouveau)
-  }
-}
-
-
-function cancelAnswer() {
-  // **Annulation de la question en cours** 
-  const attemptCount = this.state.attempt + 1;
-  const newScore = this.state.score - this.state.malus;  // appliquer le malus pour la question annulée
-
-  this.setState({
-    attempt: attemptCount,
-    score: newScore,
-    answer: "",
-    composer: ""
-  });
-
-  // Passer à la question suivante immédiatement 
-  this.nextQuestion();
-}
-
-
   const handleValidate = () => {
     const currentTrack = playlist[currentRound - 1];
     const timer = params.Time ?? 30;
@@ -329,14 +265,19 @@ function cancelAnswer() {
       )}
       <div>
         <button
-          onClick={this.submitAnswer.bind(this)}
-          disabled={this.state.answer.trim() === ""}
+          onClick={handleValidate}
+          disabled={!answer && (!bonusCompositeur || !composerGuess)}
           style={validateButtonStyle}
         >
           Valider
         </button>
         <button
-          onClick={this.cancelAnswer.bind(this)}
+          onClick={() => {
+            setIsBuzzed(false);
+            setAnswer("");
+            setComposerGuess("");
+            playCurrentTrack(deviceId);
+          }}
           style={cancelButtonStyle}
         >
           Annuler
@@ -355,7 +296,6 @@ function cancelAnswer() {
     </div>
   );
 }
-
 
 const buttonStyle = {
   padding: "10px 20px",
