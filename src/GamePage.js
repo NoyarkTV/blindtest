@@ -98,7 +98,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (params && playlist.length > 0 && !isBuzzed) {
-      const timeLimit = params.Time ?? 30;
+      const timeLimit = params.time ?? 30;
       setTimeLeft(timeLimit);
       const interval = setInterval(() => {
         setTimeLeft(prev => {
@@ -214,7 +214,7 @@ useEffect(() => {
       cx="60"
       cy="60"
       r="54"
-      stroke="#FFD700" // jaune
+      stroke="f7b733" // jaune
       strokeWidth="8"
       fill="none"
       style={{ opacity: 0.2 }}
@@ -223,11 +223,11 @@ useEffect(() => {
       cx="60"
       cy="60"
       r="54"
-      stroke="#FFD700"
+      stroke="f7b733"
       strokeWidth="8"
-      fill="none"
+      fill="f7b733"
       strokeDasharray={339.292}
-      strokeDashoffset={(1 - timeLeft / timeLimit) * 339.292}
+      strokeDashoffset={timeLeft / timeLimit * 339.292}
       transform="rotate(-90 60 60)"
       style={{ transition: "stroke-dashoffset 1s linear" }}
     />
