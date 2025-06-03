@@ -28,6 +28,8 @@ function GamePage() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupInfo, setPopupInfo] = useState(null);
   const basePointsRef = useRef(100);
+  const [showIndiceMedia, setShowIndiceMedia] = useState(false);
+  const [showIndiceAnnee, setShowIndiceAnnee] = useState(false);
 
 
 const playCurrentTrack = (devId) => {
@@ -75,11 +77,15 @@ const playCurrentTrack = (devId) => {
     console.log("📡 Socket client : a rejoint la room", id);
   }, [playerName, id]);
 
-  useEffect(() => {
-    if (deviceId && playlist.length > 0) {
-      playCurrentTrack(deviceId);
-    }
-  }, [currentRound]);
+useEffect(() => {
+  if (deviceId && playlist.length > 0) {
+    playCurrentTrack(deviceId);
+  }
+
+  // Réinitialise les indices à chaque nouveau round
+  setShowIndiceMedia(false);
+  setShowIndiceAnnee(false);
+}, [currentRound]);
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
@@ -122,6 +128,7 @@ useEffect(() => {
   clearInterval(interval);
   roundEndedRef.current = true;
   setShowPopup(true);
+  handlePause();
   setPopupInfo({
     title: "⏱ Temps écoulé",
     points: "+0 point",
@@ -303,6 +310,28 @@ const handleNext = () => {
         {timeLeft}
       </div>
 
+{/* INDICES */}
+<div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
+  {/* Média */}
+  <div style={indiceBoxStyle}>
+    <span style={{ marginRight: 8 }}>Média :</span>
+    {!showIndiceMedia ? (
+      <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
+    ) : (
+      <span>{playlist[currentRound - 1]?.media || "?"}</span>
+    )}
+  </div>
+
+  {/* Année */}
+  <div style={indiceBoxStyle}>
+    <span style={{ marginRight: 8 }}>Année :</span>
+    {!showIndiceAnnee ? (
+      <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
+    ) : (
+      <span>{playlist[currentRound - 1]?.annee || "?"}</span>
+    )}
+  </div>
+</div>
 
       {/* BUZZER / REPONSE */}
       <div style={{ marginTop: 40 }}>
