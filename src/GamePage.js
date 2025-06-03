@@ -26,6 +26,8 @@ function GamePage() {
   const roundEndedRef = useRef(false);
   const wrongAttemptsRef = useRef(0);
   const pausedTimeRef = useRef(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupInfo, setPopupInfo] = useState(null);
 
   const playCurrentTrack = (devId) => {
     const track = playlist[currentRound - 1];
@@ -143,32 +145,48 @@ useEffect(() => {
   };
 
   const handleValidate = () => {
-    const currentTrack = playlist[currentRound - 1];
-    const timer = params.Time ?? 30;
-    const bonusCompositeur = params.BonusCompositeur ?? false;
+  const currentTrack = playlist[currentRound - 1];
+  const timer = params.Time ?? 30;
+  const bonusCompositeur = params.BonusCompositeur ?? false;
 
-    const normalizedAnswer = answer.trim().toLowerCase();
-    const validAnswers = (currentTrack.answers || []).map(a => a.toLowerCase());
-    const isCorrect = validAnswers.includes(normalizedAnswer);
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const validAnswers = (currentTrack.answers || []).map(a => a.toLowerCase());
+  const isCorrect = validAnswers.includes(normalizedAnswer);
 
-    let bonus = 0;
-    if (bonusCompositeur && currentTrack.compositeur) {
-      const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
-      const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
-      if (guessList.some(g => realComposers.includes(g))) bonus = 20;
+  let bonus = 0;
+  let bonusText = "";
+  if (bonusCompositeur && currentTrack.compositeur) {
+    const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
+    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
+    if (guessList.some(g => realComposers.includes(g))) {
+      bonus = 20;
+      bonusText = " (+20 bonus compositeur)";
     }
+  }
 
-    if (isCorrect) {
-      setScore(prev => prev + 100 + bonus);
-      console.log("✅ Bonne réponse !");
-    } else {
-      console.log("❌ Mauvaise réponse");
-      setIsBuzzed(false);
-      setAnswer("");
-      setComposerGuess("");
-      playCurrentTrack(deviceId);
-    }
-  };
+  if (isCorrect) {
+    const totalPoints = 100 + bonus;
+    setScore(prev => prev + totalPoints);
+    setShowPopup(true);
+    setPopupInfo({
+      title: "✅ Bonne réponse",
+      points: `+${totalPoints} points${bonusText}`,
+      theme: currentTrack.theme || "",
+      titre: currentTrack.oeuvre || currentTrack.titre || "",
+      annee: currentTrack.annee || "",
+      compositeur: currentTrack.compositeur || "",
+      image: currentTrack.image || null
+    });
+    roundEndedRef.current = true;
+  } else {
+    console.log("❌ Mauvaise réponse");
+    setIsBuzzed(false);
+    setAnswer("");
+    setComposerGuess("");
+    playCurrentTrack(deviceId);
+  }
+};
+
 
   const handleReady = (id) => {
     setDeviceId(id);
@@ -209,6 +227,12 @@ useEffect(() => {
   const timer = params.time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
+  
+  const handleNextRoundPopup = () => {
+    setShowPopup(false);
+    roundEndedRef.current = false;
+    handleNext(); // déjà défini
+  };
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
@@ -295,6 +319,48 @@ useEffect(() => {
         <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>
         {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
       </div>
+{showPopup && popupInfo && (
+  <div style={popupOverlayStyle}>
+    <div style={popupStyle}>
+      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
+      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
+        {popupInfo.points}
+      </h1>
+
+      {popupInfo.image && (
+        <img
+          src={popupInfo.image}
+          alt="Pochette album"
+          style={{
+            width: 160, height: 160, borderRadius: 12, objectFit: "cover",
+            marginBottom: 20, boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+          }}
+        />
+      )}
+
+      <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
+        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}{popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
+      </p>
+      {popupInfo.compositeur && (
+        <p style={{ fontStyle: "italic", color: "#555", marginTop: 6 }}>
+          par {popupInfo.compositeur}
+        </p>
+      )}
+
+      {isAdmin && (
+        <button 
+          onClick={handleNextRoundPopup}
+          style={nextButtonStyle}
+          disabled={roundEndedRef.current === false}
+        >
+          🎵 Round suivant
+        </button>
+      )}
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 }
