@@ -36,14 +36,6 @@ function GamePage() {
       .catch(err => console.error("Erreur lecture Spotify :", err));
   };
 
-  console.log("🔍 DEBUG rendu GamePage", {
-  id,
-  params,
-  playlist,
-  token,
-  currentRound
-});
-
   useEffect(() => {
     const playerName = localStorage.getItem("playerName");
     setPlayerName(playerName);
@@ -208,7 +200,7 @@ useEffect(() => {
   }
 
   const timeLimit = params.time ?? 30;
-  console.log(timeLimit)
+  console.log("la timelimit est de :", timeLimit);
   const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
 
