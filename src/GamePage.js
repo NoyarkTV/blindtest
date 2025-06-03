@@ -221,7 +221,7 @@ useEffect(() => {
           height: 120,
           margin: "20px auto",
           borderRadius: "50%",
-          background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
+          background: `conic-gradient(#f7b733 ${360 * (timeLeft / timeLimit)}deg, #555 ${360 * (timeLeft / timeLimit)}deg)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
