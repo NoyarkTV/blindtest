@@ -19,6 +19,7 @@ function GamePage() {
   const [answer, setAnswer] = useState("");
   const [composerGuess, setComposerGuess] = useState("");
   const [score, setScore] = useState(0);
+  const answerInputRef = useRef(null);
 
   const playCurrentTrack = (devId) => {
     const track = playlist[currentRound - 1];
