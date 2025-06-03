@@ -200,6 +200,17 @@ useEffect(() => {
   }
 }, [params]);
 
+useEffect(() => {
+  socket.on("score-update", (scores) => {
+    console.log("📊 Mise à jour des scores :", scores);
+    setAllScores(scores);
+  });
+
+  return () => {
+    socket.off("score-update");
+  };
+}, []);
+
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
       setIsTimerRunning(false); // pause le timer
@@ -342,17 +353,35 @@ const handleNext = () => {
         Round {currentRound} / {playlist.length}
       </h1>
 
-      <div className="scoreboard">
-  <h3>📊 Scores</h3>
-  <ul>
-    {allScores.map(({ name, score }) => (
-      <li key={name} style={{
-        fontWeight: name === playerName ? "bold" : "normal",
-        color: name === playerName ? "#FFD700" : "white"
-      }}>
-        {name}: {score} pts
-      </li>
-    ))}
+<div
+  style={{
+    position: "absolute",
+    top: "80px",
+    right: "20px",
+    width: "200px",
+    background: "#222",
+    border: "1px solid #444",
+    borderRadius: "8px",
+    padding: "10px",
+    zIndex: 20
+  }}
+>
+  <h3 style={{ color: "white", fontSize: "16px", marginBottom: "8px" }}>🎯 Scores</h3>
+  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+    {allScores
+      .sort((a, b) => b.score - a.score) // tri du plus grand au plus petit
+      .map(({ name, score }) => (
+        <li
+          key={name}
+          style={{
+            marginBottom: "6px",
+            fontWeight: name === playerName ? "bold" : "normal",
+            color: name === playerName ? "#FFD700" : "#ddd"
+          }}
+        >
+          {name}: {score} pts
+        </li>
+      ))}
   </ul>
 </div>
             
