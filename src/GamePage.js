@@ -129,6 +129,14 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isBuzzed]);
 
+    useEffect(() => {
+  if (params) {
+    console.log("🧪 params reçus :", params);
+    console.log("⏱️ Time:", params.Time);
+    console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
+  }
+}, [params]);
+
   const handleBuzz = () => {
     setIsBuzzed(true);
     setTimeLeft(null);
@@ -198,14 +206,6 @@ useEffect(() => {
   if (!params || playlist.length === 0 ) {
     return <div>Chargement en cours...</div>;
   }
-
-  useEffect(() => {
-  if (params) {
-    console.log("🧪 params reçus :", params);
-    console.log("⏱️ Time:", params.Time);
-    console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
-  }
-}, [params]);
 
   const timeLimit = params.Time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
