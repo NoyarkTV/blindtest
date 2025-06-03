@@ -78,10 +78,7 @@ const playCurrentTrack = (devId) => {
     console.log("📡 Socket client : a rejoint la room", id);
   }, [playerName, id]);
 
-  useEffect(() => {
-  setTimeLeft(params.time);
-  setIsTimerRunning(true); // lance le timer pour tous les joueurs
-}, [currentRound]); // se déclenche à chaque nouveau round
+
 
 useEffect(() => {
   if (isTimerRunning) {
