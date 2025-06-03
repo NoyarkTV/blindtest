@@ -78,13 +78,17 @@ const playCurrentTrack = (devId) => {
   }, [playerName, id]);
 
 useEffect(() => {
-  if (deviceId && playlist.length > 0) {
-    playCurrentTrack(deviceId);
-  }
+  if (!deviceId || playlist.length === 0) return;
 
-  // Réinitialise les indices à chaque nouveau round
+  basePointsRef.current = 100;
+  setTimeLeft(null); // ⚠️ Déclencheur du timer dans un autre useEffect
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
+
+  // Petite attente pour laisser le round se stabiliser
+  setTimeout(() => {
+    playCurrentTrack(deviceId);
+  }, 200); // ajuste si nécessaire
 }, [currentRound]);
 
   useEffect(() => {
@@ -253,9 +257,6 @@ const handleValidate = () => {
   };
 
 const handleNext = () => {
-  setTimeLeft(null);
-  basePointsRef.current = 100;
-
   if (currentRound < playlist.length) {
     console.log("🟢 ADMIN : Envoi next-round au serveur");
     handlePause().finally(() => {
