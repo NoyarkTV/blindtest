@@ -32,6 +32,7 @@ function GamePage() {
   const [showIndiceAnnee, setShowIndiceAnnee] = useState(false);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const intervalRef = useRef(null);
+  const [allScores, setAllScores] = useState([]);
 
 const playCurrentTrack = (devId) => {
   const track = playlist[currentRound - 1];
@@ -180,6 +181,17 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isBuzzed]);
 
+  useEffect(() => {
+  socket.on("score-update", (scores) => {
+    console.log("📊 Mise à jour des scores :", scores);
+    setAllScores(scores);  // allScores est un useState à créer
+  });
+
+  return () => {
+    socket.off("score-update");
+  };
+}, []);
+
     useEffect(() => {
   if (params) {
     console.log("🧪 params reçus :", params);
@@ -237,6 +249,15 @@ const handleValidate = () => {
     const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
 
     setScore(prev => prev + totalPoints);
+    fetch("/submit-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: gameId,             // ID de la room
+        player: playerName,     // pseudo ou identifiant du joueur
+        score: score + totalPoints  // score après ajout
+      })
+    });
     setTimeLeft(null);
     setShowPopup(true);
     setPopupInfo({
@@ -320,6 +341,20 @@ const handleNext = () => {
       <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
         Round {currentRound} / {playlist.length}
       </h1>
+
+      <div className="scoreboard">
+  <h3>📊 Scores</h3>
+  <ul>
+    {allScores.map(({ name, score }) => (
+      <li key={name} style={{
+        fontWeight: name === playerName ? "bold" : "normal",
+        color: name === playerName ? "#FFD700" : "white"
+      }}>
+        {name}: {score} pts
+      </li>
+    ))}
+  </ul>
+</div>
             
       
       {/* TIMER */}
