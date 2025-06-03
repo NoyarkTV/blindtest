@@ -22,12 +22,13 @@ function GamePage() {
   const [score, setScore] = useState(0);
   const answerInputRef = useRef(null);
   const [composerAttempts, setComposerAttempts] = useState(0); // max 2 tentatives
-  const basePointsRef = useRef(0);
   const roundEndedRef = useRef(false);
   const wrongAttemptsRef = useRef(0);
   const pausedTimeRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
   const [popupInfo, setPopupInfo] = useState(null);
+  const basePointsRef = useRef(100);
+
 
   const playCurrentTrack = (devId) => {
     const track = playlist[currentRound - 1];
@@ -149,19 +150,23 @@ useEffect(() => {
       handlePause();
   };
 
-  const handleValidate = () => {
+const handleValidate = () => {
   setIsBuzzed(false);
-  setAnswer("");
-  setComposerGuess("");
-
   const currentTrack = playlist[currentRound - 1];
   const timer = params.Time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
 
-  const normalizedAnswer = answer.trim().toLowerCase();
-  const validAnswers = (currentTrack.answers || []).map(a => a.toLowerCase());
+  // 🔤 Normalisation souple des réponses
+  const normalize = str =>
+    str.toLowerCase()
+      .replace(/[^a-z0-9]/gi, '')      // enlève espaces, ponctuation
+      .replace(/\s+/g, '');            // supprime les espaces restants
+
+  const normalizedAnswer = normalize(answer);
+  const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
   const isCorrect = validAnswers.includes(normalizedAnswer);
 
+  // 🎼 Compositeur bonus
   let bonus = 0;
   let bonusText = "";
   if (bonusCompositeur && currentTrack.compositeur) {
@@ -173,10 +178,11 @@ useEffect(() => {
     }
   }
 
+  // 🟢 Bonne réponse
   if (isCorrect) {
-    const totalPoints = 100 + bonus;
+    const totalPoints = Math.max(0, basePointsRef.current + bonus);
     setScore(prev => prev + totalPoints);
-    setTimeLeft(null); // ✅ stop le timer
+    setTimeLeft(null); // ⏸️ met le timer en pause
     setShowPopup(true);
     setPopupInfo({
       title: "✅ Bonne réponse",
@@ -188,11 +194,21 @@ useEffect(() => {
       image: currentTrack.image || null
     });
     roundEndedRef.current = true;
-  } else {
-    console.log("❌ Mauvaise réponse");
-    handlePlay(); // ✅ reprend la musique à l’endroit actuel
+    basePointsRef.current = 100; // reset pour le prochain round
   }
+
+  // 🔴 Mauvaise réponse
+  else {
+    basePointsRef.current = Math.max(0, basePointsRef.current - 20); // ❗ diminue les points potentiels
+    console.log("❌ Mauvaise réponse - points restants :", basePointsRef.current);
+    handlePlay(); // ▶️ reprend la musique là où elle s’était arrêtée
+  }
+
+  // Nettoyage
+  setAnswer("");
+  setComposerGuess("");
 };
+
 
 
   const handleReady = (id) => {
@@ -216,6 +232,7 @@ useEffect(() => {
 
 const handleNext = () => {
   setTimeLeft(null);
+  basePointsRef.current = 100;
 
   if (currentRound < playlist.length) {
     console.log("🟢 ADMIN : Envoi next-round au serveur");
