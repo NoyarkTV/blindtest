@@ -98,8 +98,8 @@ useEffect(() => {
 
   useEffect(() => {
     if (params && playlist.length > 0 && !isBuzzed) {
-      const timeLimit = params.time ?? 30;
-      setTimeLeft(timeLimit);
+      const timer = params.time ?? 30;
+      setTimeLeft(timer);
       const interval = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -137,7 +137,7 @@ useEffect(() => {
 
   const handleValidate = () => {
     const currentTrack = playlist[currentRound - 1];
-    const timeLimit = params.Time ?? 30;
+    const timer = params.Time ?? 30;
     const bonusCompositeur = params.BonusCompositeur ?? false;
 
     const normalizedAnswer = answer.trim().toLowerCase();
@@ -199,8 +199,7 @@ useEffect(() => {
     return <div>Chargement en cours...</div>;
   }
 
-  const timeLimit = params.time ?? 30;
-  console.log("la timelimit est de :", timeLimit);
+  const timer = params.time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
 
@@ -221,7 +220,7 @@ useEffect(() => {
           height: 120,
           margin: "20px auto",
           borderRadius: "50%",
-          background: `conic-gradient(#f7b733 ${360 * (timeLeft / timeLimit)}deg, #555 ${360 * (timeLeft / timeLimit)}deg)`,
+          background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -233,39 +232,55 @@ useEffect(() => {
         {timeLeft}
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 20, flexDirection: "column", alignItems: "center" }}>
-        {!isBuzzed ? (
-          <button onClick={handleBuzz} style={buttonStyle}>🔔 Buzz</button>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <input
-              type="text"
-              placeholder="Réponse"
-              value={answer}
-              onChange={e => setAnswer(e.target.value)}
-              style={inputStyle}
-            />
-            {bonusCompositeur && (
-              <input
-                type="text"
-                placeholder="Compositeur"
-                value={composerGuess}
-                onChange={e => setComposerGuess(e.target.value)}
-                style={inputStyle}
-              />
-            )}
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={handleValidate} style={buttonStyle}>✅ Valider</button>
-              <button onClick={() => {
-                setIsBuzzed(false);
-                setAnswer("");
-                setComposerGuess("");
-                playCurrentTrack(deviceId);
-              }} style={buttonStyle}>❌ Annuler</button>
-            </div>
-          </div>
-        )}
+
+      {/* BUZZER / REPONSE */}
+      <div style={{ marginTop: 40 }}>
+  {!isBuzzed ? (
+    <button onClick={handleBuzz} style={buzzButtonStyle}>🔔 BUZZ</button>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+      <input
+        type="text"
+        placeholder="Votre réponse"
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleValidate()}
+        ref={answerInputRef}
+        style={inputStyle}
+      />
+      {bonusCompositeur && (
+        <input
+          type="text"
+          placeholder="Compositeur (facultatif)"
+          value={composerGuess}
+          onChange={(e) => setComposerGuess(e.target.value)}
+          style={inputStyle}
+        />
+      )}
+      <div>
+        <button
+          onClick={handleValidate}
+          disabled={!answer && (!bonusCompositeur || !composerGuess)}
+          style={validateButtonStyle}
+        >
+          Valider
+        </button>
+        <button
+          onClick={() => {
+            setIsBuzzed(false);
+            setAnswer("");
+            setComposerGuess("");
+            playCurrentTrack(deviceId);
+          }}
+          style={cancelButtonStyle}
+        >
+          Annuler
+        </button>
       </div>
+    </div>
+  )}
+</div>
+
 
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
         <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
