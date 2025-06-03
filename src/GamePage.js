@@ -92,7 +92,6 @@ useEffect(() => {
 useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
-  setShowPopup(false);
   basePointsRef.current = 100;
   setTimeLeft(params.time);
   setIsTimerRunning(true);
@@ -104,21 +103,13 @@ useEffect(() => {
 }, [currentRound]);
 
 useEffect(() => {
-  if (
-    currentRound === 1 &&
-    timeLeft === null &&
-    deviceId &&
-    playlist.length > 0 &&
-    params?.time
-  ) {
-    console.log("⏱ Lancement local du timer au round 1");
+  if (deviceId && playlist.length > 0 && currentRound === 1) {
     setTimeLeft(params.time);
     setIsTimerRunning(true);
     playCurrentTrack(deviceId);
     handleNextRoundPopup();
   }
-}, [currentRound, timeLeft, deviceId, playlist, params]);
-
+}, [deviceId, playlist, params]);
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
