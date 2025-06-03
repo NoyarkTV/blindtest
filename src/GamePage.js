@@ -208,6 +208,7 @@ useEffect(() => {
   }
 
   const timeLimit = params.time ?? 30;
+  console.log(timeLimit)
   const bonusCompositeur = params.BonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
 
