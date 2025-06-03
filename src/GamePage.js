@@ -239,7 +239,7 @@ useEffect(() => {
       fill="white"
       fontWeight="bold"
     >
-      {timeLeft}s
+      {timeLeft}
     </text>
   </svg>
 </div>
