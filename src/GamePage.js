@@ -92,7 +92,6 @@ useEffect(() => {
 useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
-  setShowPopup(false);
   basePointsRef.current = 100;
   setTimeLeft(params.time);
   setIsTimerRunning(true);
@@ -101,6 +100,11 @@ useEffect(() => {
   handleNextRoundPopup();
   playCurrentTrack(deviceId);
 
+}, [currentRound]);
+
+useEffect(() => {
+  setShowPopup(false);
+  setIsBuzzed(false); // facultatif : réinitialiser le buzz
 }, [currentRound]);
 
 useEffect(() => {
@@ -197,17 +201,16 @@ const handleValidate = () => {
   const timer = params.time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
 
-  // 🔤 Normalisation souple des réponses
   const normalize = str =>
     str.toLowerCase()
-      .replace(/[^a-z0-9]/gi, '')      // enlève espaces, ponctuation
-      .replace(/\s+/g, '');            // supprime les espaces restants
+      .replace(/[^a-z0-9]/gi, '')
+      .replace(/\s+/g, '');
 
   const normalizedAnswer = normalize(answer);
   const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
   const isCorrect = validAnswers.includes(normalizedAnswer);
 
-  // 🎼 Compositeur bonus
+  // 🎼 Bonus compositeur
   let bonus = 0;
   let bonusText = "";
   if (bonusCompositeur && currentTrack.compositeur) {
@@ -221,10 +224,20 @@ const handleValidate = () => {
 
   // 🟢 Bonne réponse
   if (isCorrect) {
-    const totalPoints = Math.max(0, basePointsRef.current + bonus);
+    const rawTimeLeft = pausedTimeRef.current ?? timeLeft;
+    let multiplier = 1;
+
+    if (showIndiceMedia && showIndiceAnnee) {
+      multiplier = 0.6;
+    } else if (showIndiceMedia || showIndiceAnnee) {
+      multiplier = 0.8;
+    }
+
+    const base = ((rawTimeLeft / timer) * 100 * multiplier) - (wrongAttemptsRef.current * 20);
+    const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
+
     setScore(prev => prev + totalPoints);
-    pausedTimeRef.current = timeLeft;  // 🧠 on garde le temps restant
-    setTimeLeft(null); // ⏸️ met le timer en pause visuellement
+    setTimeLeft(null);
     setShowPopup(true);
     setPopupInfo({
       title: "✅ Bonne réponse",
@@ -236,15 +249,15 @@ const handleValidate = () => {
       image: currentTrack.image || null
     });
     roundEndedRef.current = true;
-    basePointsRef.current = 100; // reset pour le prochain round
   }
 
   // 🔴 Mauvaise réponse
   else {
-    basePointsRef.current = Math.max(0, basePointsRef.current - 20); // ❗ diminue les points potentiels
-    console.log("❌ Mauvaise réponse - points restants :", basePointsRef.current);
-    handlePlay(); // ▶️ reprend la musique là où elle s’était arrêtée
-    setIsTimerRunning(true)
+    wrongAttemptsRef.current = (wrongAttemptsRef.current || 0) + 1;
+    console.log("❌ Mauvaise réponse - tentatives :", wrongAttemptsRef.current);
+    basePointsRef.current = Math.max(0, basePointsRef.current - 20);
+    handlePlay();
+    setIsTimerRunning(true);
   }
 
   // Nettoyage
