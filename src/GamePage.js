@@ -81,14 +81,14 @@ useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
   basePointsRef.current = 100;
-  setTimeLeft(null); // ⚠️ Déclencheur du timer dans un autre useEffect
+  setTimeLeft(null); // Reset pour déclencher le timer
+  setIsBuzzed(false); // ✅ Nécessaire pour réactiver le timer
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
 
-  // Petite attente pour laisser le round se stabiliser
   setTimeout(() => {
     playCurrentTrack(deviceId);
-  }, 200); // ajuste si nécessaire
+  }, 200);
 }, [currentRound]);
 
   useEffect(() => {
