@@ -150,6 +150,8 @@ useEffect(() => {
   };
 
   const handleValidate = () => {
+  setIsBuzzed(false); // ✅ toujours quitter le mode "buzzed"
+
   const currentTrack = playlist[currentRound - 1];
   const timer = params.Time ?? 30;
   const bonusCompositeur = params.BonusCompositeur ?? false;
@@ -185,12 +187,12 @@ useEffect(() => {
     roundEndedRef.current = true;
   } else {
     console.log("❌ Mauvaise réponse");
-    setIsBuzzed(false);
     setAnswer("");
     setComposerGuess("");
     playCurrentTrack(deviceId);
   }
 };
+
 
 
   const handleReady = (id) => {
@@ -212,18 +214,20 @@ useEffect(() => {
     }).then(() => setIsPlaying(true)).catch(err => console.error("Erreur reprise lecture :", err));
   };
 
-  const handleNext = () => {
-    if (currentRound < playlist.length) {
-      console.log("🟢 ADMIN : Envoi next-round au serveur");
-      handlePause().finally(() => {
-        socket.emit("next-round", { roomId: id });
-      });
-    } else {
-      alert("🎉 Fin de la partie !");
+const handleNext = () => {
+  setTimeLeft(null); // ✅ forcer le useEffect à relancer un timer à params.time
+
+  if (currentRound < playlist.length) {
+    console.log("🟢 ADMIN : Envoi next-round au serveur");
+    handlePause().finally(() => {
       socket.emit("next-round", { roomId: id });
-      navigate("/");
-    }
-  };
+    });
+  } else {
+    alert("🎉 Fin de la partie !");
+    socket.emit("next-round", { roomId: id });
+    navigate("/");
+  }
+};
 
   if (!params || playlist.length === 0 ) {
     return <div>Chargement en cours...</div>;
