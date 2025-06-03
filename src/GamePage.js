@@ -14,7 +14,7 @@ function GamePage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerName, setPlayerName] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isBuzzed, setIsBuzzed] = useState(false);
   const [answer, setAnswer] = useState("");
   const [composer, setComposer] = useState("");
@@ -101,6 +101,15 @@ useEffect(() => {
   playCurrentTrack(deviceId);
 
 }, [currentRound]);
+
+useEffect(() => {
+  if (deviceId && playlist.length > 0 && currentRound === 1) {
+    setTimeLeft(params.time);
+    setIsTimerRunning(true);
+    playCurrentTrack(deviceId);
+    handleNextRoundPopup();
+  }
+}, [deviceId, playlist, params]);
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
