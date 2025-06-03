@@ -25,6 +25,7 @@ function GamePage() {
   const basePointsRef = useRef(0);
   const roundEndedRef = useRef(false);
   const wrongAttemptsRef = useRef(0);
+  const pausedTimeRef = useRef(null);
 
   const playCurrentTrack = (devId) => {
     const track = playlist[currentRound - 1];
@@ -136,9 +137,9 @@ useEffect(() => {
 }, [params]);
 
   const handleBuzz = () => {
-    setIsBuzzed(true);
-    setTimeLeft(null);
-    handlePause();
+      pausedTimeRef.current = timeLeft; // on garde la valeur
+      setIsBuzzed(true);
+      handlePause();
   };
 
   const handleValidate = () => {
@@ -276,7 +277,8 @@ useEffect(() => {
             setIsBuzzed(false);
             setAnswer("");
             setComposerGuess("");
-            playCurrentTrack(deviceId);
+            setTimeLeft(pausedTimeRef.current); // on restaure le temps
+            handlePlay(); // on reprend la musique là où elle en était
           }}
           style={cancelButtonStyle}
         >
