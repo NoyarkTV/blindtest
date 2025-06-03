@@ -253,7 +253,7 @@ const handleValidate = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id: gameId,             // ID de la room
+        id: id,             // ID de la room
         player: playerName,     // pseudo ou identifiant du joueur
         score: score + totalPoints  // score après ajout
       })
