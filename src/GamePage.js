@@ -28,23 +28,28 @@ function GamePage() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupInfo, setPopupInfo] = useState(null);
   const basePointsRef = useRef(100);
+  const [isTrackReady, setIsTrackReady] = useState(false);
 
 
-  const playCurrentTrack = (devId) => {
-    const track = playlist[currentRound - 1];
-    if (!track?.uri) return;
+const playCurrentTrack = (devId) => {
+  const track = playlist[currentRound - 1];
+  if (!track?.uri) return;
 
-    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ uris: [track.uri] })
+  fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ uris: [track.uri] })
+  })
+    .then(() => {
+      setIsPlaying(true);
+      setIsTrackReady(true); // ✅ musique prête
     })
-      .then(() => setIsPlaying(true))
-      .catch(err => console.error("Erreur lecture Spotify :", err));
-  };
+    .catch(err => console.error("Erreur lecture Spotify :", err));
+};
+
 
   useEffect(() => {
     const playerName = localStorage.getItem("playerName");
@@ -74,18 +79,21 @@ function GamePage() {
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
+      setIsTrackReady(false);
       playCurrentTrack(deviceId);
     }
   }, [currentRound]);
 
   useEffect(() => {
     if (deviceId && playlist.length > 0) {
+      setIsTrackReady(false);
       playCurrentTrack(deviceId);
     }
   }, [deviceId]);
 
 useEffect(() => {
   if (deviceId && playlist.length > 0 && !isPlaying && !isBuzzed) {
+    setIsTrackReady(false);
     playCurrentTrack(deviceId);
   }
 }, [deviceId, playlist]);
@@ -107,7 +115,7 @@ useEffect(() => {
   }, []);
 
 useEffect(() => {
-  if (params && playlist.length > 0 && !isBuzzed) {
+  if (params && playlist.length > 0 && !isBuzzed && isTrackReady) {
     if (timeLeft === null) { // ✅ uniquement si timeLeft est null
       const timer = params.time ?? 30;
       setTimeLeft(timer);
@@ -182,7 +190,8 @@ const handleValidate = () => {
   if (isCorrect) {
     const totalPoints = Math.max(0, basePointsRef.current + bonus);
     setScore(prev => prev + totalPoints);
-    setTimeLeft(null); // ⏸️ met le timer en pause
+    pausedTimeRef.current = timeLeft;  // 🧠 on garde le temps restant
+    setTimeLeft(null); // ⏸️ met le timer en pause visuellement
     setShowPopup(true);
     setPopupInfo({
       title: "✅ Bonne réponse",
