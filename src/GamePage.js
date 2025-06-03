@@ -86,6 +86,7 @@ useEffect(() => {
   setIsBuzzed(false); // ✅ Nécessaire pour réactiver le timer
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
+  handleNextRoundPopup();
 
   setTimeout(() => {
     playCurrentTrack(deviceId);
@@ -422,13 +423,28 @@ const handleNext = () => {
         </p>
       )}
 
-        <button 
-          onClick={handleNextRoundPopup}
-          style={nextButtonStyle}
-          disabled={roundEndedRef.current === false}
-        >
-          Fermer
-        </button>
+{isAdmin ? (
+  <button 
+    onClick={handleNext}
+    style={nextButtonStyle}
+    disabled={roundEndedRef.current === false}
+  >
+    🎵 Round suivant
+  </button>
+) : (
+  <div
+    style={{
+      ...nextButtonStyle,
+      backgroundColor: "#ccc",
+      color: "#666",
+      cursor: "not-allowed",
+      textAlign: "center",
+      display: "inline-block"
+    }}
+  >
+    ⏳ En attente de l’admin
+  </div>
+)}
     </div>
   </div>
 )}
