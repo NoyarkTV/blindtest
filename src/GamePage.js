@@ -14,7 +14,7 @@ function GamePage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerName, setPlayerName] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(null);
   const [isBuzzed, setIsBuzzed] = useState(false);
   const [answer, setAnswer] = useState("");
   const [composer, setComposer] = useState("");
@@ -146,6 +146,12 @@ useEffect(() => {
     roundEndedRef.current = true;
 
     const currentTrack = playlist[currentRound - 1];
+
+    if (!currentTrack) {
+      console.warn("⛔ Aucun morceau trouvé pour le round :", currentRound);
+      return;
+    }
+
     setPopupInfo({
       title: "⏱ Temps écoulé",
       points: "+0 point",
@@ -155,6 +161,7 @@ useEffect(() => {
       compositeur: currentTrack.compositeur || "",
       image: currentTrack.image || null
     });
+
     setShowPopup(true);
   }
 }, [timeLeft]);
