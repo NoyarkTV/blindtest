@@ -45,7 +45,6 @@ const playCurrentTrack = (devId) => {
   })
     .then(() => {
       setIsPlaying(true);
-      setIsTrackReady(true); // ✅ musique prête
     })
     .catch(err => console.error("Erreur lecture Spotify :", err));
 };
@@ -173,7 +172,7 @@ useEffect(() => {
       .then(res => res.json())
       .then(data => {
         if (data && data.is_playing) {
-          //setIsTrackReady(true); // ✅ maintenant seulement
+          setIsTrackReady(true); // ✅ maintenant seulement
         } else {
           setTimeout(checkPlayback, 500); // 🔁 boucle tant que non prêt
         }
