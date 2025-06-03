@@ -81,9 +81,8 @@ useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
   basePointsRef.current = 100;
-  roundEndedRef.current = false;         // 🔄 Réinitialisation état round
-  setTimeLeft(params?.Time ?? 30);       // ✅ Démarre le timer
-  setIsBuzzed(false);
+  setTimeLeft(null); // Reset pour déclencher le timer
+  setIsBuzzed(false); // ✅ Nécessaire pour réactiver le timer
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
 
@@ -124,6 +123,7 @@ useEffect(() => {
   if (params && playlist.length > 0 && !isBuzzed ) {
     if (timeLeft === null) { // ✅ uniquement si timeLeft est null
       const timer = params.time ?? 30;
+      setTimeLeft(timer);
     }
 
     const interval = setInterval(() => {
