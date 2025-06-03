@@ -302,12 +302,90 @@ const buttonStyle = {
   cursor: "pointer"
 };
 
+const buzzButtonStyle = {
+  padding: "15px 40px",
+  fontSize: 24,
+  borderRadius: 30,
+  background: "#f7b733",
+  color: "#1e2a38",
+  border: "none",
+  cursor: "pointer"
+};
+
 const inputStyle = {
-  padding: "10px",
-  fontSize: "16px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-  width: "240px"
+  padding: 10,
+  fontSize: 16,
+  borderRadius: 10,
+  width: 300
+};
+
+const validateButtonStyle = {
+  marginRight: 10,
+  padding: "10px 20px",
+  borderRadius: 10,
+  background: "#4caf50",
+  color: "white",
+  border: "none",
+  fontWeight: "bold",
+  cursor: "pointer"
+};
+
+const cancelButtonStyle = {
+  padding: "10px 20px",
+  borderRadius: 10,
+  background: "#f44336",
+  color: "white",
+  border: "none",
+  fontWeight: "bold",
+  cursor: "pointer"
+};
+
+const indiceBoxStyle = {
+  background: "#fff",
+  color: "#1e2a38",
+  borderRadius: "20px",
+  padding: "6px 12px",
+  display: "flex",
+  alignItems: "center",
+  fontSize: 14,
+  fontWeight: 500,
+  boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+};
+
+const indiceButtonStyle = {
+  border: "none",
+  background: "transparent",
+  cursor: "pointer"
+};
+
+const popupOverlayStyle = {
+  position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+  background: "rgba(0,0,0,0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999
+};
+
+const popupStyle = {
+  background: "#fff",
+  padding: "30px 40px",
+  borderRadius: "20px",
+  textAlign: "center",
+  color: "#1e2a38",
+  maxWidth: 480,
+  width: "90%",
+  boxShadow: "0 0 20px rgba(0,0,0,0.4)",
+  fontFamily: "Arial, sans-serif"
+};
+
+const nextButtonStyle = {
+  marginTop: 30,
+  padding: "12px 30px",
+  fontSize: 16,
+  borderRadius: 10,
+  background: "#f7b733",
+  color: "#1e2a38",
+  fontWeight: "bold",
+  border: "none",
+  cursor: "pointer",
+  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
 };
 
 export default GamePage;
