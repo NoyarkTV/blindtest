@@ -105,22 +105,27 @@ useEffect(() => {
     return () => socket.off("game-over");
   }, []);
 
-  useEffect(() => {
-    if (params && playlist.length > 0 && !isBuzzed) {
+useEffect(() => {
+  if (params && playlist.length > 0 && !isBuzzed) {
+    if (timeLeft === null) { // ✅ uniquement si timeLeft est null
       const timer = params.time ?? 30;
       setTimeLeft(timer);
-      const interval = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
     }
-  }, [params, playlist, currentRound, isBuzzed]);
+
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, [params, playlist, currentRound, isBuzzed, timeLeft]);
+
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -230,8 +235,7 @@ useEffect(() => {
   
   const handleNextRoundPopup = () => {
     setShowPopup(false);
-    roundEndedRef.current = false;
-    handleNext(); // déjà défini
+    handlePause
   };
 
   return (
@@ -347,15 +351,13 @@ useEffect(() => {
         </p>
       )}
 
-      {isAdmin && (
         <button 
           onClick={handleNextRoundPopup}
           style={nextButtonStyle}
           disabled={roundEndedRef.current === false}
         >
-          🎵 Round suivant
+          Fermer
         </button>
-      )}
     </div>
   </div>
 )}
