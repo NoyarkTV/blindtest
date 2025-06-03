@@ -150,7 +150,9 @@ useEffect(() => {
   };
 
   const handleValidate = () => {
-  setIsBuzzed(false); // ✅ toujours quitter le mode "buzzed"
+  setIsBuzzed(false);
+  setAnswer("");
+  setComposerGuess("");
 
   const currentTrack = playlist[currentRound - 1];
   const timer = params.Time ?? 30;
@@ -174,6 +176,7 @@ useEffect(() => {
   if (isCorrect) {
     const totalPoints = 100 + bonus;
     setScore(prev => prev + totalPoints);
+    setTimeLeft(null); // ✅ stop le timer
     setShowPopup(true);
     setPopupInfo({
       title: "✅ Bonne réponse",
@@ -187,12 +190,9 @@ useEffect(() => {
     roundEndedRef.current = true;
   } else {
     console.log("❌ Mauvaise réponse");
-    setAnswer("");
-    setComposerGuess("");
-    playCurrentTrack(deviceId);
+    handlePlay(); // ✅ reprend la musique à l’endroit actuel
   }
 };
-
 
 
   const handleReady = (id) => {
@@ -215,7 +215,7 @@ useEffect(() => {
   };
 
 const handleNext = () => {
-  setTimeLeft(null); // ✅ forcer le useEffect à relancer un timer à params.time
+  setTimeLeft(null);
 
   if (currentRound < playlist.length) {
     console.log("🟢 ADMIN : Envoi next-round au serveur");
@@ -243,7 +243,7 @@ const handleNext = () => {
   };
 
   return (
-    <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh" }}>
+    <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh", alignItems: "center" }}>
       <SpotifyPlayer token={token} onReady={handleReady} />
       
       
@@ -319,7 +319,11 @@ const handleNext = () => {
       </div>
     </div>
   )}
+
+      {/* SCORE PERSO */}
+      <div style={{ marginTop: 40, fontSize: 20 }}>Score : {score} pts</div>
 </div>
+
 
 
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
