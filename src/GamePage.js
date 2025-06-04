@@ -388,20 +388,23 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
       <SpotifyPlayer token={token} onReady={handleReady} />
       
       
-{/* ROUND : positionné tout en haut */}
+{/* ROUND fixé en haut sans débordement */}
 <div style={{
-  position: "absolute",
+  position: "fixed",
   top: 20,
+  left: 0,
   width: "100%",
   textAlign: "center",
   fontFamily: "Luckiest Guy",
   fontSize: 28,
   color: "#f7b733",
-  zIndex: 10
+  zIndex: 10,
+  pointerEvents: "none" // évite tout clic parasite
 }}>
   Round {currentRound} / {playlist.length}
 </div>
 
+{/* SCOREBOARD */}
 {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
   <div style={{
     position: "fixed",           // fixé à l'écran
@@ -447,16 +450,18 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
   </div>
 )}
 
-{/* PAGE CENTRÉE */}
+{/* CONTENU CENTRAL NON SCROLLABLE */}
 <div style={{
+  position: "relative",
+  height: "100vh",
+  width: "100vw",
+  overflow: "hidden",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  minHeight: "100vh",
   background: "#1e2a38",
-  color: "#fff",
-  paddingTop: 80 // pour ne pas que le round se superpose
+  color: "#fff"
 }}>
 
   {/* TIMER CENTRÉ */}
@@ -472,14 +477,15 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
       fontSize: 36,
       fontWeight: "bold",
       color: "#1e2a38",
-      marginBottom: 30
+      marginBottom: 30,
+      boxSizing: "border-box"
     }}
   >
     {timeLeft}
   </div>
 
   {/* INDICES */}
-  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 30 }}>
+  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 30, flexWrap: "wrap" }}>
     <div style={indiceBoxStyle}>
       <span style={{ marginRight: 8 }}>Média :</span>
       {!showIndiceMedia ? (
@@ -548,7 +554,7 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
     )}
   </div>
 
-  {/* ACTION BUTTONS */}
+  {/* BOUTONS BAS */}
   <div style={{ display: "flex", gap: 10 }}>
     <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
     {isAdmin && <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>}
