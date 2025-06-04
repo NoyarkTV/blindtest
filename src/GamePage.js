@@ -335,7 +335,7 @@ useEffect(() => {
   if (params) {
     console.log("🧪 params reçus :", params);
     console.log("⏱️ Time:", params.time);
-    console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
+    console.log("🎼 BonusCompositeur:", params.bonusCompositeur);
   }
 }, [params]);
 
@@ -378,7 +378,7 @@ const handleValidate = () => {
   setIsBuzzed(false);
   const currentTrack = playlist[currentRound - 1];
   const timer = params.time ?? 30;
-  const bonusCompositeur = params.BonusCompositeur ?? false;
+  const bonusCompositeur = params.bonusCompositeur ?? false;
 
   const normalizedAnswer = normalize(answer);
   const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
@@ -514,7 +514,7 @@ const handleNext = () => {
   }
 
   const timer = params.time ?? 30;
-  const bonusCompositeur = params.BonusCompositeur ?? false;
+  const bonusCompositeur = params.bonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
   
   const handleNextRoundPopup = () => {
