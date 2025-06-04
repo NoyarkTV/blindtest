@@ -100,10 +100,22 @@ useEffect(() => {
           isMe: p.name === localPlayer
         }));
         setScoreboard(initialScoreboard);
+
+        // 🎯 Ensuite on récupère les scores actuels si dispo
+        fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
+          .then(res => res.json())
+          .then(scores => {
+            if (Array.isArray(scores)) {
+              console.log("📥 Scores initiaux récupérés :", scores);
+              setScoreboard(scores);
+            }
+          })
+          .catch(err => console.warn("⚠️ Pas de scores initiaux :", err));
       }
     })
     .catch(err => console.error("❌ Erreur lors de la récupération des joueurs :", err));
 }, [id]);
+
 
 
 useEffect(() => {
@@ -218,16 +230,15 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isBuzzed]);
 
-  useEffect(() => {
-  socket.on("score-update", (scores) => {
-    console.log("📊 Mise à jour des scores :", scores);
-    setAllScores(scores);  // allScores est un useState à créer
+useEffect(() => {
+  socket.on("score-update", (updatedScores) => {
+    console.log("📊 Scoreboard mis à jour :", updatedScores);
+    setScoreboard(updatedScores); // met à jour l'affichage
   });
 
-  return () => {
-    socket.off("score-update");
-  };
+  return () => socket.off("score-update");
 }, []);
+
 
     useEffect(() => {
   if (params) {
@@ -236,17 +247,6 @@ useEffect(() => {
     console.log("🎼 BonusCompositeur:", params.BonusCompositeur);
   }
 }, [params]);
-
-useEffect(() => {
-  socket.on("score-update", (scores) => {
-    console.log("📊 Mise à jour des scores :", scores);
-    setAllScores(scores);
-  });
-
-  return () => {
-    socket.off("score-update");
-  };
-}, []);
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
@@ -298,13 +298,13 @@ const handleValidate = () => {
 
 const updatedScore = score + totalPoints;
 setScore(updatedScore);
-fetch("/submit-score", {
+fetch("https://blindtest-69h7.onrender.com/submit-score", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    id,
-    player: playerName,
-    score: updatedScore
+    id: gameId,             // ou `id` si déjà défini
+    player: playerName,     // ton nom
+    score: score            // ton score actuel
   })
 });
     setTimeLeft(null);
