@@ -39,7 +39,8 @@ function GamePage() {
   const [showEndPopup, setShowEndPopup] = useState(false);
   const [preloadedImages, setPreloadedImages] = useState({});
   const [trackImages, setTrackImages] = useState({});
-
+  const responseTimesRef = useRef([]);
+  const [averageTime, setAverageTime] = useState(null);
   
 
 const playCurrentTrack = (devId) => {
@@ -269,6 +270,11 @@ useEffect(() => {
 
     // Classement du plus haut au plus bas score
     const sorted = [...scores].sort((a, b) => b.score - a.score);
+    const average =
+    responseTimesRef.current.reduce((sum, t) => sum + parseFloat(t), 0) /
+    responseTimesRef.current.length;
+
+    setAverageTime(average.toFixed(1));
     setFinalScores(sorted);
     setShowPopup(false); // Ferme le popup de fin de round si ouvert
     setShowEndPopup(true); // Affiche le popup de fin de partie
@@ -370,6 +376,8 @@ const handleValidate = () => {
   // 🟢 Bonne réponse
   if (isCorrect) {
     const rawTimeLeft = pausedTimeRef.current ?? timeLeft;
+    const responseTime = (params.time ?? 30) - rawTimeLeft;
+    responseTimesRef.current.push(responseTime.toFixed(1));
     let multiplier = 1;
 
     if (showIndiceMedia && showIndiceAnnee) {
@@ -413,6 +421,7 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
     setPopupInfo({
       title: "Bonne réponse",
       points: `+${totalPoints} points${bonusText}`,
+      responseTime: `${responseTime.toFixed(1)} sec`,
       theme: currentTrack.theme || "",
       titre: currentTrack.oeuvre || currentTrack.titre || "",
       annee: currentTrack.annee || "",
@@ -683,7 +692,11 @@ const handleNext = () => {
       <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
         {popupInfo.points}
       </h1>
-
+{popupInfo.responseTime && (
+  <p style={{ fontSize: 16, color: "#444", marginBottom: 6 }}>
+    ⏱️ Réponse en {popupInfo.responseTime}
+  </p>
+)}
       {trackImages[currentTrack.uri] && (
   <img
     src={trackImages[currentTrack.uri]}
@@ -778,6 +791,10 @@ const handleNext = () => {
           );
         })}
       </div>
+
+      <p style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
+        Votre temps de réponse moyen est de {averageTime} sec
+      </p>
 
       <button
         onClick={() => {
