@@ -470,7 +470,7 @@ const handleNext = () => {
           }}
         >
           <span>{p.name}</span>
-          <span>{isMe ? (typeof score === "number" ? score : 0) : ""}</span>
+          <span>{typeof p.score === "number" ? p.score : 0}</span>
         </div>
       );
     })}
