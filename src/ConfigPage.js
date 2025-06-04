@@ -126,18 +126,6 @@ const count = allTracks.filter(track => {
 
   const keep = okMedia && okCategorie && okDiff && okPays && okAnnee;
 
-  if (!keep) {
-    console.log("❌ rejeté :", {
-      titre: track.titre,
-      media: track.media,
-      categorie: track.categorie,
-      difficulte: track.difficulte,
-      pays: track.pays,
-      annee: track.annee,
-      détails: { okMedia, okCategorie, okDiff, okPays, okAnnee }
-    });
-  }
-
   return keep;
 }).length;
 

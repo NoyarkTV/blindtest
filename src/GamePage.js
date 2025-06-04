@@ -413,7 +413,7 @@ const handleNext = () => {
         }}
       >
         <span>{p.name}</span>
-        <span>{isMe ? score : ""}</span>
+        <span>{isMe ? (typeof score === "number" ? score : 0) : ""}</span>
       </div>
     );
   })}
