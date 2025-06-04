@@ -212,6 +212,7 @@ useEffect(() => {
     return;
   }
 
+  wrongAttemptsRef.current = 0;
   basePointsRef.current = 100;
   setTimeLeft(params.time);
   setIsTimerRunning(true);
@@ -219,7 +220,6 @@ useEffect(() => {
   setShowIndiceAnnee(false);
   handleNextRoundPopup();
   playCurrentTrack(deviceId);
-  wrongAttemptsRef.current = 0;
 
   console.log("🔍 Contenu de scoreboard :", scoreboard);
 }, [currentRound]);
@@ -339,12 +339,11 @@ useEffect(() => {
   }
 }, [params]);
 
-  const handleBuzz = async () => {
+  const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
       setIsTimerRunning(false); // pause le timer
       setIsBuzzed(true);
-      await handlePause();
-      setIsPlaying(false);
+      handlePause();
   };
 
 const normalize = str =>
