@@ -304,7 +304,7 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    id: gameId,             // ou `id` si déjà défini
+    id: id,             // ou `id` si déjà défini
     player: playerName,     // ton nom
     score: updatedScore     // ton score actuel
   })
