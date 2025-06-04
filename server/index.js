@@ -285,23 +285,11 @@ server.listen(PORT, () => {
 io.on("connection", (socket) => {
   console.log("📡 Socket connecté :", socket.id);
 
-socket.on("join-room", roomId => {
-  if (!rooms[roomId]) {
-    rooms[roomId] = { players: [] };
-  }
-
-  const playerName = getPlayerName(socket); // ta méthode pour récupérer son nom
-
-  // Si pas déjà dans la room, on l’ajoute
-  if (!rooms[roomId].players.includes(playerName)) {
-    rooms[roomId].players.push(playerName);
-  }
-
-  socket.join(roomId);
-
-  // 🔁 Envoie à tous les joueurs la liste complète
-  io.to(roomId).emit("player-list", rooms[roomId].players);
-});
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+    console.log(`🧩 Socket ${socket.id} a rejoint la room ${roomId}`);
+    console.log("🌐 Rooms actuelles :", Array.from(socket.rooms));
+  });
 socket.on("next-round", ({ roomId }) => {
   console.log(`📨 Reçu 'next-round' pour room ${roomId}`);
 

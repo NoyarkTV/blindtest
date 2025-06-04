@@ -10,26 +10,24 @@ function RoomPage() {
   const playerName = localStorage.getItem("playerName") || "Joueur";
 
   // 🔁 Rejoindre la room et écouter les événements
-useEffect(() => {
-  socket.emit("join-room", id);
+  useEffect(() => {
+    socket.emit("join-room", id);
 
-  // Réception d'une liste complète de joueurs
-  socket.on("player-list", updatedPlayers => {
-    console.log("📋 Liste complète des joueurs :", updatedPlayers);
-    setPlayers(updatedPlayers);
-  });
+    socket.on("player-joined", updatedPlayers => {
+      console.log("🧑‍🤝‍🧑 Mise à jour des joueurs :", updatedPlayers);
+      setPlayers(updatedPlayers);
+    });
 
-  socket.on("game-started", () => {
-    console.log("🚀 Partie lancée !");
-    navigate(`/game/${id}`);
-  });
+    socket.on("game-started", () => {
+      console.log("🚀 Partie lancée !");
+      navigate(`/game/${id}`);
+    });
 
-  return () => {
-    socket.off("player-list");
-    socket.off("game-started");
-  };
-}, [id]);
-
+    return () => {
+      socket.off("player-joined");
+      socket.off("game-started");
+    };
+  }, [id]);
 
   // 👤 Ajout du joueur à la partie
   useEffect(() => {
