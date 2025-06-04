@@ -142,7 +142,7 @@ useEffect(() => {
 }, [isTimerRunning]); 
 
 useEffect(() => {
-  if (playlist.length === 0 || !accessToken) return;
+  if (playlist.length === 0 || !token) return;
 
   const fetchImages = async () => {
     const updated = await Promise.all(
@@ -154,7 +154,7 @@ useEffect(() => {
           const id = uri.split(":")[2]; // ✅ extrait l'ID depuis l'URI
           const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
             headers: {
-              Authorization: `Bearer ${accessToken}`
+              Authorization: `Bearer ${token}`
             }
           });
 
@@ -176,7 +176,7 @@ useEffect(() => {
   };
 
   fetchImages();
-}, [playlist, accessToken]);
+}, [playlist, token]);
 
 
 useEffect(() => {
