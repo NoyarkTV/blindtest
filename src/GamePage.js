@@ -90,11 +90,21 @@ useEffect(() => {
     .then(data => {
       if (data.players) {
         console.log("👥 Joueurs récupérés :", data.players);
-        setPlayers(data.players); // ← à condition d’avoir défini setPlayers
+        setPlayers(data.players);
+
+        // 🎯 Créer un scoreboard initial
+        const localPlayer = localStorage.getItem("playerName");
+        const initialScoreboard = data.players.map(p => ({
+          name: p.name,
+          score: 0,
+          isMe: p.name === localPlayer
+        }));
+        setScoreboard(initialScoreboard);
       }
     })
     .catch(err => console.error("❌ Erreur lors de la récupération des joueurs :", err));
 }, [id]);
+
 
 useEffect(() => {
   if (players.length === 0 || !playerName) return;
@@ -382,29 +392,27 @@ const handleNext = () => {
       </h1>
 
 {Array.isArray(scoreboard) && (
-<div style={{
-  position: "fixed",
-  right: 20,
-  top: 20,
-  background: "#fff",
-  color: "#1e2a38",
-  padding: 12,
-  borderRadius: 12,
-  width: 200,
-  boxShadow: "0 0 10px rgba(0,0,0,0.3)",
-  fontSize: 14,
-  zIndex: 10
-}}>
-  <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Joueurs</div>
-  {scoreboard.map((p, i) => {
-    const isMe = p.name === playerName;
-    return (
+  <div style={{
+    position: "fixed",
+    right: 20,
+    top: 20,
+    background: "#fff",
+    color: "#1e2a38",
+    padding: 12,
+    borderRadius: 12,
+    width: 200,
+    boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+    fontSize: 14,
+    zIndex: 10
+  }}>
+    <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Joueurs</div>
+    {scoreboard.map((p, i) => (
       <div
         key={i}
         style={{
-          fontWeight: isMe ? "bold" : "normal",
-          backgroundColor: isMe ? "#f7b733" : "transparent",
-          color: isMe ? "#1e2a38" : "#333",
+          fontWeight: p.isMe ? "bold" : "normal",
+          backgroundColor: p.isMe ? "#f7b733" : "transparent",
+          color: p.isMe ? "#1e2a38" : "#333",
           padding: "6px 8px",
           borderRadius: 8,
           display: "flex",
@@ -413,11 +421,10 @@ const handleNext = () => {
         }}
       >
         <span>{p.name}</span>
-        <span>{isMe ? (typeof score === "number" ? score : 0) : ""}</span>
+        <span>{p.isMe ? (typeof score === "number" ? score : 0) : ""}</span>
       </div>
-    );
-  })}
-</div>
+    ))}
+  </div>
 )}
 
             
