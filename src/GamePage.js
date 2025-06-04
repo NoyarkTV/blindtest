@@ -138,7 +138,7 @@ useEffect(() => {
 useEffect(() => {
   if (isTimerRunning) {
     intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => Math.max(prev - 1, 0));
+      setTimeLeft(prev => Math.max((prev - 0.1), 0));
     }, 100);
   }
   return () => clearInterval(intervalRef.current);
