@@ -18,6 +18,7 @@ function ConfigPage() {
   const [allTracks, setAllTracks] = useState([]);
   const [filteredCount, setFilteredCount] = useState(0);
   const [players, setPlayers] = useState([]);
+  const [copied, setCopied] = useState(false);
 
 
 
@@ -143,11 +144,16 @@ const count = allTracks.filter(track => {
     );
   };
 
-  const copierCode = () => {
+const copierCode = () => {
   navigator.clipboard.writeText(id)
-    .then(() => console.log("✅ Code copié :", id))
+    .then(() => {
+      console.log("✅ Code copié :", id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // reviennent à "Copier" après 2 secondes
+    })
     .catch(err => console.error("❌ Erreur copie :", err));
 };
+
 
 
 const validerPartie = () => {
@@ -307,19 +313,23 @@ const validerPartie = () => {
           <div className="code-box" style={{ display: "flex", gap: 10 }}>
             <input value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold" }} />
             <button
-            onClick={copierCode}
-            style={{
-              backgroundColor: "#f7b733",
-              color: "#1e2a38",
-              border: "none",
-              borderRadius: "8px",
-              padding: "6px 12px",
-              fontWeight: "bold",
-              cursor: "pointer"
-            }}
+  onClick={copierCode}
+  style={{
+    backgroundColor: "#f7b733",
+    color: "#1e2a38",
+    border: "none",
+    borderRadius: "8px",
+    padding: "6px 12px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    width: "80px", // pour garder une taille fixe
+    textAlign: "center"
+  }}
 >
-               Copier
-            </button>
+  {copied ? "Copié !" : "Copier"}
+</button>
+
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#ccc", color: "#333", cursor: "pointer" }} onClick={() => navigate("/")}>Annuler</button>
