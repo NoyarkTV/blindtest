@@ -346,6 +346,27 @@ useEffect(() => {
       handlePause();
   };
 
+const levenshtein = (a, b) => {
+  const matrix = Array.from({ length: b.length + 1 }, (_, i) =>
+    Array.from({ length: a.length + 1 }, (_, j) =>
+      i === 0 ? j : j === 0 ? i : 0
+    )
+  );
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,         // deletion
+        matrix[i][j - 1] + 1,         // insertion
+        matrix[i - 1][j - 1] + cost   // substitution
+      );
+    }
+  }
+  return matrix[b.length][a.length];
+};
+
+
 const handleValidate = () => {
   setIsBuzzed(false);
   const currentTrack = playlist[currentRound - 1];
@@ -362,19 +383,38 @@ const handleValidate = () => {
 
   const normalizedAnswer = normalize(answer);
   const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
-  const isCorrect = validAnswers.includes(normalizedAnswer);
+  const isCorrect = validAnswers.some(valid =>
+    valid === normalizedAnswer || levenshtein(valid, normalizedAnswer) <= 2
+  );
 
   // 🎼 Bonus compositeur
   let bonus = 0;
   let bonusText = "";
   if (bonusCompositeur && currentTrack.compositeur) {
-    const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
-    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
-    if (guessList.some(g => realComposers.includes(g))) {
-      bonus = 20;
-      bonusText = " (+20 bonus compositeur)";
-    }
+  const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
+  const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
+
+  const normalize = str =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/gi, '')
+      .replace(/\s+/g, '');
+
+  const isComposerMatch = guessList.some(g => {
+    const gNorm = normalize(g);
+    return realComposers.some(r => {
+      const rNorm = normalize(r);
+      return levenshtein(gNorm, rNorm) <= 2;
+    });
+  });
+
+  if (isComposerMatch) {
+    bonus = 20;
+    bonusText = " (+20 bonus compositeur)";
   }
+}
 
   // 🟢 Bonne réponse
   if (isCorrect) {
