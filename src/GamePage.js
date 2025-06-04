@@ -607,7 +607,7 @@ const handleNext = () => {
       boxSizing: "border-box"
     }}
   >
-    {timeLeft}
+    {Math.ceil(timeLeft ?? 0)}
   </div>
 
   {/* INDICES */}
