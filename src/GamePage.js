@@ -395,12 +395,12 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
   };
 
 const handleNext = () => {
-  if (currentRound < playlist.length) {
+  
     console.log("🟢 ADMIN : Envoi next-round au serveur");
     handlePause().finally(() => {
       socket.emit("next-round", { roomId: id });
     });
-  }
+  
 };
 
   if (!params || playlist.length === 0 ) {
