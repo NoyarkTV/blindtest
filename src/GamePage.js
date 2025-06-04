@@ -35,6 +35,9 @@ function GamePage() {
   const [allScores, setAllScores] = useState([]);
   const [players, setPlayers] = useState([]);
   const [scoreboard, setScoreboard] = useState([]);
+  const [finalScores, setFinalScores] = useState([]);
+  const [showEndPopup, setShowEndPopup] = useState(false);
+  
   
 
 const playCurrentTrack = (devId) => {
@@ -187,13 +190,20 @@ useEffect(() => {
     return () => socket.off("round-updated");
   }, []);
 
-  useEffect(() => {
-    socket.on("game-over", () => {
-      alert("🎉 Fin de la partie !");
-      navigate("/");
-    });
-    return () => socket.off("game-over");
-  }, []);
+useEffect(() => {
+  socket.on("game-over", (scores) => {
+    console.log("🎉 Fin de partie, scores finaux :", scores);
+
+    // Classement du plus haut au plus bas score
+    const sorted = [...scores].sort((a, b) => b.score - a.score);
+    setFinalScores(sorted);
+    setShowPopup(false); // Ferme le popup de fin de round si ouvert
+    setShowEndPopup(true); // Affiche le popup de fin de partie
+  });
+
+  return () => socket.off("game-over");
+}, []);
+
 
 
 useEffect(() => {
@@ -217,7 +227,7 @@ useEffect(() => {
       compositeur: currentTrack.compositeur || "",
       image: currentTrack.image || null
     });
-
+    handlePause();
     setShowPopup(true);
   }
 }, [timeLeft]);
@@ -457,7 +467,7 @@ const handleNext = () => {
       marginBottom: 10,
       color: "#1e2a38"
     }}>
-      🏆 Joueurs
+      🏆 Scoreboard
     </div>
 
     {scoreboard.map((p, i) => {
@@ -648,6 +658,68 @@ const handleNext = () => {
     ⏳ En attente de l’admin
   </div>
 )}
+    </div>
+  </div>
+)}
+
+{showEndPopup && (
+  <div style={popupOverlayStyle}>
+    <div style={{ 
+      ...popupStyle, 
+      minWidth: 320, 
+      paddingBottom: 24 
+    }}>
+      <h2 style={{ fontSize: 28, marginBottom: 6 }}>🎉 Fin de la partie !</h2>
+
+      {finalScores.length > 0 && (
+        <p style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+          Le gagnant est : {finalScores[0].name}
+        </p>
+      )}
+
+      <div style={{
+        backgroundColor: "#f2f2f2",
+        borderRadius: 12,
+        padding: "10px 16px",
+        marginBottom: 20,
+        width: "100%",
+        boxSizing: "border-box"
+      }}>
+        {finalScores.map((p, i) => {
+          const isMe = p.name === playerName;
+          return (
+            <div
+              key={p.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "6px 8px",
+                backgroundColor: isMe ? "#f7b733" : "transparent",
+                borderRadius: 8,
+                fontWeight: isMe ? "bold" : "normal",
+                marginBottom: 4
+              }}
+            >
+              <span>{i + 1}. {p.name}</span>
+              <span>{p.score} pts</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={() => {
+          setShowEndPopup(false);
+          navigate("/");
+        }}
+        style={{
+          ...nextButtonStyle,
+          padding: "10px 18px",
+          fontSize: 16
+        }}
+      >
+        🔙 Retour à l’accueil
+      </button>
     </div>
   </div>
 )}
