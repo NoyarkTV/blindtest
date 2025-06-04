@@ -89,12 +89,12 @@ useEffect(() => {
     .then(res => res.json())
     .then(data => {
       if (data.players) {
-        console.log("👥 Joueurs récupérés :", data.players);
-        setPlayers(data.players);
+        const rawPlayers = data.players.map(obj => Object.values(obj)[0]); // ✅ extrait { name: "xxx" } propre
+        console.log("👥 Joueurs extraits :", rawPlayers);
+        setPlayers(rawPlayers);
 
-        // 🎯 Créer un scoreboard initial
         const localPlayer = localStorage.getItem("playerName");
-        const initialScoreboard = data.players.map(p => ({
+        const initialScoreboard = rawPlayers.map(p => ({
           name: p.name,
           score: 0,
           isMe: p.name === localPlayer
