@@ -400,10 +400,6 @@ const handleNext = () => {
     handlePause().finally(() => {
       socket.emit("next-round", { roomId: id });
     });
-  } else {
-    alert("🎉 Fin de la partie !");
-    socket.emit("next-round", { roomId: id });
-    navigate("/");
   }
 };
 
