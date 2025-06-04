@@ -81,7 +81,7 @@ useEffect(() => {
     width: "100%",
     maxWidth: "600px"
   }}>
-    <h2 style={{ color: "#f7b733", fontSize: "1.4rem" }}>👥 Joueurs connectés</h2>
+    <h2 style={{ color: "#1a1a1a", fontSize: "1.4rem" }}>👥 Joueurs connectés</h2>
     <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
       {players.map((p, i) => (
         <li key={i} style={{
