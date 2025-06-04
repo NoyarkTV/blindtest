@@ -56,7 +56,7 @@ useEffect(() => {
   return (
 <div style={{
   minHeight: "100vh",
-  backgroundColor: "#ffffff", // fond général blanc
+  backgroundColor: "#1e2a38", // fond général blanc
   color: "#1e2a38",           // texte sombre
   fontFamily: "'Poppins', sans-serif",
   display: "flex",
