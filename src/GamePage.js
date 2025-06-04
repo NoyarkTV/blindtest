@@ -191,18 +191,13 @@ useEffect(() => {
   }, []);
 
 useEffect(() => {
-  socket.on("game-over", (scores) => {
-    console.log("🎉 Fin de partie, scores finaux :", scores);
-
-    // Classement du plus haut au plus bas score
-    const sorted = [...scores].sort((a, b) => b.score - a.score);
-    setFinalScores(sorted);
-    setShowPopup(false); // Ferme le popup de fin de round si ouvert
-    setShowEndPopup(true); // Affiche le popup de fin de partie
+  socket.on("game-over", () => {
+    setFinalScores([...scoreboard].sort((a, b) => b.score - a.score));
+    setShowPopup(false);
+    setShowEndPopup(true);
   });
-
   return () => socket.off("game-over");
-}, []);
+}, [scoreboard]);
 
 
 
