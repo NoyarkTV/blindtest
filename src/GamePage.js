@@ -141,42 +141,59 @@ useEffect(() => {
   return () => clearInterval(intervalRef.current);
 }, [isTimerRunning]); 
 
-useEffect(() => {
-  if (playlist.length === 0 || !token) return;
+const extractSpotifyId = (uri) => uri?.split(":")?.[2] || null;
 
-  const fetchImages = async () => {
-    const updated = await Promise.all(
-      playlist.map(async (track) => {
-        try {
-          const uri = track.uri;
-          if (!uri || !uri.startsWith("spotify:track:")) return track;
+const fetchAllTrackImages = async (uris) => {
+  const token = localStorage.getItem("spotify_token");
+  if (!token) {
+    console.warn("❌ Aucun access token disponible pour Spotify.");
+    return {};
+  }
 
-          const id = uri.split(":")[2]; // ✅ extrait l'ID depuis l'URI
-          const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
+  const ids = uris.map(extractSpotifyId).filter(Boolean);
+  const imageMap = {};
 
-          if (!res.ok) throw new Error("Erreur API Spotify");
-
-          const data = await res.json();
-          return {
-            ...track,
-            image: data.album?.images?.[0]?.url || null
-          };
-        } catch (err) {
-          console.error(`❌ Erreur image pour ${track.uri}`, err);
-          return { ...track, image: null };
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    try {
+      const res = await fetch(`https://api.spotify.com/v1/tracks?ids=${batch.join(",")}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      })
-    );
+      });
 
-    setPlaylist(updated); // remplace la playlist avec les images chargées
-  };
+      if (res.status === 429) {
+        const retryAfter = res.headers.get("Retry-After");
+        const delay = retryAfter ? parseInt(retryAfter) * 1000 : 1000;
+        console.warn(`⏳ Trop de requêtes. Pause de ${delay} ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        i -= 50; // on recommence la même batch
+        continue;
+      }
 
-  fetchImages();
-}, [playlist, token]);
+      const data = await res.json();
+      for (const track of data.tracks) {
+        imageMap[track.uri] = track.album?.images?.[0]?.url || null;
+      }
+    } catch (err) {
+      console.error("❌ Erreur pendant la récupération des images Spotify :", err);
+    }
+  }
+
+  return imageMap;
+};
+
+useEffect(() => {
+  if (!playlist.length) return;
+
+  const uris = playlist.map(track => track.uri);
+  fetchAllTrackImages(uris).then((images) => {
+    if (images) {
+      setTrackImages(images);
+    }
+  });
+}, [playlist]);
+
 
 
 useEffect(() => {
