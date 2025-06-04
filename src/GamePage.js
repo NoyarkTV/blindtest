@@ -388,28 +388,82 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
       <SpotifyPlayer token={token} onReady={handleReady} />
       
       
+{/* ROUND : positionné tout en haut */}
+<div style={{
+  position: "absolute",
+  top: 20,
+  width: "100%",
+  textAlign: "center",
+  fontFamily: "Luckiest Guy",
+  fontSize: 28,
+  color: "#f7b733",
+  zIndex: 10
+}}>
+  Round {currentRound} / {playlist.length}
+</div>
+
+{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+  <div style={{
+    position: "fixed",           // fixé à l'écran
+    top: 20,
+    right: 20,
+    width: 220,                  // largeur contrôlée
+    backgroundColor: "#fff",     // ✅ fond blanc visible
+    borderRadius: 12,
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    padding: 12,
+    zIndex: 1000
+  }}>
+    <div style={{
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 10,
+      color: "#1e2a38"
+    }}>
+      🏆 Joueurs
+    </div>
+
+    {scoreboard.map((p, i) => {
+      const isMe = p.name === playerName;
+      return (
+        <div
+          key={i}
+          style={{
+            fontWeight: isMe ? "bold" : "normal",
+            backgroundColor: isMe ? "#f7b733" : "transparent",
+            color: isMe ? "#1e2a38" : "#333",
+            padding: "6px 8px",
+            borderRadius: 8,
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 4
+          }}
+        >
+          <span>{p.name}</span>
+          <span>{isMe ? (typeof score === "number" ? score : 0) : ""}</span>
+        </div>
+      );
+    })}
+  </div>
+)}
+
+{/* PAGE CENTRÉE */}
 <div style={{
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  padding: 20,
-  color: "#fff",
+  minHeight: "100vh",
   background: "#1e2a38",
-  minHeight: "100vh"
+  color: "#fff",
+  paddingTop: 80 // pour ne pas que le round se superpose
 }}>
 
-  {/* ROUND */}
-  <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
-    Round {currentRound} / {playlist.length}
-  </h1>
-
-  {/* TIMER */}
+  {/* TIMER CENTRÉ */}
   <div
     style={{
-      width: 120,
-      height: 120,
-      margin: "20px auto",
+      width: 140,
+      height: 140,
       borderRadius: "50%",
       background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
       display: "flex",
@@ -417,15 +471,15 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
       justifyContent: "center",
       fontSize: 36,
       fontWeight: "bold",
-      color: "#1e2a38"
+      color: "#1e2a38",
+      marginBottom: 30
     }}
   >
     {timeLeft}
   </div>
 
   {/* INDICES */}
-  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
-    {/* Média */}
+  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 30 }}>
     <div style={indiceBoxStyle}>
       <span style={{ marginRight: 8 }}>Média :</span>
       {!showIndiceMedia ? (
@@ -435,7 +489,6 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
       )}
     </div>
 
-    {/* Année */}
     <div style={indiceBoxStyle}>
       <span style={{ marginRight: 8 }}>Année :</span>
       {!showIndiceAnnee ? (
@@ -446,8 +499,8 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
     </div>
   </div>
 
-  {/* BUZZER / REPONSE */}
-  <div style={{ marginTop: 40 }}>
+  {/* BUZZER OU RÉPONSE */}
+  <div style={{ marginBottom: 30 }}>
     {!isBuzzed ? (
       <button onClick={handleBuzz} style={buzzButtonStyle}> BUZZ</button>
     ) : (
@@ -495,14 +548,14 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
     )}
   </div>
 
-  {/* BOUTONS D'ACTION */}
-  <div style={{ display: "flex", gap: 10, marginTop: 30 }}>
+  {/* ACTION BUTTONS */}
+  <div style={{ display: "flex", gap: 10 }}>
     <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
     {isAdmin && <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>}
     {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
   </div>
-
 </div>
+
 
 
 {showPopup && popupInfo && (
