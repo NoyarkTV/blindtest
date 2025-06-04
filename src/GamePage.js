@@ -394,8 +394,26 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
 
 
 {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-  <div style={{ /* styles */ }}>
-    <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Joueurs</div>
+  <div style={{
+    position: "fixed",           // fixé à l'écran
+    top: 20,
+    right: 20,
+    width: 220,                  // largeur contrôlée
+    backgroundColor: "#fff",     // ✅ fond blanc visible
+    borderRadius: 12,
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    padding: 12,
+    zIndex: 1000
+  }}>
+    <div style={{
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 10,
+      color: "#1e2a38"
+    }}>
+      🏆 Joueurs
+    </div>
+
     {scoreboard.map((p, i) => {
       const isMe = p.name === playerName;
       return (
@@ -419,6 +437,7 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
     })}
   </div>
 )}
+
 
 
             
