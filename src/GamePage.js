@@ -37,7 +37,7 @@ function GamePage() {
   const [scoreboard, setScoreboard] = useState([]);
   const [finalScores, setFinalScores] = useState([]);
   const [showEndPopup, setShowEndPopup] = useState(false);
-  
+  const [preloadedImages, setPreloadedImages] = useState({});
   
 
 const playCurrentTrack = (devId) => {
@@ -142,6 +142,25 @@ useEffect(() => {
 }, [isTimerRunning]); 
 
 useEffect(() => {
+  if (!playlist || playlist.length === 0) return;
+
+  const images = {};
+  const preloadImages = async () => {
+    for (const track of playlist) {
+      const url = track.image;
+      if (url && !images[track.id || track.titre]) {
+        const img = new Image();
+        img.src = url;
+        images[track.id || track.titre] = url;
+      }
+    }
+    setPreloadedImages(images); // state local que tu crées
+  };
+
+  preloadImages();
+}, [playlist]);
+
+useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
   if (currentRound > playlist.length) {
@@ -242,7 +261,7 @@ useEffect(() => {
       titre: currentTrack.oeuvre || currentTrack.titre || "",
       annee: currentTrack.annee || "",
       compositeur: currentTrack.compositeur || "",
-      image: currentTrack.image || null
+      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
     });
     handlePause();
     setShowPopup(true);
@@ -360,7 +379,7 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
       titre: currentTrack.oeuvre || currentTrack.titre || "",
       annee: currentTrack.annee || "",
       compositeur: currentTrack.compositeur || "",
-      image: currentTrack.image || null
+      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
     });
     roundEndedRef.current = true;
   }
@@ -619,8 +638,6 @@ const handleNext = () => {
   </div>
 </div>
 
-
-
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>
     <div style={popupStyle}>
@@ -682,7 +699,7 @@ const handleNext = () => {
       minWidth: 320, 
       paddingBottom: 24 
     }}>
-      <h2 style={{ fontSize: 28, marginBottom: 6 }}>🎉 Fin de la partie !</h2>
+      <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
 
       {finalScores.length > 0 && (
         <p style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
@@ -731,7 +748,7 @@ const handleNext = () => {
           fontSize: 16
         }}
       >
-        🔙 Retour à l’accueil
+        Quitter
       </button>
     </div>
   </div>
