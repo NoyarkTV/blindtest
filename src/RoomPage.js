@@ -10,27 +10,27 @@ function RoomPage() {
   const playerName = localStorage.getItem("playerName") || "Joueur";
 
   // 🔁 Rejoindre la room et écouter les événements
-  useEffect(() => {
-socket.on("join-room", (roomId) => {
-  const playerName = getPlayerName(socket); // ta fonction existante
-  if (!rooms[roomId]) {
-    rooms[roomId] = { players: [] };
-  }
+useEffect(() => {
+  socket.emit("join-room", id);
 
-  // Ajoute le joueur s’il n’y est pas déjà
-  if (!rooms[roomId].players.includes(playerName)) {
-    rooms[roomId].players.push(playerName);
-  }
+  socket.on("player-joined", updatedPlayers => {
+    setPlayers(updatedPlayers);
+  });
 
-  socket.join(roomId);
+  socket.on("player-list", fullList => {
+    setPlayers(fullList);
+  });
 
-  // 👇 Répond uniquement à celui qui vient d'arriver
-  socket.emit("player-list", rooms[roomId].players);
+  socket.on("game-started", () => {
+    navigate(`/game/${id}`);
+  });
 
-  // 👇 Informe les autres (facultatif si tu veux mettre à jour les autres)
-  socket.to(roomId).emit("player-joined", rooms[roomId].players);
-});
-  }, [id]);
+  return () => {
+    socket.off("player-joined");
+    socket.off("player-list");
+    socket.off("game-started");
+  };
+}, [id]);
 
   // 👤 Ajout du joueur à la partie
   useEffect(() => {
