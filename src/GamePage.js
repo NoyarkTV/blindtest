@@ -381,6 +381,7 @@ const handleNext = () => {
     setShowPopup(false);
     handlePause();
   };
+console.log("🔍 Contenu de scoreboard :", scoreboard);
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh", alignItems: "center" }}>
@@ -391,41 +392,34 @@ const handleNext = () => {
         Round {currentRound} / {playlist.length}
       </h1>
 
-{Array.isArray(scoreboard) && (
-  <div style={{
-    position: "fixed",
-    right: 20,
-    top: 20,
-    background: "#fff",
-    color: "#1e2a38",
-    padding: 12,
-    borderRadius: 12,
-    width: 200,
-    boxShadow: "0 0 10px rgba(0,0,0,0.3)",
-    fontSize: 14,
-    zIndex: 10
-  }}>
+
+{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+  <div style={{ /* styles */ }}>
     <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Joueurs</div>
-    {scoreboard.map((p, i) => (
-      <div
-        key={i}
-        style={{
-          fontWeight: p.isMe ? "bold" : "normal",
-          backgroundColor: p.isMe ? "#f7b733" : "transparent",
-          color: p.isMe ? "#1e2a38" : "#333",
-          padding: "6px 8px",
-          borderRadius: 8,
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 4
-        }}
-      >
-        <span>{p.name}</span>
-        <span>{p.isMe ? (typeof score === "number" ? score : 0) : ""}</span>
-      </div>
-    ))}
+    {scoreboard.map((p, i) => {
+      const isMe = p.name === playerName;
+      return (
+        <div
+          key={i}
+          style={{
+            fontWeight: isMe ? "bold" : "normal",
+            backgroundColor: isMe ? "#f7b733" : "transparent",
+            color: isMe ? "#1e2a38" : "#333",
+            padding: "6px 8px",
+            borderRadius: 8,
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 4
+          }}
+        >
+          <span>{p.name}</span>
+          <span>{isMe ? (typeof score === "number" ? score : 0) : ""}</span>
+        </div>
+      );
+    })}
   </div>
 )}
+
 
             
       
