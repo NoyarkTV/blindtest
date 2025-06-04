@@ -33,6 +33,9 @@ function GamePage() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const intervalRef = useRef(null);
   const [allScores, setAllScores] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [scoreboard, setScoreboard] = useState([]);
+  
 
 const playCurrentTrack = (devId) => {
   const track = playlist[currentRound - 1];
@@ -79,7 +82,30 @@ const playCurrentTrack = (devId) => {
     console.log("📡 Socket client : a rejoint la room", id);
   }, [playerName, id]);
 
+useEffect(() => {
+  if (!id) return;
 
+  fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.players) {
+        console.log("👥 Joueurs récupérés :", data.players);
+        setPlayers(data.players); // ← à condition d’avoir défini setPlayers
+      }
+    })
+    .catch(err => console.error("❌ Erreur lors de la récupération des joueurs :", err));
+}, [id]);
+
+useEffect(() => {
+  if (players.length === 0 || !playerName) return;
+
+  const board = players.map(name => ({
+    name,
+    score: name === playerName ? score : 0
+  }));
+
+  setScoreboard(board);
+}, [players, playerName, score]);
 
 useEffect(() => {
   if (isTimerRunning) {
@@ -355,37 +381,38 @@ const handleNext = () => {
         Round {currentRound} / {playlist.length}
       </h1>
 
-<div
-  style={{
-    position: "absolute",
-    top: "80px",
-    right: "20px",
-    width: "200px",
-    background: "#222",
-    border: "1px solid #444",
-    borderRadius: "8px",
-    padding: "10px",
-    zIndex: 20
-  }}
->
-  <h3 style={{ color: "white", fontSize: "16px", marginBottom: "8px" }}>🎯 Scores</h3>
-  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-    {allScores
-      .sort((a, b) => b.score - a.score) // tri du plus grand au plus petit
-      .map(({ name, score }) => (
-        <li
-          key={name}
-          style={{
-            marginBottom: "6px",
-            fontWeight: name === playerName ? "bold" : "normal",
-            color: name === playerName ? "#FFD700" : "#ddd"
-          }}
-        >
-          {name}: {score} pts
-        </li>
-      ))}
-  </ul>
+<div style={{
+  position: "fixed",
+  right: 20,
+  top: 20,
+  background: "#fff",
+  color: "#1e2a38",
+  padding: 12,
+  borderRadius: 12,
+  width: 200,
+  boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+  fontSize: 14,
+  zIndex: 10
+}}>
+  <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Scoreboard</div>
+  {scoreboard.map((p, i) => (
+    <div
+      key={i}
+      style={{
+        fontWeight: p.name === playerName ? "bold" : "normal",
+        backgroundColor: p.name === playerName ? "#f7b733" : "transparent",
+        padding: "4px 6px",
+        borderRadius: 6,
+        display: "flex",
+        justifyContent: "space-between"
+      }}
+    >
+      <span>{p.name}</span>
+      <span>{p.score}</span>
+    </div>
+  ))}
 </div>
+
             
       
       {/* TIMER */}
