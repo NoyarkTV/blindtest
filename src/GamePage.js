@@ -144,6 +144,16 @@ useEffect(() => {
 useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
 
+  if (currentRound > playlist.length) {
+    console.log("🏁 Fin de partie détectée côté client");
+    const sorted = [...scoreboard].sort((a, b) => b.score - a.score);
+    setFinalScores(sorted);
+    setShowPopup(false);
+    setShowEndPopup(true);
+    handlePause();
+    return;
+  }
+
   basePointsRef.current = 100;
   setTimeLeft(params.time);
   setIsTimerRunning(true);
@@ -152,9 +162,10 @@ useEffect(() => {
   handleNextRoundPopup();
   playCurrentTrack(deviceId);
   wrongAttemptsRef.current = 0;
-  console.log("🔍 Contenu de scoreboard :", scoreboard);
 
+  console.log("🔍 Contenu de scoreboard :", scoreboard);
 }, [currentRound]);
+
 
 useEffect(() => {
   setShowPopup(false);
@@ -191,13 +202,18 @@ useEffect(() => {
   }, []);
 
 useEffect(() => {
-  socket.on("game-over", () => {
-    setFinalScores([...scoreboard].sort((a, b) => b.score - a.score));
-    setShowPopup(false);
-    setShowEndPopup(true);
+  socket.on("game-over", (scores) => {
+    console.log("🎉 Fin de partie, scores finaux :", scores);
+
+    // Classement du plus haut au plus bas score
+    const sorted = [...scores].sort((a, b) => b.score - a.score);
+    setFinalScores(sorted);
+    setShowPopup(false); // Ferme le popup de fin de round si ouvert
+    setShowEndPopup(true); // Affiche le popup de fin de partie
   });
+
   return () => socket.off("game-over");
-}, [scoreboard]);
+}, []);
 
 
 
@@ -384,6 +400,10 @@ const handleNext = () => {
     handlePause().finally(() => {
       socket.emit("next-round", { roomId: id });
     });
+  } else {
+    alert("🎉 Fin de la partie !");
+    socket.emit("next-round", { roomId: id });
+    navigate("/");
   }
 };
 
