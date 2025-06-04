@@ -198,6 +198,20 @@ app.get("/game-info/:id", (req, res) => {
   });
 });
 
+app.get("/game/:id", (req, res) => {
+  const { id } = req.params;
+  const game = games[id];
+
+  if (!game) {
+    return res.status(404).json({ error: "Partie introuvable" });
+  }
+
+  res.json({
+    players: game.players || [],
+    scores: game.scores || []
+  });
+});
+
 
 app.post("/submit-score", (req, res) => {
   const { id, player, score } = req.body;
