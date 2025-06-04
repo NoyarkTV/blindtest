@@ -387,7 +387,25 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh", alignItems: "center" }}>
       <SpotifyPlayer token={token} onReady={handleReady} />
       
-      
+<style>
+  {`
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* 🔒 empêche scroll global */
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    *, *::before, *::after {
+      box-sizing: inherit;
+    }
+  `}
+</style>
+
+
+
 {/* ROUND fixé en haut sans débordement */}
 <div style={{
   position: "fixed",
