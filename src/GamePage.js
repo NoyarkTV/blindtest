@@ -299,6 +299,13 @@ const handleValidate = () => {
 
 const updatedScore = score + totalPoints;
 setScore(updatedScore);
+setScoreboard(prev =>
+  prev.map(p =>
+    p.name === playerName
+      ? { ...p, score: updatedScore }
+      : p
+  )
+);
 
 fetch("https://blindtest-69h7.onrender.com/submit-score", {
   method: "POST",
