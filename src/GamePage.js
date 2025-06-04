@@ -149,6 +149,7 @@ useEffect(() => {
   handleNextRoundPopup();
   playCurrentTrack(deviceId);
   wrongAttemptsRef.current = 0;
+  console.log("🔍 Contenu de scoreboard :", scoreboard);
 
 }, [currentRound]);
 
@@ -298,15 +299,24 @@ const handleValidate = () => {
 
 const updatedScore = score + totalPoints;
 setScore(updatedScore);
+
 fetch("https://blindtest-69h7.onrender.com/submit-score", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     id: gameId,             // ou `id` si déjà défini
     player: playerName,     // ton nom
-    score: score            // ton score actuel
+    score: updatedScore     // ton score actuel
   })
-});
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Score soumis au serveur :", data);
+  })
+  .catch(err => {
+    console.error("❌ Erreur lors de l'envoi du score :", err);
+  });
+
     setTimeLeft(null);
     setShowPopup(true);
     setPopupInfo({
@@ -381,7 +391,6 @@ const handleNext = () => {
     setShowPopup(false);
     handlePause();
   };
-console.log("🔍 Contenu de scoreboard :", scoreboard);
 
   return (
     <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh", alignItems: "center" }}>
