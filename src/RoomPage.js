@@ -11,22 +11,25 @@ function RoomPage() {
 
   // 🔁 Rejoindre la room et écouter les événements
   useEffect(() => {
-    socket.emit("join-room", id);
+socket.on("join-room", (roomId) => {
+  const playerName = getPlayerName(socket); // ta fonction existante
+  if (!rooms[roomId]) {
+    rooms[roomId] = { players: [] };
+  }
 
-    socket.on("player-joined", updatedPlayers => {
-      console.log("🧑‍🤝‍🧑 Mise à jour des joueurs :", updatedPlayers);
-      setPlayers(updatedPlayers);
-    });
+  // Ajoute le joueur s’il n’y est pas déjà
+  if (!rooms[roomId].players.includes(playerName)) {
+    rooms[roomId].players.push(playerName);
+  }
 
-    socket.on("game-started", () => {
-      console.log("🚀 Partie lancée !");
-      navigate(`/game/${id}`);
-    });
+  socket.join(roomId);
 
-    return () => {
-      socket.off("player-joined");
-      socket.off("game-started");
-    };
+  // 👇 Répond uniquement à celui qui vient d'arriver
+  socket.emit("player-list", rooms[roomId].players);
+
+  // 👇 Informe les autres (facultatif si tu veux mettre à jour les autres)
+  socket.to(roomId).emit("player-joined", rooms[roomId].players);
+});
   }, [id]);
 
   // 👤 Ajout du joueur à la partie
@@ -51,77 +54,71 @@ function RoomPage() {
   const config = game.config || {};
 
   return (
-  <div style={{
-    minHeight: "100vh",
-    backgroundColor: "#1e2a38",
-    color: "#ffffff",
-    fontFamily: "'Poppins', sans-serif",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "40px 20px"
+<div style={{
+  minHeight: "100vh",
+  backgroundColor: "#ffffff", // fond général blanc
+  color: "#1e2a38",           // texte sombre
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "40px 20px"
+}}>
+  <h1 style={{
+    fontSize: "2.5rem",
+    fontFamily: "'Luckiest Guy', cursive",
+    color: "#f7b733",
+    marginBottom: 30
   }}>
-    <h1 style={{
-      fontSize: "2.5rem",
-      fontFamily: "'Luckiest Guy', cursive",
-      color: "#f7b733",
-      marginBottom: 30
-    }}>
-      🎮 Salle {id}
-    </h1>
+    Salle d'attente
+  </h1>
+
+  <div style={{
+    background: "#ffffff",
+    padding: "30px",
+    borderRadius: "20px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+    width: "100%",
+    maxWidth: "600px"
+  }}>
+    <h2 style={{ color: "#f7b733", fontSize: "1.4rem" }}>👥 Joueurs connectés</h2>
+    <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
+      {players.map((p, i) => (
+        <li key={i} style={{
+          backgroundColor: "#f0f0f0",
+          color: "#1e2a38",
+          padding: "8px 12px",
+          marginBottom: 8,
+          borderRadius: 8
+        }}>
+          {p.name}
+        </li>
+      ))}
+    </ul>
+
 
     <div style={{
-      background: "#ffffff",
-      padding: "30px",
-      borderRadius: "20px",
-      boxShadow: "0 0 10px rgba(0,0,0,0.3)",
-      width: "100%",
-      maxWidth: "600px"
+      marginTop: 40,
+      fontSize: 18,
+      background: "#e0e0e0",
+      color: "#666",
+      padding: "20px",
+      borderRadius: "12px",
+      textAlign: "center"
     }}>
-      <h2 style={{ color: "#f7b733", fontSize: "1.4rem" }}>👥 Joueurs connectés</h2>
-      <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
-        {players.map((p, i) => (
-          <li key={i} style={{
-            backgroundColor: "#333",
-            padding: "8px 12px",
-            marginBottom: 8,
-            borderRadius: 8
-          }}>
-            {p.name}
-          </li>
-        ))}
-      </ul>
-
-      <h2 style={{ color: "#f7b733", fontSize: "1.4rem", marginTop: 30 }}>📋 Paramètres</h2>
-      {game.config ? (
-        <ul style={{ lineHeight: 1.8, paddingLeft: 0, listStyle: "none" }}>
-          <li><b>Rounds :</b> {game.config.nbRounds}</li>
-          <li><b>Temps par manche :</b> {game.config.time} secondes</li>
-          <li><b>Bonus compositeur :</b> {game.config.bonusCompositeur ? "Oui" : "Non"}</li>
-          <li><b>Années :</b> {game.config.anneeMin} à {game.config.anneeMax}</li>
-          <li><b>Médias :</b> {game.config.media?.join(", ")}</li>
-          <li><b>Catégories :</b> {game.config.categories?.join(", ")}</li>
-          <li><b>Difficulté :</b> {game.config.difficulte?.join(", ")}</li>
-          <li><b>Pays :</b> {game.config.pays?.join(", ")}</li>
-        </ul>
-      ) : (
-        <p style={{ fontStyle: "italic", marginTop: 10 }}>
-          🛠️ En attente de configuration par l'organisateur...
-        </p>
-      )}
-
-      <div style={{
-        marginTop: 40,
-        fontSize: 18,
-        background: "#555",
-        padding: "20px",
-        borderRadius: "12px",
-        textAlign: "center"
-      }}>
-        ⏳ En attente que l'organisateur lance la partie...
-      </div>
+      ⏳ En attente que l'organisateur lance la partie...
     </div>
+
+    <p style={{
+      marginTop: 25,
+      textAlign: "center",
+      fontSize: 14,
+      color: "#999"
+    }}>
+      ID de la salle : <code style={{ background: "#f5f5f5", padding: "2px 6px", borderRadius: "6px" }}>{id}</code>
+    </p>
   </div>
+</div>
 );
 }
 
