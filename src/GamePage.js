@@ -142,23 +142,42 @@ useEffect(() => {
 }, [isTimerRunning]); 
 
 useEffect(() => {
-  if (!playlist || playlist.length === 0) return;
+  if (playlist.length === 0 || !accessToken) return;
 
-  const images = {};
-  const preloadImages = async () => {
-    for (const track of playlist) {
-      const url = track.image;
-      if (url && !images[track.id || track.titre]) {
-        const img = new Image();
-        img.src = url;
-        images[track.id || track.titre] = url;
-      }
-    }
-    setPreloadedImages(images); // state local que tu crées
+  const fetchImages = async () => {
+    const updated = await Promise.all(
+      playlist.map(async (track) => {
+        try {
+          const uri = track.uri;
+          if (!uri || !uri.startsWith("spotify:track:")) return track;
+
+          const id = uri.split(":")[2]; // ✅ extrait l'ID depuis l'URI
+          const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+
+          if (!res.ok) throw new Error("Erreur API Spotify");
+
+          const data = await res.json();
+          return {
+            ...track,
+            image: data.album?.images?.[0]?.url || null
+          };
+        } catch (err) {
+          console.error(`❌ Erreur image pour ${track.uri}`, err);
+          return { ...track, image: null };
+        }
+      })
+    );
+
+    setPlaylist(updated); // remplace la playlist avec les images chargées
   };
 
-  preloadImages();
-}, [playlist]);
+  fetchImages();
+}, [playlist, accessToken]);
+
 
 useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
