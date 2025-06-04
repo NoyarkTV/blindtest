@@ -388,161 +388,123 @@ console.log("🔍 Contenu de scoreboard :", scoreboard);
       <SpotifyPlayer token={token} onReady={handleReady} />
       
       
-      <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
-        Round {currentRound} / {playlist.length}
-      </h1>
+<div style={{
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 20,
+  color: "#fff",
+  background: "#1e2a38",
+  minHeight: "100vh"
+}}>
 
+  {/* ROUND */}
+  <h1 style={{ color: "#f7b733", fontFamily: "Luckiest Guy" }}>
+    Round {currentRound} / {playlist.length}
+  </h1>
 
-{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-  <div style={{
-    position: "fixed",           // fixé à l'écran
-    top: 20,
-    right: 20,
-    width: 220,                  // largeur contrôlée
-    backgroundColor: "#fff",     // ✅ fond blanc visible
-    borderRadius: 12,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-    padding: 12,
-    zIndex: 1000
-  }}>
-    <div style={{
+  {/* TIMER */}
+  <div
+    style={{
+      width: 120,
+      height: 120,
+      margin: "20px auto",
+      borderRadius: "50%",
+      background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 36,
       fontWeight: "bold",
-      fontSize: 16,
-      marginBottom: 10,
       color: "#1e2a38"
-    }}>
-      🏆 Joueurs
+    }}
+  >
+    {timeLeft}
+  </div>
+
+  {/* INDICES */}
+  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
+    {/* Média */}
+    <div style={indiceBoxStyle}>
+      <span style={{ marginRight: 8 }}>Média :</span>
+      {!showIndiceMedia ? (
+        <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
+      ) : (
+        <span>{playlist[currentRound - 1]?.media || "?"}</span>
+      )}
     </div>
 
-    {scoreboard.map((p, i) => {
-      const isMe = p.name === playerName;
-      return (
-        <div
-          key={i}
-          style={{
-            fontWeight: isMe ? "bold" : "normal",
-            backgroundColor: isMe ? "#f7b733" : "transparent",
-            color: isMe ? "#1e2a38" : "#333",
-            padding: "6px 8px",
-            borderRadius: 8,
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 4
-          }}
-        >
-          <span>{p.name}</span>
-          <span>{isMe ? (typeof score === "number" ? score : 0) : ""}</span>
-        </div>
-      );
-    })}
+    {/* Année */}
+    <div style={indiceBoxStyle}>
+      <span style={{ marginRight: 8 }}>Année :</span>
+      {!showIndiceAnnee ? (
+        <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
+      ) : (
+        <span>{playlist[currentRound - 1]?.annee || "?"}</span>
+      )}
+    </div>
   </div>
-)}
 
-
-
-            
-      
-      {/* TIMER */}
-      <div
-        style={{
-          width: 120,
-          height: 120,
-          margin: "20px auto",
-          borderRadius: "50%",
-          background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 36,
-          fontWeight: "bold",
-          color: "#1e2a38"
-        }}
-      >
-        {timeLeft}
-      </div>
-
-{/* INDICES */}
-<div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 20 }}>
-  {/* Média */}
-  <div style={indiceBoxStyle}>
-    <span style={{ marginRight: 8 }}>Média :</span>
-    {!showIndiceMedia ? (
-      <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
+  {/* BUZZER / REPONSE */}
+  <div style={{ marginTop: 40 }}>
+    {!isBuzzed ? (
+      <button onClick={handleBuzz} style={buzzButtonStyle}> BUZZ</button>
     ) : (
-      <span>{playlist[currentRound - 1]?.media || "?"}</span>
-    )}
-  </div>
-
-  {/* Année */}
-  <div style={indiceBoxStyle}>
-    <span style={{ marginRight: 8 }}>Année :</span>
-    {!showIndiceAnnee ? (
-      <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
-    ) : (
-      <span>{playlist[currentRound - 1]?.annee || "?"}</span>
-    )}
-  </div>
-</div>
-
-      {/* BUZZER / REPONSE */}
-      <div style={{ marginTop: 40 }}>
-  {!isBuzzed ? (
-    <button onClick={handleBuzz} style={buzzButtonStyle}> BUZZ</button>
-  ) : (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-      <input
-        type="text"
-        placeholder="Votre réponse"
-        value={answer}
-        onChange={(e) => setAnswer(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleValidate()}
-        ref={answerInputRef}
-        style={inputStyle}
-      />
-      {bonusCompositeur && (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <input
           type="text"
-          placeholder="Compositeur (facultatif)"
-          value={composerGuess}
-          onChange={(e) => setComposerGuess(e.target.value)}
+          placeholder="Votre réponse"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleValidate()}
+          ref={answerInputRef}
           style={inputStyle}
         />
-      )}
-      <div>
-        <button
-          onClick={handleValidate}
-          disabled={!answer && (!bonusCompositeur || !composerGuess)}
-          style={validateButtonStyle}
-        >
-          Valider
-        </button>
-        <button
-          onClick={() => {
-            setIsBuzzed(false);
-            setAnswer("");
-            setComposerGuess("");
-            setIsTimerRunning(true)
-            handlePlay(); // on reprend la musique là où elle en était
-          }}
-          style={cancelButtonStyle}
-        >
-          Annuler
-        </button>
+        {bonusCompositeur && (
+          <input
+            type="text"
+            placeholder="Compositeur (facultatif)"
+            value={composerGuess}
+            onChange={(e) => setComposerGuess(e.target.value)}
+            style={inputStyle}
+          />
+        )}
+        <div>
+          <button
+            onClick={handleValidate}
+            disabled={!answer && (!bonusCompositeur || !composerGuess)}
+            style={validateButtonStyle}
+          >
+            Valider
+          </button>
+          <button
+            onClick={() => {
+              setIsBuzzed(false);
+              setAnswer("");
+              setComposerGuess("");
+              setIsTimerRunning(true);
+              handlePlay();
+            }}
+            style={cancelButtonStyle}
+          >
+            Annuler
+          </button>
+        </div>
       </div>
-    </div>
-  )}
+    )}
+  </div>
 
-      {/* SCORE PERSO */}
-      <div style={{ marginTop: 40, fontSize: 20 }}>Score : {score} pts</div>
+  {/* BOUTONS D'ACTION */}
+  <div style={{ display: "flex", gap: 10, marginTop: 30 }}>
+    <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
+    {isAdmin && <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>}
+    {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
+  </div>
+
 </div>
 
 
-
-      <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-        <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
-        <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>
-        {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
-      </div>
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>
     <div style={popupStyle}>
