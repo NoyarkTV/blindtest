@@ -411,7 +411,7 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
     setTimeLeft(null);
     setShowPopup(true);
     setPopupInfo({
-      title: "✅ Bonne réponse",
+      title: "Bonne réponse",
       points: `+${totalPoints} points${bonusText}`,
       theme: currentTrack.theme || "",
       titre: currentTrack.oeuvre || currentTrack.titre || "",
