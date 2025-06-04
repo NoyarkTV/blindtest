@@ -515,7 +515,7 @@ const handleNext = () => {
   const timer = params.time ?? 30;
   const bonusCompositeur = params.bonusCompositeur ?? false;
   const currentTrack = playlist[currentRound - 1];
-  
+
   const handleNextRoundPopup = () => {
     setShowPopup(false);
     handlePause();
