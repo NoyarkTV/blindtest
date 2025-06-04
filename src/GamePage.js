@@ -139,7 +139,7 @@ useEffect(() => {
   if (isTimerRunning) {
     intervalRef.current = setInterval(() => {
       setTimeLeft(prev => Math.max(prev - 1, 0));
-    }, 1000);
+    }, 100);
   }
   return () => clearInterval(intervalRef.current);
 }, [isTimerRunning]); 
@@ -354,8 +354,11 @@ const handleValidate = () => {
 
   const normalize = str =>
     str.toLowerCase()
-      .replace(/[^a-z0-9]/gi, '')
-      .replace(/\s+/g, '');
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/gi, '')
+    .replace(/\s+/g, '');
 
   const normalizedAnswer = normalize(answer);
   const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
