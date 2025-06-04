@@ -382,34 +382,29 @@ const handleNext = () => {
       </h1>
 
 {Array.isArray(scoreboard) && (
-  <div style={{
-    position: "fixed",
-    right: 20,
-    top: 20,
-    background: "#fff",
-    color: "#1e2a38",
-    padding: 12,
-    borderRadius: 12,
-    width: 220,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-    fontSize: 14,
-    zIndex: 1000
-  }}>
-    <div style={{
-      fontWeight: "bold",
-      marginBottom: 10,
-      fontSize: 16,
-      textAlign: "center"
-    }}>
-      🏆 Scoreboard
-    </div>
-    {scoreboard.map((p, i) => (
+<div style={{
+  position: "fixed",
+  right: 20,
+  top: 20,
+  background: "#fff",
+  color: "#1e2a38",
+  padding: 12,
+  borderRadius: 12,
+  width: 200,
+  boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+  fontSize: 14,
+  zIndex: 10
+}}>
+  <div style={{ fontWeight: "bold", marginBottom: 8 }}>🏆 Joueurs</div>
+  {scoreboard.map((p, i) => {
+    const isMe = p.name === playerName;
+    return (
       <div
         key={i}
         style={{
-          fontWeight: p.name === playerName ? "bold" : "normal",
-          backgroundColor: p.name === playerName ? "#f7b733" : "transparent",
-          color: p.name === playerName ? "#1e2a38" : "#333",
+          fontWeight: isMe ? "bold" : "normal",
+          backgroundColor: isMe ? "#f7b733" : "transparent",
+          color: isMe ? "#1e2a38" : "#333",
           padding: "6px 8px",
           borderRadius: 8,
           display: "flex",
@@ -418,10 +413,11 @@ const handleNext = () => {
         }}
       >
         <span>{p.name}</span>
-        <span>{p.score ?? 0}</span>
+        <span>{isMe ? score : ""}</span>
       </div>
-    ))}
-  </div>
+    );
+  })}
+</div>
 )}
 
             
