@@ -122,6 +122,15 @@ useEffect(() => {
     .catch(err => console.error("❌ Erreur lors de la récupération des joueurs :", err));
 }, [id]);
 
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (isBuzzed) {
+      handlePause(); // Appel sécurisé via ta fonction perso
+    }
+  }, 100); // Toutes les 1 seconde
+
+  return () => clearInterval(interval); // Nettoyage
+}, [isBuzzed]);
 
 
 useEffect(() => {
@@ -138,11 +147,22 @@ useEffect(() => {
 useEffect(() => {
   if (isTimerRunning) {
     intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => Math.max((prev - 0.1), 0));
+      setTimeLeft(prev => {
+        const newTime = Math.max(prev - 0.1, 0);
+
+        // ✅ Pause de secours si on est en mode buzz
+        if (isBuzzed) {
+          handlePause(); // ta fonction perso pour mettre pause proprement
+        }
+
+        return newTime;
+      });
     }, 100);
   }
+
   return () => clearInterval(intervalRef.current);
-}, [isTimerRunning]); 
+}, [isTimerRunning, isBuzzed]);
+
 
 const extractSpotifyId = (uri) => uri?.split(":")?.[2] || null;
 
