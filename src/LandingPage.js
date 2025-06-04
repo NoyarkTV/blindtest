@@ -24,7 +24,17 @@ const handleJoinGame = () => {
   };
 
 const handleCreateGame = async () => {
-  const gameId = uuidv4();
+  const generateSimpleId = (length = 5) => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let id = '';
+  for (let i = 0; i < length; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
+};
+
+const gameId = generateSimpleId();
+
   const playerName = localStorage.getItem("playerName") || "";
 
   const game = {
