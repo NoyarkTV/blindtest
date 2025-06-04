@@ -38,6 +38,8 @@ function GamePage() {
   const [finalScores, setFinalScores] = useState([]);
   const [showEndPopup, setShowEndPopup] = useState(false);
   const [preloadedImages, setPreloadedImages] = useState({});
+  const [trackImages, setTrackImages] = useState({});
+
   
 
 const playCurrentTrack = (devId) => {
@@ -682,16 +684,20 @@ const handleNext = () => {
         {popupInfo.points}
       </h1>
 
-      {popupInfo.image && (
-        <img
-          src={popupInfo.image}
-          alt="Pochette album"
-          style={{
-            width: 160, height: 160, borderRadius: 12, objectFit: "cover",
-            marginBottom: 20, boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-          }}
-        />
-      )}
+      {trackImages[currentTrack.uri] && (
+  <img
+    src={trackImages[currentTrack.uri]}
+    alt="Pochette album"
+    style={{
+      width: 160,
+      height: 160,
+      borderRadius: 12,
+      objectFit: "cover",
+      marginBottom: 20,
+      boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+    }}
+  />
+)}
 
       <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
         {popupInfo.theme ? `${popupInfo.theme} - ` : ""}{popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
