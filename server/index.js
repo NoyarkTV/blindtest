@@ -307,7 +307,7 @@ socket.on("next-round", ({ roomId }) => {
     io.to(roomId).emit("round-updated", { newRound: game.currentRound });
   } else {
     console.log("🏁 Fin de la partie");
-    io.to(roomId).emit("game-over");
+    io.to(roomId).emit("game-over", games[roomId]?.scores || []);
   }
 });
 });

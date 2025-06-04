@@ -203,6 +203,11 @@ useEffect(() => {
 
 useEffect(() => {
   socket.on("game-over", (scores) => {
+    if (!Array.isArray(scores)) {
+      console.error("❌ Scores invalides reçus dans 'game-over' :", scores);
+      return;
+    }
+
     console.log("🎉 Fin de partie, scores finaux :", scores);
 
     // Classement du plus haut au plus bas score
@@ -214,6 +219,7 @@ useEffect(() => {
 
   return () => socket.off("game-over");
 }, []);
+
 
 
 
