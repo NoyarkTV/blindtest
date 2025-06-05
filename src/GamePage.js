@@ -339,6 +339,12 @@ useEffect(() => {
   }
 }, [params]);
 
+useEffect(() => {
+  if (isBuzzed && answerInputRef.current) {
+    answerInputRef.current.focus();
+  }
+}, [isBuzzed]);
+
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
       setIsTimerRunning(false); // pause le timer
