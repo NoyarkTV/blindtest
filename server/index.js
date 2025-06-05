@@ -340,6 +340,92 @@ const allTracks = [];     // utilisé pour les filtres
 let filteredTracks = [];  // alimenté après POST /set-filters
 
 const GSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=0&single=true&output=csv";
+const GSheetSW = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=1674078581&single=true&output=csv";
+const GSheetHP = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=1465853254&single=true&output=csv";
+const GSheetHG = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=867242062&single=true&output=csv";
+const GSheetPoc = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=2048974181&single=true&output=csv";
+const GSheetAvg = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=1063471584&single=true&output=csv";
+const GSheetAvt= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=171097940&single=true&output=csv";
+const GSheetDn= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=2128064135&single=true&output=csv";
+const GSheetHTTYD= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=1731030068&single=true&output=csv";
+const GSheetJB= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=2002558209&single=true&output=csv";
+const GSheetLoTR= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=446981821&single=true&output=csv";
+const GSheetGotG= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=95989887&single=true&output=csv";
+const GSheetDpl= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=1732790998&single=true&output=csv";
+const GSheetEnct= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=74581739&single=true&output=csv";
+const GSheetRL= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=10287656&single=true&output=csv";
+const GSheetTGS= "https://docs.google.com/spreadsheets/d/e/2PACX-1vQaLPUFlOgMH_M77kx1a_WE1YLo1IhoKeKX3IT5d70yEgej66reOZTayABJH3ODRUyMCiP2sH3fqBDI/pub?gid=1521858933&single=true&output=csv";
+const sagaTracks = []; 
+const sagaSheets = {
+  "Star Wars": GSheetSW,
+  "Harry Potter": GSheetHP,
+  "Hunger Games": GSheetHG,
+  "Pirates des Caraïbes": GSheetPoc,
+  "Avengers": GSheetAvg,
+  "Avatar": GSheetAvt,
+  "Dune": GSheetDn,
+  "Dragons": GSheetHTTYD,
+  "James Bond": GSheetJB,
+  "Le Seigneur des Anneaux": GSheetLoTR,
+  "Gardiens de la Galaxie": GSheetGotG,
+  "Deadpool": GSheetDpl,
+  "Encanto": GSheetEnct,
+  "Roi Lion": GSheetRL,
+  "The Greatest Showman": GSheetTGS
+};
+
+for (const [sagaName, url] of Object.entries(sagaSheets)) {
+  fetch(url)
+    .then(async res => {
+      const csvData = await res.text();
+      const rows = [];
+
+      await new Promise((resolve) => {
+        Readable.from(csvData)
+          .pipe(csv())
+          .on("data", (row) => rows.push(row))
+          .on("end", resolve);
+      });
+
+      for (const row of rows) {
+        const uri = row["Code Spotify"];
+        if (!uri?.startsWith("spotify:track:")) continue;
+
+        const titre = row["Oeuvre"] || "";
+        const reponses = (row["Réponse"] || "").split(",").map(r => r.trim()).filter(Boolean);
+        const compositeur = row["Compositeur"] || "";
+        const theme = row["Titre"] || sagaName; // 🟢 "Titre" est ici le nom affiché de la chanson
+        const annee = parseInt(row["Année"]) || 0;
+        const answers = [titre, ...reponses].filter(Boolean);
+
+        const track = {
+          uri,
+          titre,
+          theme,
+          compositeur,
+          annee,
+          answers,
+          saga: sagaName
+        };
+
+        sagaTracks.push(track);
+      }
+
+      console.log(`🎬 ${sagaName} : ${rows.length} morceaux saga chargés`);
+    })
+    .catch(err => {
+      console.error(`Erreur de chargement saga ${sagaName} :`, err);
+    });
+}
+
+app.get("/saga-tracks", (req, res) => {
+  const minExpected = Object.keys(sagaSheets).length;
+  if (sagaTracks.length < minExpected) {
+    return res.status(503).json({ error: "Chargement des sagas en cours" });
+  }
+  res.json(sagaTracks);
+});
+
 
 fetch(GSheetURL)
   .then(async (res) => {

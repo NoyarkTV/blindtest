@@ -19,6 +19,7 @@ function ConfigPage() {
   const [filteredCount, setFilteredCount] = useState(0);
   const [players, setPlayers] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [sagaTracks, setSagaTracks] = useState([]);
 
 
 
@@ -92,6 +93,19 @@ useEffect(() => {
     .catch(err => {
       console.error("Erreur lors du chargement des morceaux :", err);
       setAllTracks([]);
+    });
+}, []);
+
+useEffect(() => {
+  fetch("https://blindtest-69h7.onrender.com/saga-tracks")
+    .then(res => res.json())
+    .then(data => {
+      setSagaTracks(data);
+      console.log("🎬 Morceaux saga chargés :", data.length);
+    })
+    .catch(err => {
+      console.error("Erreur chargement morceaux saga :", err);
+      setSagaTracks([]);
     });
 }, []);
 
@@ -187,15 +201,75 @@ const validerPartie = () => {
     return okMedia && okCategorie && okDiff && okPays && okAnnee;
   });
 
-  // 🎲 Tirer aléatoirement les morceaux
-  const shuffled = [...filteredTracks].sort(() => Math.random() - 0.5);
-  const enrichedTracks = shuffled.slice(0, nbRounds).map(track => {
+function fisherYatesShuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function getRandomSagaTrack(sagaName) {
+  const sagaOptions = sagaTracks.filter(t => t.saga === sagaName);
+  if (sagaOptions.length === 0) {
+    console.warn(`❌ Saga inconnue ou vide : "${sagaName}"`);
+    return null;
+  }
+  const picked = sagaOptions[Math.floor(Math.random() * sagaOptions.length)];
+  console.log(`🎬 Saga détectée : "${sagaName}" → ${picked.titre}`);
+  return picked;
+}
+
+// 🎲 Tirage avec gestion saga + complétion
+let shuffled = fisherYatesShuffle(filteredTracks);
+const enrichedTracks = [];
+
+for (let i = 0; i < shuffled.length && enrichedTracks.length < nbRounds; i++) {
+  const track = shuffled[i];
+
+  if (!track.uri?.startsWith("spotify:track:")) {
+    const sagaName = track.uri?.trim();
+    console.log(`🔍 URI non standard détecté, tentative saga : "${sagaName}"`);
+
+    const sagaTrack = getRandomSagaTrack(sagaName);
+    if (sagaTrack) {
+      enrichedTracks.push({
+        ...sagaTrack,
+        image: sagaTrack.image || null
+      });
+    } else {
+      console.warn(`⚠️ Aucun morceau trouvé pour saga "${sagaName}"`);
+    }
+  } else {
     const original = allTracks.find(t => t.uri === track.uri);
-    return {
+    enrichedTracks.push({
       ...track,
       image: original?.image || null
-    };
-  });
+    });
+  }
+}
+
+// 🔁 Complétion si on n’a pas assez de morceaux
+if (enrichedTracks.length < nbRounds) {
+  console.log(`🔄 Complétion : ${nbRounds - enrichedTracks.length} morceaux manquants, recherche en cours...`);
+
+  const remaining = fisherYatesShuffle(allTracks).filter(t =>
+    !enrichedTracks.some(et => et.uri === t.uri) &&
+    t.uri?.startsWith("spotify:track:")
+  );
+
+  for (let i = 0; i < remaining.length && enrichedTracks.length < nbRounds; i++) {
+    enrichedTracks.push({
+      ...remaining[i],
+      image: remaining[i].image || null
+    });
+    console.log(`➕ Complément ajouté : ${remaining[i].titre}`);
+  }
+}
+
+console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds})`);
+
 
   const payload = {
     id,                   // ID de la partie
