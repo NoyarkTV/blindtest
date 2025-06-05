@@ -441,8 +441,9 @@ fetch(GSheetURL)
 
     for (const row of rows) {
       const uri = row["Code Spotify"];
-      if (!uri?.startsWith("spotify:track:")) continue;
+      if (!uri) continue;
 
+      const isSaga = !uri.startsWith("spotify:track:");
       const titre = row["Oeuvre"] || "";
       const reponses = (row["Réponse"] || "").split(",").map(r => r.trim()).filter(Boolean);
       const compositeur = row["Compositeur"] || "";
@@ -453,6 +454,9 @@ fetch(GSheetURL)
       const pays = row["Pays"] || "";
       const annee = parseInt(row["Année"]) || 0;
       const answers = [titre, ...reponses].filter(Boolean);
+      const total = allTracks.length;
+      const sagas = allTracks.filter(t => !t.uri?.startsWith("spotify:track:")).length;
+      const valides = total - sagas;
 
       const track = {
         uri,
@@ -465,7 +469,8 @@ fetch(GSheetURL)
         pays,
         annee,
         answers,
-        image : null
+        image : null,
+        isSaga: isSaga
       };
 
       uris.push(uri);
@@ -473,7 +478,7 @@ fetch(GSheetURL)
     }
 
     filteredTracks = [...allTracks];
-    console.log(`🎵 ${allTracks.length} pistes Spotify chargées avec images.`);
+    console.log(`🎵 ${total} pistes chargées : ${valides} valides Spotify, ${sagas} sagas à remplacer dynamiquement.`);
   })
   .catch(err => {
     console.error("Erreur lors du chargement Google Sheets :", err);
