@@ -491,6 +491,32 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
     playCurrentTrack(id);
   };
 
+  const handleRestartRound = () => {
+  console.log("🔄 Relance complète du round", currentRound);
+
+  // Reset timer
+  setTimeLeft(params.time);
+  setIsTimerRunning(true);
+
+  // Reset essais / points de base
+  wrongAttemptsRef.current = 0;
+  basePointsRef.current = 100;
+
+  // Reset buzz éventuel
+  setIsBuzzed(false);
+  setAnswer("");
+  setComposerGuess("");
+
+  // Pause d'abord pour forcer une vraie relecture propre
+  handlePause().finally(() => {
+    // Petite attente pour être sûr que le player est bien à l'arrêt (important)
+    setTimeout(() => {
+      playCurrentTrack(deviceId);
+    }, 500); // 500 ms est une bonne valeur en pratique pour forcer Spotify à réagir
+  });
+};
+
+
   const handlePause = () => {
     return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
       method: "PUT",
@@ -718,7 +744,7 @@ const handleNext = () => {
 
   {/* BOUTONS BAS */}
   <div style={{ display: "flex", gap: 10 }}>
-    <button onClick={handlePlay} style={buttonStyle}>▶️ Play</button>
+    <button onClick={handleRestartRound} style={buttonStyle}>🔄 Relancer le round</button>
     {isAdmin && <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>}
     {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
   </div>
