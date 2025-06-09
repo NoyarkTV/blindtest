@@ -41,13 +41,15 @@ function GamePage() {
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
   const [averageTime, setAverageTime] = useState(null);
-  
+  const isVerifyingRef = useRef(false);
 
 const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
   if (!track?.uri) return;
 
   console.log("▶️ Demande lecture track :", track.uri);
+
+  isVerifyingRef.current = true; // on démarre une nouvelle vérif
 
   await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
     method: "PUT",
@@ -59,11 +61,15 @@ const playCurrentTrack = async (devId) => {
   }).then(() => {
     console.log("▶️ Lecture demandée, vérification en cours...");
 
-    // Lancer une boucle de vérification
     const maxTries = 10;
     let tries = 0;
 
     const verifyPlayback = async () => {
+      if (!isVerifyingRef.current) {
+        console.log("⛔ Vérif annulée (ancienne track ?)");
+        return;
+      }
+
       tries++;
       const res = await fetch("https://api.spotify.com/v1/me/player", {
         headers: { Authorization: `Bearer ${token}` }
@@ -75,25 +81,29 @@ const playCurrentTrack = async (devId) => {
 
       console.log(`🔍 Vérif #${tries} - playing: ${isPlaying} - track: ${currentUri}`);
 
-      if (isPlaying && currentUri === track.uri) {
+      // Très important : vérifier qu'on est bien sur la bonne track ET le bon round
+      const stillCurrentTrack = (playlist[currentRound - 1]?.uri === track.uri);
+
+      if (isPlaying && currentUri === track.uri && stillCurrentTrack) {
         console.log("✅ Track confirmée en lecture !");
         setIsPlaying(true);
-        setIsTimerRunning(true); // ⏱️ On démarre le timer SEULEMENT ICI
+        setIsTimerRunning(true); // On démarre le timer SEULEMENT ICI
+        isVerifyingRef.current = false; // terminé
       } else if (tries < maxTries) {
         setTimeout(verifyPlayback, 300); // on attend 300ms et on recheck
       } else {
         console.warn("❌ Impossible de confirmer la lecture après plusieurs tentatives");
         setIsPlaying(false);
-        // option : tu peux décider ici de montrer un message / bouton "Relancer"
+        isVerifyingRef.current = false;
       }
     };
 
     verifyPlayback();
   }).catch(err => {
     console.error("Erreur lecture Spotify :", err);
+    isVerifyingRef.current = false;
   });
 };
-
 
   useEffect(() => {
     const playerName = localStorage.getItem("playerName");
