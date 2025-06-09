@@ -41,6 +41,9 @@ function GamePage() {
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
   const [averageTime, setAverageTime] = useState(null);
+  const goodAnswersCountRef = useRef(0);
+  const [goodAnswersCount, setGoodAnswersCount] = useState(0);
+
   
 
 const playCurrentTrack = async (devId) => {
@@ -315,6 +318,11 @@ useEffect(() => {
   return () => socket.off("game-over");
 }, []);
 
+setGoodAnswersCount(prev => {
+  const newCount = prev + 1;
+  goodAnswersCountRef.current = newCount;
+  return newCount;
+});
 
 
 
@@ -426,25 +434,27 @@ const handleValidate = () => {
   // 🎼 Bonus compositeur
   let bonus = 0;
   let bonusText = "";
+  let isComposerMatch = false;
+
   if (bonusCompositeur && currentTrack.compositeur) {
-  const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
-  const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
+    const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
+    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
 
-  const isComposerMatch = guessList.some(g => {
-    const gNorm = normalize(g);
-    return realComposers.some(r => {
-      const rNorm = normalize(r);
-      return levenshtein(gNorm, rNorm) <= 2;
+    isComposerMatch = guessList.some(g => {
+      const gNorm = normalize(g);
+      return realComposers.some(r => {
+        const rNorm = normalize(r);
+        return levenshtein(gNorm, rNorm) <= 2;
+      });
     });
-  });
 
-  if (isComposerMatch) {
-    bonus = 20;
-    bonusText = " (+20 bonus compositeur)";
+    if (isComposerMatch) {
+      bonus = 20;
+      bonusText = " (+20 bonus compositeur)";
+    }
   }
-}
 
-  // 🟢 Bonne réponse
+  // 🟢 Cas 1 : Titre correct (comme avant)
   if (isCorrect) {
     const rawTimeLeft = pausedTimeRef.current ?? timeLeft;
     const responseTime = (params.time ?? 30) - rawTimeLeft;
@@ -460,32 +470,33 @@ const handleValidate = () => {
     const base = ((rawTimeLeft / timer) * 100 * multiplier) - (wrongAttemptsRef.current * 20);
     const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
 
-const updatedScore = score + totalPoints;
-setScore(updatedScore);
-setScoreboard(prev =>
-  prev.map(p =>
-    p.name === playerName
-      ? { ...p, score: updatedScore }
-      : p
-  )
-);
+    const updatedScore = score + totalPoints;
+    setGoodAnswersCount(prev => prev + 1);
+    setScore(updatedScore);
+    setScoreboard(prev =>
+      prev.map(p =>
+        p.name === playerName
+          ? { ...p, score: updatedScore }
+          : p
+      )
+    );
 
-fetch("https://blindtest-69h7.onrender.com/submit-score", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    id: id,             // ou `id` si déjà défini
-    player: playerName,     // ton nom
-    score: updatedScore     // ton score actuel
-  })
-})
-  .then(res => res.json())
-  .then(data => {
-    console.log("✅ Score soumis au serveur :", data);
-  })
-  .catch(err => {
-    console.error("❌ Erreur lors de l'envoi du score :", err);
-  });
+    fetch("https://blindtest-69h7.onrender.com/submit-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: id,
+        player: playerName,
+        score: updatedScore
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("✅ Score soumis au serveur :", data);
+      })
+      .catch(err => {
+        console.error("❌ Erreur lors de l'envoi du score :", err);
+      });
 
     setTimeLeft(null);
     setShowPopup(true);
@@ -502,7 +513,51 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
     roundEndedRef.current = true;
   }
 
-  // 🔴 Mauvaise réponse
+  // 🟢 Cas 2 : Compositeur seul correct
+  else if (isComposerMatch) {
+    const updatedScore = score + bonus;
+    setScore(updatedScore);
+    setScoreboard(prev =>
+      prev.map(p =>
+        p.name === playerName
+          ? { ...p, score: updatedScore }
+          : p
+      )
+    );
+
+    fetch("https://blindtest-69h7.onrender.com/submit-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: id,
+        player: playerName,
+        score: updatedScore
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("✅ Score soumis au serveur (bonus compositeur seul) :", data);
+      })
+      .catch(err => {
+        console.error("❌ Erreur lors de l'envoi du score (bonus compo seul) :", err);
+      });
+
+    setTimeLeft(null);
+    setShowPopup(true);
+    setPopupInfo({
+      title: "Bonne réponse compositeur",
+      points: `+${bonus} points (compositeur seul)`,
+      responseTime: "-",
+      theme: currentTrack.theme || "",
+      titre: currentTrack.oeuvre || currentTrack.titre || "",
+      annee: currentTrack.annee || "",
+      compositeur: currentTrack.compositeur || "",
+      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+    });
+    roundEndedRef.current = true;
+  }
+
+  // 🔴 Cas 3 : Mauvaise réponse
   else {
     wrongAttemptsRef.current = (wrongAttemptsRef.current || 0) + 1;
     console.log("❌ Mauvaise réponse - tentatives :", wrongAttemptsRef.current);
@@ -515,6 +570,7 @@ fetch("https://blindtest-69h7.onrender.com/submit-score", {
   setAnswer("");
   setComposerGuess("");
 };
+
 
 
 
@@ -890,8 +946,9 @@ const handleNext = () => {
       </div>
 
       <p style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
-        Votre temps de réponse moyen est de {averageTime} sec
+        Votre temps de réponse moyen est de {averageTime} sec en {goodAnswersCountRef.current} bonnes réponses
       </p>
+
 
       <button
         onClick={() => {
