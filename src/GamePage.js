@@ -41,9 +41,6 @@ function GamePage() {
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
   const [averageTime, setAverageTime] = useState(null);
-  const goodAnswersCountRef = useRef(0);
-  const [goodAnswersCount, setGoodAnswersCount] = useState(0);
-
   
 
 const playCurrentTrack = async (devId) => {
@@ -318,11 +315,6 @@ useEffect(() => {
   return () => socket.off("game-over");
 }, []);
 
-setGoodAnswersCount(prev => {
-  const newCount = prev + 1;
-  goodAnswersCountRef.current = newCount;
-  return newCount;
-});
 
 
 
@@ -471,7 +463,6 @@ const handleValidate = () => {
     const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
 
     const updatedScore = score + totalPoints;
-    setGoodAnswersCount(prev => prev + 1);
     setScore(updatedScore);
     setScoreboard(prev =>
       prev.map(p =>
@@ -570,7 +561,6 @@ const handleValidate = () => {
   setAnswer("");
   setComposerGuess("");
 };
-
 
 
 
@@ -946,12 +936,8 @@ const handleNext = () => {
       </div>
 
       <p style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
-        {averageTime && !isNaN(averageTime)
-        ? `Votre temps de réponse moyen est de ${averageTime} sec en ${goodAnswersCount} bonnes réponses`
-        : `Aucune bonne réponse enregistrée`}
+        Votre temps de réponse moyen est de {averageTime} sec
       </p>
-
-
 
       <button
         onClick={() => {
