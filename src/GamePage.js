@@ -377,6 +377,27 @@ useEffect(() => {
   }
 }, [isBuzzed]);
 
+useEffect(() => {
+  if (showPopup && deviceId && playlist.length > 0 && currentRound <= playlist.length) {
+    // Relance douce de la musique sur le bon morceau (volume faible)
+    console.log("🎵 Relance douce musique pendant le popup");
+
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(() => {
+      console.log("🎵 Musique relancée pour popup");
+      // Option : ici tu peux régler le volume à faible si tu veux
+      // Par exemple utiliser l'API set volume
+      fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=20&device_id=${deviceId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    }).catch(err => console.error("Erreur reprise lecture pendant popup :", err));
+  }
+}, [showPopup, deviceId, playlist, currentRound]);
+
+
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
       setIsTimerRunning(false); // pause le timer
