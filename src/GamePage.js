@@ -257,6 +257,7 @@ useEffect(() => {
 
   wrongAttemptsRef.current = 0;
   basePointsRef.current = 100;
+  setVolume(100);
   setTimeLeft(params.time);
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
