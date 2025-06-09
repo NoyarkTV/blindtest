@@ -946,8 +946,11 @@ const handleNext = () => {
       </div>
 
       <p style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
-        Votre temps de réponse moyen est de {averageTime} sec en {goodAnswersCountRef.current} bonnes réponses
+        {averageTime && !isNaN(averageTime)
+        ? `Votre temps de réponse moyen est de ${averageTime} sec en ${goodAnswersCount} bonnes réponses`
+        : `Aucune bonne réponse enregistrée`}
       </p>
+
 
 
       <button
