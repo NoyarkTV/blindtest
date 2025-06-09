@@ -43,22 +43,55 @@ function GamePage() {
   const [averageTime, setAverageTime] = useState(null);
   
 
-const playCurrentTrack = (devId) => {
+const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
   if (!track?.uri) return;
 
-  fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
+  console.log("▶️ Demande lecture track :", track.uri);
+
+  await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ uris: [track.uri] })
-  })
-    .then(() => {
-      setIsPlaying(true);
-    })
-    .catch(err => console.error("Erreur lecture Spotify :", err));
+  }).then(() => {
+    console.log("▶️ Lecture demandée, vérification en cours...");
+
+    // Lancer une boucle de vérification
+    const maxTries = 10;
+    let tries = 0;
+
+    const verifyPlayback = async () => {
+      tries++;
+      const res = await fetch("https://api.spotify.com/v1/me/player", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      const currentUri = data?.item?.uri;
+      const isPlaying = data?.is_playing;
+
+      console.log(`🔍 Vérif #${tries} - playing: ${isPlaying} - track: ${currentUri}`);
+
+      if (isPlaying && currentUri === track.uri) {
+        console.log("✅ Track confirmée en lecture !");
+        setIsPlaying(true);
+        setIsTimerRunning(true); // ⏱️ On démarre le timer SEULEMENT ICI
+      } else if (tries < maxTries) {
+        setTimeout(verifyPlayback, 300); // on attend 300ms et on recheck
+      } else {
+        console.warn("❌ Impossible de confirmer la lecture après plusieurs tentatives");
+        setIsPlaying(false);
+        // option : tu peux décider ici de montrer un message / bouton "Relancer"
+      }
+    };
+
+    verifyPlayback();
+  }).catch(err => {
+    console.error("Erreur lecture Spotify :", err);
+  });
 };
 
 
@@ -215,7 +248,6 @@ useEffect(() => {
   wrongAttemptsRef.current = 0;
   basePointsRef.current = 100;
   setTimeLeft(params.time);
-  setIsTimerRunning(true);
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
   handleNextRoundPopup();
