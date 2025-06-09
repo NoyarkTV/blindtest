@@ -377,9 +377,25 @@ useEffect(() => {
   }
 }, [isBuzzed]);
 
+const setVolume = (percent) => {
+  if (!deviceId || percent < 0 || percent > 100) return;
+
+  fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${percent}&device_id=${deviceId}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(() => {
+    console.log(`🔊 Volume réglé à ${percent}%`);
+  }).catch(err => {
+    console.error(`Erreur lors du réglage du volume à ${percent}% :`, err);
+  });
+};
+
+
 useEffect(() => {
-  if (showPopup && deviceId && playlist.length > 0 && currentRound <= playlist.length) {
-    // Relance douce de la musique sur le bon morceau (volume faible)
+  if (!deviceId || playlist.length === 0 || currentRound > playlist.length) return;
+
+  if (showPopup) {
+    // 🎵 Relance douce musique pendant le popup
     console.log("🎵 Relance douce musique pendant le popup");
 
     fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
@@ -387,16 +403,14 @@ useEffect(() => {
       headers: { Authorization: `Bearer ${token}` }
     }).then(() => {
       console.log("🎵 Musique relancée pour popup");
-      // Option : ici tu peux régler le volume à faible si tu veux
-      // Par exemple utiliser l'API set volume
-      fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=20&device_id=${deviceId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      setVolume(20); // Volume faible
     }).catch(err => console.error("Erreur reprise lecture pendant popup :", err));
+  } else {
+    // 🎵 On repasse le volume à 100% après le popup
+    console.log("🎵 Remise volume à 100% après popup");
+    setVolume(100);
   }
-}, [showPopup, deviceId, playlist, currentRound]);
-
+}, [showPopup, deviceId, playlist, currentRound, token]);
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
