@@ -120,18 +120,18 @@ useEffect(() => {
   padding: 12px 16px;
   border-radius: 10px;
   font-size: 0.9rem;
-  width: 240px;
+  min-width: 240px; /* au moins 240px */
+  max-width: 400px; /* peut s'élargir jusqu'à 400px */
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   z-index: 20;
   transition: opacity 0.3s;
+  word-wrap: break-word; /* si un mot est trop long */
 }
 
 .profile-tooltip div {
   padding: 6px 0;
   border-bottom: 1px solid rgba(255,255,255,0.1);
-  white-space: nowrap;            /* ✅ pas de retour à la ligne */
-  overflow: hidden;               /* ✅ coupe proprement */
-  text-overflow: ellipsis;        /* ✅ ajoute "..." si trop long */
+  /* on enlève les règles qui forçaient le texte sur une ligne */
 }
 
 .profile-tooltip div:last-child {
