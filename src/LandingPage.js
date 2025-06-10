@@ -156,7 +156,7 @@ useEffect(() => {
 
     <div style={{
       minHeight: "100vh",
-      backgroundColor: "#29387a",
+      backgroundColor: "#1c2541",
       color: "#ffffff",
       fontFamily: "'Poppins', sans-serif",
       display: "flex",
