@@ -43,6 +43,7 @@ function GamePage() {
   const [averageTime, setAverageTime] = useState(null);
   const isVerifyingRef = useRef(false);
   const [playersReady, setPlayersReady] = useState(0);
+  const [isWrongAnswer, setIsWrongAnswer] = useState(false);
 
 const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
@@ -436,12 +437,12 @@ useEffect(() => {
 }, []);
 
 
-  const handleBuzz = () => {
-      pausedTimeRef.current = timeLeft; // on garde la valeur
-      setIsTimerRunning(false); // pause le timer
-      setIsBuzzed(true);
-      handlePause();
-  };
+const handleBuzz = async () => {
+    pausedTimeRef.current = timeLeft;
+    setIsTimerRunning(false);
+    setIsBuzzed(true);
+    await handlePause();
+};
 
 const normalize = str =>
   str
@@ -609,14 +610,18 @@ const handleValidate = () => {
     roundEndedRef.current = true;
   }
 
-  // 🔴 Cas 3 : Mauvaise réponse
-  else {
+// 🔴 Cas 3 : Mauvaise réponse
+else {
     wrongAttemptsRef.current = (wrongAttemptsRef.current || 0) + 1;
     console.log("❌ Mauvaise réponse - tentatives :", wrongAttemptsRef.current);
     basePointsRef.current = Math.max(0, basePointsRef.current - 20);
+
+    setIsWrongAnswer(true); //animation
+    setTimeout(() => setIsWrongAnswer(false), 600); // 600ms pour laisser l'animation se faire
+
     handlePlay();
     setIsTimerRunning(true);
-  }
+}
 
   // Nettoyage
   setAnswer("");
@@ -697,20 +702,36 @@ const handleNext = () => {
       <SpotifyPlayer token={token} onReady={handleReady} />
       
 <style>
-  {`
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden; /* 🔒 empêche scroll global */
-      height: 100%;
-      width: 100%;
-      box-sizing: border-box;
-    }
+{`
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-    *, *::before, *::after {
-      box-sizing: inherit;
-    }
-  `}
+  *, *::before, *::after {
+    box-sizing: inherit;
+  }
+
+  /* ✅ Ajoute ton animation ici */
+  @keyframes shake-pulse {
+    0% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
+    25% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
+    50% { transform: translateX(5px) scale(1); background-color: #ffe6e6; }
+    75% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
+    100% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
+  }
+
+  .wrong-answer {
+    animation: shake-pulse 0.6s;
+    border: 2px solid #f44336 !important;
+    background-color: #ffe6e6 !important;
+    color: #1e2a38 !important;
+  }
+`}
 </style>
 
 
@@ -846,6 +867,7 @@ const handleNext = () => {
           onKeyDown={(e) => e.key === "Enter" && handleValidate()}
           ref={answerInputRef}
           style={inputStyle}
+          className={isWrongAnswer ? "wrong-answer" : ""}
         />
         {bonusCompositeur && (
           <input
@@ -854,6 +876,7 @@ const handleNext = () => {
             value={composerGuess}
             onChange={(e) => setComposerGuess(e.target.value)}
             style={inputStyle}
+            className={isWrongAnswer ? "wrong-answer" : ""}
           />
         )}
         <div>
