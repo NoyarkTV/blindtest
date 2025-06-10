@@ -264,6 +264,7 @@ useEffect(() => {
   setShowIndiceAnnee(false);
   handleNextRoundPopup();
   playCurrentTrack(deviceId);
+  roundEndedRef.current = false;
 
   console.log("🔍 Contenu de scoreboard :", scoreboard);
 }, [currentRound]);
