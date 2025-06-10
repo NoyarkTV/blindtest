@@ -109,21 +109,38 @@ useEffect(() => {
       cursor: pointer;
     }
 
-    .profile-tooltip {
-      visibility: hidden;
-      opacity: 0;
-      position: absolute;
-      top: 30px;
-      right: 0;
-      background-color: rgba(0, 0, 0, 0.85);
-      color: #fff;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      width: 200px;
-      z-index: 20;
-      transition: opacity 0.3s;
-    }
+.profile-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  width: 240px; /* un peu plus large */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 20;
+  transition: opacity 0.3s;
+}
+
+.profile-tooltip div {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.profile-tooltip div:last-child {
+  border-bottom: none;
+}
+
+.info-icon:hover .profile-tooltip,
+.profile-tooltip:hover {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
 
     .info-icon:hover .profile-tooltip,
     .profile-tooltip:hover {
