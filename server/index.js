@@ -47,7 +47,7 @@ app.post("/create-game", (req, res) => {
   }
 
   // Stockage en mémoire (ou en DB plus tard)
-  games[id] = { id, admin, players };
+  games[id] = { id, admin, players, playersReady: [] };
 
   console.log("✅ Partie créée :", games[id]);
 
@@ -164,7 +164,8 @@ app.post("/start-game", (req, res) => {
     config: params,
     playlist,
     currentRound: 1,
-    nbRounds: playlist.length
+    nbRounds: playlist.length,
+    playersReady: []
   };
 
   io.to(id).emit("game-started", {
@@ -303,11 +304,29 @@ socket.on("next-round", ({ roomId }) => {
 
   if (game.currentRound < game.playlist.length) {
     game.currentRound++;
+    game.playersReady = [];
     console.log(`🆙 Nouveau round : ${game.currentRound}`);
     io.to(roomId).emit("round-updated", { newRound: game.currentRound });
   } else {
     console.log("🏁 Fin de la partie");
     io.to(roomId).emit("game-over", games[roomId]?.scores || []);
+  }
+});
+socket.on("player-ready", ({ roomId, playerName }) => {
+  const game = games[roomId];
+  if (!game) {
+    console.warn("❌ Partie non trouvée pour player-ready :", roomId);
+    return;
+  }
+
+  if (!game.playersReady.includes(playerName)) {
+    game.playersReady.push(playerName);
+    console.log(`✅ Player ready: ${playerName} (${game.playersReady.length} / ${game.players.length})`);
+
+    io.to(roomId).emit("players-ready-update", {
+      ready: game.playersReady.length,
+      total: game.players.length
+    });
   }
 });
 });

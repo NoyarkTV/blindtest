@@ -42,6 +42,7 @@ function GamePage() {
   const responseTimesRef = useRef([]);
   const [averageTime, setAverageTime] = useState(null);
   const isVerifyingRef = useRef(false);
+  const [playersReady, setPlayersReady] = useState(0);
 
 const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
@@ -352,6 +353,7 @@ useEffect(() => {
     });
     handlePause();
     setShowPopup(true);
+    socket.emit("player-ready", { roomId: id, playerName });
   }
 }, [timeLeft]);
 
@@ -422,6 +424,16 @@ useEffect(() => {
     setVolume(100);
   }
 }, [showPopup, deviceId, playlist, currentRound, token]);
+
+useEffect(() => {
+  socket.on("players-ready-update", ({ ready, total }) => {
+    setPlayersReady(ready);
+    console.log(`✅ Players ready: ${ready}/${total}`);
+  });
+
+  return () => socket.off("players-ready-update");
+}, []);
+
 
   const handleBuzz = () => {
       pausedTimeRef.current = timeLeft; // on garde la valeur
@@ -537,6 +549,7 @@ const handleValidate = () => {
 
     setTimeLeft(null);
     setShowPopup(true);
+    socket.emit("player-ready", { roomId: id, playerName });
     setPopupInfo({
       title: "Bonne réponse",
       points: `+${totalPoints} points${bonusText}`,
@@ -581,6 +594,7 @@ const handleValidate = () => {
 
     setTimeLeft(null);
     setShowPopup(true);
+    socket.emit("player-ready", { roomId: id, playerName });
     setPopupInfo({
       title: "Bonne réponse compositeur",
       points: `+${bonus} points (compositeur seul)`,
@@ -916,7 +930,7 @@ const handleNext = () => {
     style={nextButtonStyle}
     disabled={roundEndedRef.current === false}
   >
-    🎵 Round suivant
+    🎵 Round suivant ({playersReady} / {players.length})
   </button>
 ) : (
   <div
