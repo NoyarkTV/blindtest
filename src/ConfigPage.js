@@ -297,7 +297,7 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
             key={item}
             style={{
               background: selected.includes(item) ? "#f7b733" : "#eee",
-              color: selected.includes(item) ? "#1e2a38" : "#000",
+              color: selected.includes(item) ? "#29387a" : "#000",
               padding: "4px 8px",
               borderRadius: "12px",
               cursor: "pointer",
@@ -318,8 +318,8 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
   );
 
   return (
-    <div style={{ background: "#1e2a38", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-      <div style={{ background: "white", color: "#1e2a38", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
+    <div style={{ background: "#29387a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+      <div style={{ background: "white", color: "#29387a", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
           <h1 style={{ color: "#000000", fontSize: "2rem", margin: 0 }}>Configurer la partie</h1>
           <div>
@@ -329,7 +329,7 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
             </div>
             <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
 
-            <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1e2a38" }}>
+            <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#29387a" }}>
   {filteredCount === 0
     ? "Aucun morceau disponible avec ces filtres"
     : `${filteredCount} morceaux disponibles`}
@@ -390,7 +390,7 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
   onClick={copierCode}
   style={{
     backgroundColor: "#f7b733",
-    color: "#1e2a38",
+    color: "#29387a",
     border: "none",
     borderRadius: "8px",
     padding: "6px 12px",
@@ -407,7 +407,7 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#ccc", color: "#333", cursor: "pointer" }} onClick={() => navigate("/")}>Annuler</button>
-            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#f7b733", color: "#1e2a38", cursor: "pointer" }} onClick={validerPartie}>Lancer la partie</button>
+            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#f7b733", color: "#29387a", cursor: "pointer" }} onClick={validerPartie}>Lancer la partie</button>
           </div>
         </div>
       </div>

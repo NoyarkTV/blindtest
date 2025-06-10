@@ -120,7 +120,7 @@ useEffect(() => {
   padding: 12px 16px;
   border-radius: 10px;
   font-size: 0.9rem;
-  width: 240px; /* un peu plus large */
+  width: 240px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   z-index: 20;
   transition: opacity 0.3s;
@@ -129,6 +129,9 @@ useEffect(() => {
 .profile-tooltip div {
   padding: 6px 0;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;            /* ✅ pas de retour à la ligne */
+  overflow: hidden;               /* ✅ coupe proprement */
+  text-overflow: ellipsis;        /* ✅ ajoute "..." si trop long */
 }
 
 .profile-tooltip div:last-child {
@@ -153,7 +156,7 @@ useEffect(() => {
 
     <div style={{
       minHeight: "100vh",
-      backgroundColor: "#1e2a38",
+      backgroundColor: "#29387a",
       color: "#ffffff",
       fontFamily: "'Poppins', sans-serif",
       display: "flex",

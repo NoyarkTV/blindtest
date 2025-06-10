@@ -56,8 +56,8 @@ useEffect(() => {
   return (
 <div style={{
   minHeight: "100vh",
-  backgroundColor: "#1e2a38", // fond général blanc
-  color: "#1e2a38",           // texte sombre
+  backgroundColor: "#29387a", // fond général blanc
+  color: "#29387a",           // texte sombre
   fontFamily: "'Poppins', sans-serif",
   display: "flex",
   flexDirection: "column",
@@ -86,7 +86,7 @@ useEffect(() => {
       {players.map((p, i) => (
         <li key={i} style={{
           backgroundColor: "#f0f0f0",
-          color: "#1e2a38",
+          color: "#29387a",
           padding: "8px 12px",
           marginBottom: 8,
           borderRadius: 8

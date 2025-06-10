@@ -1055,7 +1055,7 @@ const buttonStyle = {
   borderRadius: "8px",
   border: "none",
   background: "#f7b733",
-  color: "#1e2a38",
+  color: "#29387a",
   fontWeight: "bold",
   cursor: "pointer"
 };
@@ -1065,7 +1065,7 @@ const buzzButtonStyle = {
   fontSize: 24,
   borderRadius: 30,
   background: "#f7b733",
-  color: "#1e2a38",
+  color: "#29387a",
   border: "none",
   cursor: "pointer"
 };
@@ -1102,7 +1102,7 @@ const cancelButtonStyle = {
 
 const indiceBoxStyle = {
   background: "#fff",
-  color: "#1e2a38",
+  color: "#29387a",
   borderRadius: "20px",
   padding: "6px 12px",
   display: "flex",
@@ -1128,7 +1128,7 @@ const popupStyle = {
   padding: "30px 40px",
   borderRadius: "20px",
   textAlign: "center",
-  color: "#1e2a38",
+  color: "#29387a",
   maxWidth: 480,
   width: "90%",
   boxShadow: "0 0 20px rgba(0,0,0,0.4)",
@@ -1141,7 +1141,7 @@ const nextButtonStyle = {
   fontSize: 16,
   borderRadius: 10,
   background: "#f7b733",
-  color: "#1e2a38",
+  color: "#29387a",
   fontWeight: "bold",
   border: "none",
   cursor: "pointer",
