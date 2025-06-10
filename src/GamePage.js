@@ -259,7 +259,6 @@ useEffect(() => {
 
   wrongAttemptsRef.current = 0;
   basePointsRef.current = 100;
-  setVolume(100);
   setTimeLeft(params.time);
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
@@ -418,12 +417,10 @@ useEffect(() => {
       headers: { Authorization: `Bearer ${token}` }
     }).then(() => {
       console.log("🎵 Musique relancée pour popup");
-      setVolume(20); // Volume faible
     }).catch(err => console.error("Erreur reprise lecture pendant popup :", err));
   } else {
     // 🎵 On repasse le volume à 100% après le popup
     console.log("🎵 Remise volume à 100% après popup");
-    setVolume(100);
   }
 }, [showPopup, deviceId, playlist, currentRound, token]);
 
