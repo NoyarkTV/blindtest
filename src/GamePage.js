@@ -44,6 +44,7 @@ function GamePage() {
   const isVerifyingRef = useRef(false);
   const [playersReady, setPlayersReady] = useState(0);
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
+  const [roundsWon, setRoundsWon] = useState(0);
 
 const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
@@ -251,6 +252,36 @@ useEffect(() => {
     console.log("🏁 Fin de partie détectée côté client");
     const sorted = [...scoreboard].sort((a, b) => b.score - a.score);
     setFinalScores(sorted);
+const totalResponseTime = responseTimesRef.current.reduce((sum, t) => sum + parseFloat(t), 0);
+const averageResponseTime = responseTimesRef.current.length > 0
+  ? (totalResponseTime / responseTimesRef.current.length)
+  : 0;
+
+const bestResponseTime = responseTimesRef.current.length > 0
+  ? Math.min(...responseTimesRef.current.map(t => parseFloat(t)))
+  : null;
+
+if (!params.testMode) { // ✅ tu ajouteras params.testMode plus bas
+  fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      playerName,
+      averageResponseTime,
+      roundsPlayed: playlist.length,
+      roundsWon,
+      bestResponseTime,
+      totalScore: score
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Stats envoyées au serveur :", data);
+  })
+  .catch(err => {
+    console.error("❌ Erreur lors de l'envoi des stats :", err);
+  });
+}
     setShowPopup(false);
     setShowEndPopup(true);
     handlePause();
@@ -335,6 +366,7 @@ useEffect(() => {
   if (timeLeft === 0) {
     setIsTimerRunning(false);
     roundEndedRef.current = true;
+    setRoundsWon(prev => prev + 1);
 
     const currentTrack = playlist[currentRound - 1];
 
@@ -560,6 +592,7 @@ const handleValidate = () => {
       image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
     });
     roundEndedRef.current = true;
+    setRoundsWon(prev => prev + 1);
     setAnswer("");
     setComposerGuess("");
   }

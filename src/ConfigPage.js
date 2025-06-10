@@ -14,12 +14,12 @@ function ConfigPage() {
   const [bonusCompositeur, setBonusCompositeur] = useState(false);
   const [anneeMin, setAnneeMin] = useState(1925);
   const [anneeMax, setAnneeMax] = useState(2025);
-  const [emoji, setEmoji] = useState("🟠");
   const [allTracks, setAllTracks] = useState([]);
   const [filteredCount, setFilteredCount] = useState(0);
   const [players, setPlayers] = useState([]);
   const [copied, setCopied] = useState(false);
   const [sagaTracks, setSagaTracks] = useState([]);
+  const [testMode, setTestMode] = useState(false);
 
 
 
@@ -181,7 +181,7 @@ const validerPartie = () => {
     categories: selectedCategorie,
     difficulte: selectedDifficulte,
     pays: selectedPays,
-    emoji
+    testMode
   };
 
   // 🔎 Filtrer les morceaux selon les critères
@@ -327,6 +327,19 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
               <div style={{ fontWeight: "bold" }}>Nombre de rounds</div>
               <label><input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} /> Bonus compositeur</label>
             </div>
+            {playerName === "thibchoffardet" && (
+  <div style={{ marginTop: "10px" }}>
+    <label>
+      <input
+        type="checkbox"
+        checked={testMode}
+        onChange={(e) => setTestMode(e.target.checked)}
+        style={{ marginRight: "6px" }}
+      />
+      Mode test (n'envoie pas les stats)
+    </label>
+  </div>
+)}
             <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
 
             <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1c2541" }}>
@@ -370,15 +383,6 @@ console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds
     }}
   >
     <span>{p.name}</span>
-    {p.name === playerName && (
-      <select value={emoji} onChange={e => setEmoji(e.target.value)} style={{ marginLeft: "10px" }}>
-        <option value="🟠">🟠</option>
-        <option value="🟣">🟣</option>
-        <option value="🟢">🟢</option>
-        <option value="🔵">🔵</option>
-        <option value="🟡">🟡</option>
-      </select>
-    )}
   </div>
 ))}
 

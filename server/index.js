@@ -5,6 +5,7 @@ const open = (...args) => import('open').then(mod => mod.default(...args));
 let storedAccessToken = null;
 let storedRefreshToken = null;
 let ready = false;
+const playerProfiles = {};
 const adjectives = [
   "Groovy", "Sneaky", "Witty", "Epic", "Cheesy", "Cosmic", "Rebel", "Jazzy", "Funky", "Classy",
   "Legendary", "Wild", "Bizarre", "Electric", "Savage", "Majestic", "Spooky", "Shiny", "Vibrant", "Zany",
@@ -327,7 +328,8 @@ app.get("/profile", (req, res) => {
         if (displayName && displayName.trim()) {
           res.send({
             playerName: displayName,
-            spotifyUser: true
+            spotifyUser: true,
+            stats: playerProfiles[displayName] || null
           });
         } else {
           // Cas rare : token valide mais pas de display_name → on met un randomName
@@ -355,6 +357,44 @@ app.get("/profile", (req, res) => {
     });
   }
 });
+
+app.post("/update-profile-stats", (req, res) => {
+  const {
+    playerName,
+    averageResponseTime,
+    roundsPlayed,
+    roundsWon,
+    bestResponseTime,
+    totalScore
+  } = req.body;
+
+  // Ex de structure simple en mémoire (à remplacer par DB plus tard)
+  if (!playerProfiles[playerName]) {
+    playerProfiles[playerName] = {
+      gamesPlayed: 0,
+      totalRoundsPlayed: 0,
+      totalRoundsWon: 0,
+      cumulativeResponseTime: 0,
+      bestResponseTime: null,
+      totalScore: 0
+    };
+  }
+
+  const profile = playerProfiles[playerName];
+
+  profile.gamesPlayed += 1;
+  profile.totalRoundsPlayed += roundsPlayed;
+  profile.totalRoundsWon += roundsWon;
+  profile.cumulativeResponseTime += averageResponseTime * roundsPlayed;
+  profile.totalScore += totalScore;
+
+  if (profile.bestResponseTime === null || bestResponseTime < profile.bestResponseTime) {
+    profile.bestResponseTime = bestResponseTime;
+  }
+
+  res.send({ success: true, profile });
+});
+
 
 const PORT = process.env.PORT;
 
