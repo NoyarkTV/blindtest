@@ -563,6 +563,8 @@ const handleValidate = () => {
       image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
     });
     roundEndedRef.current = true;
+    setAnswer("");
+    setComposerGuess("");
   }
 
   // 🟢 Cas 2 : Compositeur seul correct
@@ -608,6 +610,8 @@ const handleValidate = () => {
       image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
     });
     roundEndedRef.current = true;
+    setAnswer("");
+    setComposerGuess("");
   }
 
 // 🔴 Cas 3 : Mauvaise réponse
@@ -616,16 +620,16 @@ else {
     console.log("❌ Mauvaise réponse - tentatives :", wrongAttemptsRef.current);
     basePointsRef.current = Math.max(0, basePointsRef.current - 20);
 
-    setIsWrongAnswer(true); //animation
-    setTimeout(() => setIsWrongAnswer(false), 600); // 600ms pour laisser l'animation se faire
+    setIsWrongAnswer(true);
+    setTimeout(() => {
+    setIsWrongAnswer(false);
+    setAnswer("");
+    setComposerGuess("");
+  }, 600);
 
-    handlePlay();
-    setIsTimerRunning(true);
+handlePlay();
+setIsTimerRunning(true);
 }
-
-  // Nettoyage
-  setAnswer("");
-  setComposerGuess("");
 };
 
 
