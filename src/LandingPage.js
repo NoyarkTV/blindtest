@@ -6,6 +6,8 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState(localStorage.getItem("playerName") || "");
   const [joinCode, setJoinCode] = useState("");
+  const [spotifyToken, setSpotifyToken] = useState(null);
+
 
 const handleJoinGame = () => {
   const trimmed = joinCode.trim();
