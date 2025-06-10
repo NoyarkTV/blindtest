@@ -1074,7 +1074,10 @@ const inputStyle = {
   padding: 10,
   fontSize: 16,
   borderRadius: 10,
-  width: 300
+  width: 300,
+  backgroundColor: "#fff",
+  transform: "none",
+  transition: "all 0.3s ease"
 };
 
 const validateButtonStyle = {
