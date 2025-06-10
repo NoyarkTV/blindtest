@@ -95,21 +95,29 @@ useEffect(() => {
 
   return (
   <>
-    <style>
-      {`
-        .profile-tooltip {
-          visibility: hidden;
-          opacity: 0;
-          transition: opacity 0.3s;
-        }
+<style>
+  {`
+    .profile-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
 
-        .info-icon:hover .profile-tooltip {
-          visibility: visible;
-          opacity: 1;
-          pointer-events: auto;
-        }
-      `}
-    </style>
+    .info-icon {
+      pointer-events: auto;
+    }
+
+    .info-icon svg {
+      pointer-events: none; /* NE PAS capter la souris, pour que le hover fonctionne */
+    }
+
+    .info-icon:hover .profile-tooltip {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+    }
+  `}
+</style>
 
     <div style={{
       minHeight: "100vh",
