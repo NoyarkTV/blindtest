@@ -97,21 +97,36 @@ useEffect(() => {
   <>
 <style>
   {`
-    .profile-tooltip {
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 0.3s;
+    .info-icon-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
 
     .info-icon {
-      pointer-events: auto;
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
     }
 
-    .info-icon svg {
-      pointer-events: none; /* NE PAS capter la souris, pour que le hover fonctionne */
+    .profile-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 30px;
+      right: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      width: 200px;
+      z-index: 20;
+      transition: opacity 0.3s;
     }
 
-    .info-icon:hover .profile-tooltip {
+    .info-icon:hover .profile-tooltip,
+    .profile-tooltip:hover {
       visibility: visible;
       opacity: 1;
       pointer-events: auto;
