@@ -93,23 +93,24 @@ useEffect(() => {
     window.location.href = "https://blindtest-69h7.onrender.com/login";
   };
 
-  <style>
-{`
-  .profile-tooltip {
-    visibility: hidden;
-  }
-
-  div[style*="position: relative"]:hover .profile-tooltip {
-    visibility: visible;
-    opacity: 1 !important;
-    pointerEvents: auto !important;
-  }
-`}
-</style>
   return (
+  <>
+    <style>
+      {`
+        .profile-tooltip {
+          visibility: hidden;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
 
+        .info-icon:hover .profile-tooltip {
+          visibility: visible;
+          opacity: 1;
+          pointer-events: auto;
+        }
+      `}
+    </style>
 
-    
     <div style={{
       minHeight: "100vh",
       backgroundColor: "#1e2a38",
@@ -148,8 +149,50 @@ useEffect(() => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "15px"
+          gap: "15px",
+          position: "relative" // pour le position absolute du i
         }}>
+          {spotifyToken && (
+            <div
+              className="info-icon"
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                cursor: "pointer",
+                fontSize: "24px"
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#f7b733" className="bi bi-info-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+              </svg>
+              <div className="profile-tooltip" style={{
+                position: "absolute",
+                top: "30px",
+                right: "0",
+                backgroundColor: "rgba(0, 0, 0, 0.85)",
+                color: "#fff",
+                padding: "10px",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+                width: "200px",
+                opacity: "0",
+                pointerEvents: "none",
+                transition: "opacity 0.3s",
+                zIndex: 20
+              }}>
+                <div>Temps moyen de réponse: --</div>
+                <div>Nombre de rounds joués: --</div>
+                <div>Nombre de rounds remportés: --</div>
+                <div>Taux de réussite: -- %</div>
+                <div>Nombre de parties jouées: --</div>
+                <div>Meilleur temps de réponse: -- sec</div>
+                <div>Score total cumulé: --</div>
+              </div>
+            </div>
+          )}
+
           <div style={{
             width: "120px",
             height: "120px",
@@ -163,85 +206,45 @@ useEffect(() => {
             👤
           </div>
 
-          {spotifyToken && (
-  <div style={{ 
-    position: "relative", 
-    alignSelf: "flex-end", 
-    marginTop: "-20px", 
-    marginRight: "-10px", 
-    cursor: "pointer" 
-  }}>
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f7b733" className="bi bi-info-circle" viewBox="0 0 16 16">
-      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-      <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-    </svg>
-    <div style={{
-      position: "absolute",
-      top: "20px",
-      right: "0",
-      backgroundColor: "rgba(0, 0, 0, 0.85)",
-      color: "#fff",
-      padding: "10px",
-      borderRadius: "8px",
-      fontSize: "0.85rem",
-      width: "200px",
-      opacity: "0",
-      pointerEvents: "none",
-      transition: "opacity 0.3s",
-      zIndex: 20
-    }} className="profile-tooltip">
-      <div>Temps moyen de réponse: --</div>
-      <div>Nombre de rounds joués: --</div>
-      <div>Nombre de rounds remportés: --</div>
-      <div>Taux de réussite: -- %</div>
-      <div>Nombre de parties jouées: --</div>
-      <div>Meilleur temps de réponse: -- sec</div>
-      <div>Score total cumulé: --</div>
-    </div>
-  </div>
-)}
-
-<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-  <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</span>
-</div>
-
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</span>
+          </div>
 
           <button
-        className="btn"
-          onClick={handleSpotifyConnect}
-          style={{
-            backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
-            color: "#1e2a38",
-            fontWeight: "bold",
-            padding: "10px 20px",
-            fontSize: "1rem",
-            border: "none",
-            borderRadius: "50px",
-            cursor: "pointer"
-          }}
->
-          {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
-        </button>
-        {spotifyToken && (
-  <button
-    onClick={() => {
-      localStorage.removeItem("spotify_token");
-      setSpotifyToken(null);
-    }}
-    style={{
-      marginTop: "10px",
-      backgroundColor: "#444",
-      color: "#fff",
-      padding: "6px 12px",
-      borderRadius: "20px",
-      cursor: "pointer",
-      border: "none"
-    }}
-  >
-    Se déconnecter
-  </button>
-)}
-
+            className="btn"
+            onClick={handleSpotifyConnect}
+            style={{
+              backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
+              color: "#1e2a38",
+              fontWeight: "bold",
+              padding: "10px 20px",
+              fontSize: "1rem",
+              border: "none",
+              borderRadius: "50px",
+              cursor: "pointer"
+            }}
+          >
+            {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+          </button>
+          {spotifyToken && (
+            <button
+              onClick={() => {
+                localStorage.removeItem("spotify_token");
+                setSpotifyToken(null);
+              }}
+              style={{
+                marginTop: "10px",
+                backgroundColor: "#444",
+                color: "#fff",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                cursor: "pointer",
+                border: "none"
+              }}
+            >
+              Se déconnecter
+            </button>
+          )}
         </div>
 
         {/* Boutons à droite */}
@@ -257,20 +260,21 @@ useEffect(() => {
             Créer une partie
           </button>
           <div style={{ display: "flex", gap: "10px" }}>
-  <input
-    placeholder="Code de partie"
-    value={joinCode}
-    onChange={(e) => setJoinCode(e.target.value)}
-    style={inputStyle}
-  />
-  <button className="btn" style={buttonStyle} onClick={() => navigate(`/room/${joinCode}`)}>
-  Rejoindre
-</button>
-</div>
+            <input
+              placeholder="Code de partie"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              style={inputStyle}
+            />
+            <button className="btn" style={buttonStyle} onClick={() => navigate(`/room/${joinCode}`)}>
+              Rejoindre
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }
 
 const buttonStyle = {
