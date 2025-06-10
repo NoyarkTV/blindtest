@@ -318,17 +318,34 @@ app.get("/profile", (req, res) => {
     return fetch("https://api.spotify.com/v1/me", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error("Invalid Spotify token");
+        return r.json();
+      })
       .then(data => {
-        const displayName = data.display_name || "Spotify User";
-        res.send({
-          playerName: displayName,
-          spotifyUser: true
-        });
+        const displayName = data.display_name;
+        if (displayName && displayName.trim()) {
+          res.send({
+            playerName: displayName,
+            spotifyUser: true
+          });
+        } else {
+          // Cas rare : token valide mais pas de display_name → on met un randomName
+          const randomName = generateRandomName();
+          res.send({
+            playerName: randomName,
+            spotifyUser: false
+          });
+        }
       })
       .catch(err => {
         console.error("Erreur profil Spotify :", err);
-        res.status(500).send({ error: "Erreur Spotify" });
+        // Token invalide → on renvoie un randomName
+        const randomName = generateRandomName();
+        res.send({
+          playerName: randomName,
+          spotifyUser: false
+        });
       });
   } else {
     const randomName = generateRandomName();
@@ -338,7 +355,6 @@ app.get("/profile", (req, res) => {
     });
   }
 });
-
 
 const PORT = process.env.PORT;
 
