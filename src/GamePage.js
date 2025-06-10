@@ -747,6 +747,7 @@ const handleNext = () => {
   left: 0,
   width: "100%",
   textAlign: "left",
+  paddingLeft: 20, // ✅ petit espace à gauche
   fontFamily: "Luckiest Guy",
   fontSize: 28,
   color: "#f7b733",
@@ -862,21 +863,17 @@ const handleNext = () => {
     {!isBuzzed ? (
       <button onClick={handleBuzz} style={buzzButtonStyle}> BUZZ</button>
     ) : (
-      <div className={isWrongAnswer ? "wrong-answer" : ""} style={inputStyle}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <input
+        key={isWrongAnswer ? "wrong" : "normal"}
           type="text"
           placeholder="Votre réponse"
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleValidate()}
           ref={answerInputRef}
-          style={{
-            all: "unset", // Reset styles
-            width: "100%",
-            height: "100%",
-            padding: 10,
-            fontSize: 16,
-          }}
+          style={inputStyle}
+          className={isWrongAnswer ? "wrong-answer" : ""}
         />
         {bonusCompositeur && (
           <input

@@ -5,8 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState(localStorage.getItem("playerName") || "");
-  const [editing, setEditing] = useState(false);
-  const [inputName, setInputName] = useState(playerName);
   const [joinCode, setJoinCode] = useState("");
 
 const handleJoinGame = () => {
@@ -16,12 +14,25 @@ const handleJoinGame = () => {
   navigate(`/room/${trimmed}`);
 };
 
-  const handleSaveName = () => {
-    const name = inputName.trim() || "";
-    setPlayerName(name);
-    localStorage.setItem("playerName", name);
-    setEditing(false);
-  };
+useEffect(() => {
+  fetch("https://blindtest-69h7.onrender.com/profile", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("spotify_token") || ""}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.playerName) {
+        setPlayerName(data.playerName);
+        localStorage.setItem("playerName", data.playerName);
+      }
+    })
+    .catch(err => {
+      console.error("Erreur récupération profil :", err);
+    });
+}, []);
+
+
 
 const handleCreateGame = async () => {
   const generateSimpleId = (length = 5) => {
@@ -59,7 +70,10 @@ const gameId = generateSimpleId();
   }
 };
 
-    const [spotifyToken, setSpotifyToken] = useState(null);
+useEffect(() => {
+  const stored = localStorage.getItem("spotify_token");
+  if (stored) setSpotifyToken(stored);
+}, []);
 
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
@@ -69,23 +83,6 @@ useEffect(() => {
     localStorage.setItem("spotify_token", token);
     setSpotifyToken(token);
     window.history.replaceState({}, document.title, "/");
-
-    // 🔍 Récupération du nom Spotify
-    fetch("https://api.spotify.com/v1/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.display_name) {
-          setPlayerName(data.display_name); // Remplit automatiquement le champ
-          localStorage.setItem("playerName", data.display_name);
-        }
-      })
-      .catch(err => console.error("Erreur récupération profil Spotify :", err));
-
-  } else {
-    const stored = localStorage.getItem("spotify_token");
-    if (stored) setSpotifyToken(stored);
   }
 }, []);
 
@@ -148,26 +145,10 @@ useEffect(() => {
             👤
           </div>
 
-          {!editing ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</span>
-              <button onClick={() => setEditing(true)} className="btn-edit">Modifier</button>
-            </div>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <input
-                value={inputName}
-                onChange={e => setInputName(e.target.value)}
-                style={{
-                  fontSize: "1rem",
-                  padding: "4px 8px",
-                  borderRadius: "8px",
-                  border: "none"
-                }}
-              />
-              <button onClick={handleSaveName} className="btn-edit">Valider</button>
-            </div>
-          )}
+<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+  <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</span>
+</div>
+
 
           <button
         className="btn"
