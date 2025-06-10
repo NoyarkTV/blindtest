@@ -732,7 +732,7 @@ const handleNext = () => {
   };
 
   return (
-    <div style={{ padding: 20, color: "#fff", background: "#1e2a38", minHeight: "100vh", alignItems: "center" }}>
+    <div style={{ padding: 20, color: "#fff", background: "#1c2541", minHeight: "100vh", alignItems: "center" }}>
       <SpotifyPlayer token={token} onReady={handleReady} />
       
 <style>
@@ -763,7 +763,7 @@ const handleNext = () => {
     animation: shake-pulse 0.6s;
     border: 2px solid #f44336 !important;
     background-color: #ffe6e6 !important;
-    color: #1e2a38 !important;
+    color: #1c2541 !important;
   }
 `}
 </style>
@@ -804,7 +804,7 @@ const handleNext = () => {
       fontWeight: "bold",
       fontSize: 16,
       marginBottom: 10,
-      color: "#1e2a38"
+      color: "#1c2541"
     }}>
       🏆 Scoreboard
     </div>
@@ -817,7 +817,7 @@ const handleNext = () => {
           style={{
             fontWeight: isMe ? "bold" : "normal",
             backgroundColor: isMe ? "#f7b733" : "transparent",
-            color: isMe ? "#1e2a38" : "#333",
+            color: isMe ? "#1c2541" : "#333",
             padding: "6px 8px",
             borderRadius: 8,
             display: "flex",
@@ -843,7 +843,7 @@ const handleNext = () => {
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  background: "#1e2a38",
+  background: "#1c2541",
   color: "#fff"
 }}>
 
@@ -859,7 +859,7 @@ const handleNext = () => {
       justifyContent: "center",
       fontSize: 36,
       fontWeight: "bold",
-      color: "#1e2a38",
+      color: "#1c2541",
       marginBottom: 30,
       boxSizing: "border-box"
     }}
@@ -1004,7 +1004,7 @@ const handleNext = () => {
       display: "inline-block"
     }}
   >
-    ⏳ En attente de l’admin
+    ⏳ En attente de l’admin ({playersReady} / {players.length})
   </div>
 )}
     </div>
