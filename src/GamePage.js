@@ -864,6 +864,7 @@ const handleNext = () => {
     ) : (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <input
+        key={isWrongAnswer ? "wrong" : "normal"}
           type="text"
           placeholder="Votre réponse"
           value={answer}
@@ -875,6 +876,7 @@ const handleNext = () => {
         />
         {bonusCompositeur && (
           <input
+          key={isWrongAnswer ? "wrong" : "normal"}
             type="text"
             placeholder="Compositeur (facultatif)"
             value={composerGuess}
