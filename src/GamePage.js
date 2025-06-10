@@ -876,7 +876,7 @@ const handleNext = () => {
         />
         {bonusCompositeur && (
           <input
-          key={isWrongAnswer ? "wrong" : "normal"}
+          key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
             type="text"
             placeholder="Compositeur (facultatif)"
             value={composerGuess}
@@ -1078,8 +1078,7 @@ const inputStyle = {
   borderRadius: 10,
   width: 300,
   backgroundColor: "#fff",
-  transform: "none",
-  transition: "all 0.3s ease"
+  transition: "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease"
 };
 
 const validateButtonStyle = {
