@@ -45,6 +45,26 @@ function GamePage() {
   const [playersReady, setPlayersReady] = useState(0);
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
   const [roundsWon, setRoundsWon] = useState(0);
+  
+const roundsWonRef = useRef(roundsWon);
+useEffect(() => {
+  roundsWonRef.current = roundsWon;
+}, [roundsWon]);
+
+const playerNameRef = useRef(playerName);
+useEffect(() => {
+  playerNameRef.current = playerName;
+}, [playerName]);
+
+const playlistRef = useRef(playlist);
+useEffect(() => {
+  playlistRef.current = playlist;
+}, [playlist]);
+
+const paramsRef = useRef(params);
+useEffect(() => {
+  paramsRef.current = params;
+}, [params]);
 
 const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
@@ -343,17 +363,24 @@ useEffect(() => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          playerName,
+          playerName: playerNameRef.current,
           averageResponseTime,
-          roundsPlayed: playlist.length,
-          roundsWon,
+          roundsPlayed: playlistRef.current.length,
+          roundsWon: roundsWonRef.current,
           bestResponseTime,
           totalScore: score
         })
       })
       .then(res => res.json())
       .then(data => {
-        console.log("✅ Stats envoyées au serveur :", data);
+        console.log("📤 Envoi des stats de fin de partie :", {
+          playerName: playerNameRef.current,
+          averageResponseTime,
+          roundsPlayed: playlistRef.current.length,
+          roundsWon: roundsWonRef.current,
+          bestResponseTime,
+          totalScore: score
+        });
       })
       .catch(err => {
         console.error("❌ Erreur lors de l'envoi des stats :", err);
