@@ -330,8 +330,6 @@ useEffect(() => {
     setFinalScores(sorted);
     setShowPopup(false); // Ferme le popup de fin de round si ouvert
     setShowEndPopup(true); // Affiche le popup de fin de partie
-
-    if (!params.testMode) {
       console.log("📤 Envoi des stats de fin de partie :", {
         playerName,
         averageResponseTime,
@@ -360,7 +358,7 @@ useEffect(() => {
       .catch(err => {
         console.error("❌ Erreur lors de l'envoi des stats :", err);
       });
-    }
+  
   });
 
   return () => socket.off("game-over");
