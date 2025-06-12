@@ -66,6 +66,11 @@ useEffect(() => {
   paramsRef.current = params;
 }, [params]);
 
+const scoreRef = useRef(score);
+useEffect(() => {
+  scoreRef.current = score;
+}, [score]);
+
 useEffect(() => {
   fetch("https://blindtest-69h7.onrender.com/profile", {
     headers: {
@@ -375,7 +380,7 @@ useEffect(() => {
         roundsPlayed: playlist.length,
         roundsWon,
         bestResponseTime,
-        totalScore: score
+        totalScore
       });
 
       fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
@@ -387,7 +392,7 @@ useEffect(() => {
           roundsPlayed: playlistRef.current.length,
           roundsWon: roundsWonRef.current,
           bestResponseTime,
-          totalScore: score
+          totalScore: scoreRef.current
         })
       })
       .then(res => res.json())

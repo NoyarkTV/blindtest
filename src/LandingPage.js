@@ -206,10 +206,21 @@ useEffect(() => {
         <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
       </svg>
       <div className="profile-tooltip">
-<div>Temps moyen de réponse: {playerStats?.averageResponseTime?.toFixed(2) ?? "--"} sec</div>
-<div>Nombre de rounds joués: {playerStats?.roundsPlayed ?? "--"}</div>
-<div>Nombre de rounds remportés: {playerStats?.roundsWon ?? "--"}</div>
-<div>Taux de réussite: {playerStats?.roundsPlayed ? Math.round((playerStats.roundsWon / playerStats.roundsPlayed) * 100) : "--"} %</div>
+<div>
+Temps moyen de réponse: 
+  {playerStats?.totalRoundsPlayed > 0
+    ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2)
+    : "--"} sec
+</div>
+<div>Nombre de rounds joués: {playerStats?.totalRoundsPlayed ?? "--"}</div>
+<div>Nombre de rounds remportés: {playerStats?.totalRoundsWon ?? "--"}</div>
+<div>
+  Taux de réussite: 
+  {playerStats?.totalRoundsPlayed > 0
+    ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100)
+    : "--"} %
+</div>
+
 <div>Nombre de parties jouées: {playerStats?.gamesPlayed ?? "--"}</div>
 <div>Meilleur temps de réponse: {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
 <div>Score total cumulé: {playerStats?.totalScore ?? "--"}</div>
