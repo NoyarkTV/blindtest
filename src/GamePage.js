@@ -380,7 +380,7 @@ useEffect(() => {
         roundsPlayed: playlist.length,
         roundsWon,
         bestResponseTime,
-        totalScore
+        totalScore: score
       });
 
       fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
