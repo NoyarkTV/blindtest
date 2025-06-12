@@ -252,36 +252,7 @@ useEffect(() => {
     console.log("🏁 Fin de partie détectée côté client");
     const sorted = [...scoreboard].sort((a, b) => b.score - a.score);
     setFinalScores(sorted);
-const totalResponseTime = responseTimesRef.current.reduce((sum, t) => sum + parseFloat(t), 0);
-const averageResponseTime = responseTimesRef.current.length > 0
-  ? (totalResponseTime / responseTimesRef.current.length)
-  : 0;
 
-const bestResponseTime = responseTimesRef.current.length > 0
-  ? Math.min(...responseTimesRef.current.map(t => parseFloat(t)))
-  : null;
-
-if (!params.testMode) { // ✅ tu ajouteras params.testMode plus bas
-  fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      playerName,
-      averageResponseTime,
-      roundsPlayed: playlist.length,
-      roundsWon,
-      bestResponseTime,
-      totalScore: score
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("✅ Stats envoyées au serveur :", data);
-  })
-  .catch(err => {
-    console.error("❌ Erreur lors de l'envoi des stats :", err);
-  });
-}
     setShowPopup(false);
     setShowEndPopup(true);
     handlePause();
@@ -346,21 +317,54 @@ useEffect(() => {
 
     // Classement du plus haut au plus bas score
     const sorted = [...scores].sort((a, b) => b.score - a.score);
-    const average =
-    responseTimesRef.current.reduce((sum, t) => sum + parseFloat(t), 0) /
-    responseTimesRef.current.length;
+    const totalResponseTime = responseTimesRef.current.reduce((sum, t) => sum + parseFloat(t), 0);
+    const averageResponseTime = responseTimesRef.current.length > 0
+      ? (totalResponseTime / responseTimesRef.current.length)
+      : 0;
 
-    setAverageTime(average.toFixed(1));
+    const bestResponseTime = responseTimesRef.current.length > 0
+      ? Math.min(...responseTimesRef.current.map(t => parseFloat(t)))
+      : null;
+
+    setAverageTime(averageResponseTime.toFixed(1));
     setFinalScores(sorted);
     setShowPopup(false); // Ferme le popup de fin de round si ouvert
     setShowEndPopup(true); // Affiche le popup de fin de partie
+
+    if (!params.testMode) {
+      console.log("📤 Envoi des stats de fin de partie :", {
+        playerName,
+        averageResponseTime,
+        roundsPlayed: playlist.length,
+        roundsWon,
+        bestResponseTime,
+        totalScore: score
+      });
+
+      fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerName,
+          averageResponseTime,
+          roundsPlayed: playlist.length,
+          roundsWon,
+          bestResponseTime,
+          totalScore: score
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("✅ Stats envoyées au serveur :", data);
+      })
+      .catch(err => {
+        console.error("❌ Erreur lors de l'envoi des stats :", err);
+      });
+    }
   });
 
   return () => socket.off("game-over");
 }, []);
-
-
-
 
 useEffect(() => {
   if (timeLeft === 0) {
