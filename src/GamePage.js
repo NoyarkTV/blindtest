@@ -66,6 +66,25 @@ useEffect(() => {
   paramsRef.current = params;
 }, [params]);
 
+useEffect(() => {
+  fetch("https://blindtest-69h7.onrender.com/profile", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.playerName) {
+        console.log("🎵 Récupéré display_name pour la partie :", data.playerName);
+        setPlayerName(data.playerName);
+        localStorage.setItem("playerName", data.playerName); // pour cohérence
+      }
+    })
+    .catch(err => {
+      console.error("❌ Erreur récupération profile dans GamePage :", err);
+    });
+}, [token]);
+
 const playCurrentTrack = async (devId) => {
   const track = playlist[currentRound - 1];
   if (!track?.uri) return;
