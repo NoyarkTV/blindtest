@@ -8,7 +8,48 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const [joinCode, setJoinCode] = useState("");
   const [spotifyToken, setSpotifyToken] = useState(null);
   const [playerStats, setPlayerStats] = useState(null);
+  const adjectives = [
+  "Groovy", "Sneaky", "Witty", "Epic", "Cheesy", "Cosmic", "Rebel", "Jazzy", "Funky", "Classy",
+  "Legendary", "Wild", "Bizarre", "Electric", "Savage", "Majestic", "Spooky", "Shiny", "Vibrant", "Zany",
+  "Grumpy", "Lucky", "Chill", "Psychedelic", "Melodic", "Sassy", "Retro", "Flashy", "Crazy", "Trendy",
+  "Smooth", "Loyal", "Furious", "Bold", "Charming", "Nostalgic", "Offbeat", "Dreamy", "Loud", "Magnetic"
+];
 
+const nouns = [
+  "Vader", "Leia", "Yoda", "Luke", "Han", "Chewbacca", "Kylo", "Rey", "Palpatine", "ObiWan",
+  "Gandalf", "Frodo", "Aragorn", "Legolas", "Gollum", "Bilbo", "Galadriel", "Thorin", "Sauron", "Elrond",
+  "Harry", "Hermione", "Ron", "Dumbledore", "Snape", "Voldemort", "Draco", "Neville", "Sirius", "Luna",
+  "Neo", "Trinity", "Morpheus", "Smith", "Oracle",
+  "Ironman", "Thor", "Hulk", "Spiderman", "BlackWidow", "DoctorStrange", "Loki", "ScarletWitch", "Vision", "AntMan",
+  "Batman", "Joker", "Harley", "Superman", "Flash", "WonderWoman", "Aquaman", "GreenLantern", "Catwoman", "Riddler",
+  "Indiana", "Bond", "Ripley", "SarahConnor", "Forrest", "Rocky", "Drago", "Maximus", "Marty", "Doc",
+  "Ferris", "Jules", "Vincent", "TonyMontana", "Tyler", "TheDude", "Clarice", "Hannibal", "Shrek", "Donkey",
+  "Po", "Tigress", "Hiccup", "Toothless", "JackSparrow", "WillTurner", "Elizabeth", "DavyJones", "Beetlejuice", "Edward",
+  "Arya", "Jon", "Tyrion", "Daenerys", "Cersei", "Brienne", "Jaime", "Hodor", "Littlefinger", "Varys",
+  "Walter", "Jesse", "Saul", "Gus", "Hank", "Skyler", "Mike", "Jane", "Tuco", "Badger",
+  "Eleven", "Mike", "Dustin", "Lucas", "Will", "Max", "Hopper", "Joyce", "Steve", "Robin",
+  "Dexter", "Debra", "Doakes", "Masuka", "TrinityKiller",
+  "Sheldon", "Leonard", "Penny", "Howard", "Raj",
+  "Barney", "Ted", "Marshall", "Robin", "Lily",
+  "Rick", "Morty", "Summer", "Jerry", "Beth",
+  "Mario", "Luigi", "Link", "Zelda", "Ganondorf", "Kratos", "Lara", "MasterChief", "Samus", "Geralt",
+  "Cloud", "Tifa", "Sephiroth", "Sonic", "Knuckles", "Tails", "DonkeyKong", "Kirby", "FoxMcCloud", "Falco",
+  "Pikachu", "Charizard", "Mewtwo", "Eevee", "Ash", "Red", "ChunLi", "Ryu", "Ken", "Blanka",
+  "PacMan", "MegaMan", "Bomberman", "SimonBelmont", "Alucard", "Doomguy", "Arthur", "DukeNukem", "Scorpion", "SubZero",
+  "Simba", "Nala", "Mufasa", "Scar", "Aladdin", "Jasmine", "Genie", "Jafar", "Belle", "Beast",
+  "Ariel", "Ursula", "Eric", "Hercules", "Megara", "Hades", "Tarzan", "Jane", "Mulan", "ShanYu",
+  "Elsa", "Anna", "Olaf", "Kristoff", "Buzz", "Woody", "Jessie", "Lotso", "Remy", "Linguini",
+  "WallE", "EVE", "Lightning", "Mater", "Sully", "Mike", "Boo", "MrIncredible", "Elastigirl", "JackJack",
+  "Godzilla", "KingKong", "GLaDOS", "Wheatley", "MasterRoshi", "Goku", "Vegeta", "Piccolo", "Naruto", "Sasuke",
+  "Luffy", "Zoro", "Nami", "Sanji", "Chopper", "Dio", "Jotaro", "Spike", "Faye", "Ed"
+];
+
+
+  function generateRandomName() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    return `${adj} ${noun}`;
+  }
 
 const handleJoinGame = () => {
   const trimmed = joinCode.trim();
@@ -16,6 +57,39 @@ const handleJoinGame = () => {
 
   navigate(`/room/${trimmed}`);
 };
+
+useEffect(() => {
+  fetch("https://blindtest-69h7.onrender.com/profile", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("spotify_token") || ""}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.playerName) {
+        setPlayerName(data.playerName);
+        localStorage.setItem("playerName", data.playerName);
+      } else {
+        // fallback uniquement côté client
+        const fallbackName = generateRandomName();
+        setPlayerName(fallbackName);
+        localStorage.setItem("playerName", fallbackName);
+      }
+
+      if (data.stats) {
+        setPlayerStats(data.stats);
+      } else {
+        setPlayerStats(null);
+      }
+    })
+    .catch(() => {
+      // En cas d’erreur d’appel → fallback local
+      const fallbackName = generateRandomName();
+      setPlayerName(fallbackName);
+      localStorage.setItem("playerName", fallbackName);
+    });
+}, []);
+
 
 useEffect(() => {
   fetch("https://blindtest-69h7.onrender.com/profile", {

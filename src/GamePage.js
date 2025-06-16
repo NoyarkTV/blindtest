@@ -392,7 +392,7 @@ useEffect(() => {
           roundsPlayed: playlistRef.current.length,
           roundsWon: roundsWonRef.current,
           bestResponseTime,
-          totalScore: scoreRef.current
+          totalScore: score
         })
       })
       .then(res => res.json())

@@ -42,14 +42,6 @@ const nouns = [
   "Luffy", "Zoro", "Nami", "Sanji", "Chopper", "Dio", "Jotaro", "Spike", "Faye", "Ed"
 ];
 
-
-
-  function generateRandomName() {
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  return `${adj} ${noun}`;
-}
-
 const app = express();
 app.use(express.json());
 
@@ -58,6 +50,7 @@ const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 const games = {};
+const alreadyPlayedUris = new Set();
 
 const cors = require("cors");
 app.use(cors({
@@ -206,19 +199,19 @@ app.post("/start-game", (req, res) => {
   games[id] = {
     ...(games[id] || {}),
     config: params,
-    playlist,
+    playlist: uniqueTracks,
     currentRound: 1,
-    nbRounds: playlist.length,
+    nbRounds: uniqueTracks.length,
     playersReady: []
   };
 
   io.to(id).emit("game-started", {
-    playlist: playlist.map((track, i) => ({ index: i + 1, ...track })),
-    nbRounds: playlist.length,
+    playlist: uniqueTracks.map((track, i) => ({ index: i + 1, ...track })),
+    nbRounds: uniqueTracks.length,
     config: params
   });
 
-  console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux`);
+  console.log(`🎬 Partie ${id} lancée avec ${uniqueTracks.length} morceaux (exclusion active)`);
   console.log("📦 Paramètres de la partie :", params);
 
   res.status(200).send({ success: true });
@@ -242,6 +235,104 @@ app.get("/game-info/:id", (req, res) => {
     nbRounds: game.nbRounds || (game.playlist?.length ?? 0)
   });
 });
+
+function fisherYatesShuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function getRandomSagaTrack(sagaName) {
+  const sagaOptions = sagaTracks.filter(t => t.saga === sagaName);
+  if (sagaOptions.length === 0) return null;
+  const picked = sagaOptions[Math.floor(Math.random() * sagaOptions.length)];
+  console.log(`🎬 Saga "${sagaName}" → ${picked.titre}`);
+  return picked;
+}
+
+app.post("/generate-playlist", (req, res) => {
+  const { filters, nbRounds } = req.body;
+
+  if (!filters || !nbRounds || !Array.isArray(allTracks)) {
+    return res.status(400).send({ error: "Requête invalide ou données manquantes" });
+  }
+
+  const {
+    media = [],
+    categories = [],
+    difficulte = [],
+    pays = [],
+    anneeMin = 0,
+    anneeMax = 3000
+  } = filters;
+
+  // 1. Filtrage initial
+  let tracks = allTracks.filter(track => {
+    const matchMedia = media.includes(track.media);
+    const matchDifficulte = difficulte.includes(track.difficulte);
+    const matchPays = pays.includes(track.pays);
+    const matchAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
+    const matchCategorie = categories.some(cat =>
+      (track.categorie || "").split(",").map(c => c.trim()).includes(cat)
+    );
+    return matchMedia && matchDifficulte && matchPays && matchAnnee && matchCategorie;
+  });
+
+  // 2. Exclusion des déjà jouées
+  let notPlayed = tracks.filter(t => !alreadyPlayedUris.has(t.uri));
+
+  // 3. Si trop peu, reset mémoire
+  if (notPlayed.length < nbRounds) {
+    console.log("🔁 Trop peu de morceaux disponibles, réinitialisation de la mémoire");
+    alreadyPlayedUris.clear();
+    notPlayed = tracks;
+  }
+
+  // 4. Shuffle local
+  const shuffled = fisherYatesShuffle(notPlayed);
+
+  // 5. Préparer la playlist avec gestion des sagas
+  const enrichedTracks = [];
+
+  for (let i = 0; i < shuffled.length && enrichedTracks.length < nbRounds; i++) {
+    const track = shuffled[i];
+
+    if (!track.uri?.startsWith("spotify:track:")) {
+      const sagaTrack = getRandomSagaTrack(track.uri?.trim());
+      if (sagaTrack) {
+        enrichedTracks.push({
+          ...sagaTrack,
+          image: sagaTrack.image || null
+        });
+        alreadyPlayedUris.add(sagaTrack.uri);
+      } else {
+        console.warn(`⚠️ Saga introuvable : ${track.uri}`);
+      }
+    } else {
+      enrichedTracks.push({ ...track, image: track.image || null });
+      alreadyPlayedUris.add(track.uri);
+    }
+  }
+
+  // 6. Complétion si nécessaire
+  if (enrichedTracks.length < nbRounds) {
+    const remaining = fisherYatesShuffle(allTracks).filter(t =>
+      !enrichedTracks.some(et => et.uri === t.uri) &&
+      t.uri?.startsWith("spotify:track:")
+    );
+    for (let i = 0; i < remaining.length && enrichedTracks.length < nbRounds; i++) {
+      enrichedTracks.push({ ...remaining[i], image: remaining[i].image || null });
+      alreadyPlayedUris.add(remaining[i].uri);
+    }
+  }
+
+  console.log(`✅ Playlist générée (${enrichedTracks.length}/${nbRounds})`);
+  res.send({ playlist: enrichedTracks });
+});
+
 
 app.get("/game/:id", (req, res) => {
   const { id } = req.params;
@@ -315,48 +406,36 @@ app.get("/scores/:id", (req, res) => {
 app.get("/profile", (req, res) => {
   const token = req.headers["authorization"]?.replace("Bearer ", "");
 
-  if (token) {
-    return fetch("https://api.spotify.com/v1/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(r => {
-        if (!r.ok) throw new Error("Invalid Spotify token");
-        return r.json();
-      })
-      .then(data => {
-        const displayName = data.display_name;
-        if (displayName && displayName.trim()) {
-          res.send({
-            playerName: displayName,
-            spotifyUser: true,
-            stats: playerProfiles[displayName] || null
-          });
-        } else {
-          // Cas rare : token valide mais pas de display_name → on met un randomName
-          const randomName = generateRandomName();
-          res.send({
-            playerName: randomName,
-            spotifyUser: false
-          });
-        }
-      })
-      .catch(err => {
-        console.error("Erreur profil Spotify :", err);
-        // Token invalide → on renvoie un randomName
-        const randomName = generateRandomName();
-        res.send({
-          playerName: randomName,
-          spotifyUser: false
-        });
-      });
-  } else {
-    const randomName = generateRandomName();
-    res.send({
-      playerName: randomName,
-      spotifyUser: false
-    });
+  if (!token) {
+    return res.status(401).send({ error: "Aucun token fourni" });
   }
+
+  fetch("https://api.spotify.com/v1/me", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(r => {
+      if (!r.ok) throw new Error("Token Spotify invalide");
+      return r.json();
+    })
+    .then(data => {
+      const displayName = data.display_name?.trim();
+      if (displayName) {
+        res.send({
+          playerName: displayName,
+          spotifyUser: true,
+          stats: playerProfiles[displayName] || null
+        });
+      } else {
+        // Token valide mais pas de nom → client doit gérer le fallback
+        res.status(400).send({ error: "Nom Spotify vide ou invalide" });
+      }
+    })
+    .catch(err => {
+      console.error("❌ Erreur profil Spotify :", err.message);
+      res.status(401).send({ error: "Échec d'authentification Spotify" });
+    });
 });
+
 
 app.post("/update-profile-stats", (req, res) => {
   const {

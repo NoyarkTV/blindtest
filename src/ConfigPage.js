@@ -184,108 +184,47 @@ const validerPartie = () => {
     testMode
   };
 
-  // 🔎 Filtrer les morceaux selon les critères
-  const filteredTracks = allTracks.filter(track => {
-    const okMedia = selectedMedia.includes(track.media);
-    const okCategorie =
-      !selectedCategorie.length || selectedCategorie.some(cat =>
-        (track.categorie || "")
-          .split(",")
-          .map(c => c.trim())
-          .includes(cat)
-      );
-    const okDiff = selectedDifficulte.includes(track.difficulte);
-    const okPays = selectedPays.includes(track.pays);
-    const okAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
-
-    return okMedia && okCategorie && okDiff && okPays && okAnnee;
-  });
-
-function fisherYatesShuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function getRandomSagaTrack(sagaName) {
-  const sagaOptions = sagaTracks.filter(t => t.saga === sagaName);
-  if (sagaOptions.length === 0) {
-    console.warn(`❌ Saga inconnue ou vide : "${sagaName}"`);
-    return null;
-  }
-  const picked = sagaOptions[Math.floor(Math.random() * sagaOptions.length)];
-  console.log(`🎬 Saga détectée : "${sagaName}" → ${picked.titre}`);
-  return picked;
-}
-
-// 🎲 Tirage avec gestion saga + complétion
-let shuffled = fisherYatesShuffle(filteredTracks);
-const enrichedTracks = [];
-
-for (let i = 0; i < shuffled.length && enrichedTracks.length < nbRounds; i++) {
-  const track = shuffled[i];
-
-  if (!track.uri?.startsWith("spotify:track:")) {
-    const sagaName = track.uri?.trim();
-    console.log(`🔍 URI non standard détecté, tentative saga : "${sagaName}"`);
-
-    const sagaTrack = getRandomSagaTrack(sagaName);
-    if (sagaTrack) {
-      enrichedTracks.push({
-        ...sagaTrack,
-        image: sagaTrack.image || null
-      });
-    } else {
-      console.warn(`⚠️ Aucun morceau trouvé pour saga "${sagaName}"`);
-    }
-  } else {
-    const original = allTracks.find(t => t.uri === track.uri);
-    enrichedTracks.push({
-      ...track,
-      image: original?.image || null
-    });
-  }
-}
-
-// 🔁 Complétion si on n’a pas assez de morceaux
-if (enrichedTracks.length < nbRounds) {
-  console.log(`🔄 Complétion : ${nbRounds - enrichedTracks.length} morceaux manquants, recherche en cours...`);
-
-  const remaining = fisherYatesShuffle(allTracks).filter(t =>
-    !enrichedTracks.some(et => et.uri === t.uri) &&
-    t.uri?.startsWith("spotify:track:")
-  );
-
-  for (let i = 0; i < remaining.length && enrichedTracks.length < nbRounds; i++) {
-    enrichedTracks.push({
-      ...remaining[i],
-      image: remaining[i].image || null
-    });
-    console.log(`➕ Complément ajouté : ${remaining[i].titre}`);
-  }
-}
-
-console.log(`✅ Playlist finale générée (${enrichedTracks.length}/${nbRounds})`);
-
-
-  const payload = {
-    id,                   // ID de la partie
-    params,               // paramètres de jeu
-    playlist: enrichedTracks, // morceaux choisis
-    admin: playerName
+  const filters = {
+    media: selectedMedia,
+    categories: selectedCategorie,
+    difficulte: selectedDifficulte,
+    pays: selectedPays,
+    anneeMin,
+    anneeMax
   };
 
-  fetch("https://blindtest-69h7.onrender.com/start-game", {
+  // 🎯 Demande au serveur de générer la playlist
+  fetch("https://blindtest-69h7.onrender.com/generate-playlist", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ filters, nbRounds })
   })
     .then(res => res.json())
-    .then(() => navigate(`/game/${id}`))
-    .catch(err => console.error("Erreur lancement partie :", err));
+    .then(data => {
+      const playlist = data.playlist;
+      if (!playlist || playlist.length === 0) {
+        console.error("❌ Playlist vide ou non reçue");
+        return;
+      }
+
+      // 🔁 Démarre la partie avec cette playlist
+      fetch("https://blindtest-69h7.onrender.com/start-game", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          params,
+          playlist,
+          admin: playerName
+        })
+      })
+        .then(res => res.json())
+        .then(() => navigate(`/game/${id}`))
+        .catch(err => console.error("❌ Erreur lancement partie :", err));
+    })
+    .catch(err => {
+      console.error("❌ Erreur génération playlist :", err);
+    });
 };
 
   const renderCheckboxGroup = (label, list, selected, setter) => (
