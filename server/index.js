@@ -190,7 +190,7 @@ app.post("/set-filters", (req, res) => {
 });
 
 app.post("/start-game", (req, res) => {
-  const { id, params, playlist } = req.body;
+  const { id, params, playlist, admin } = req.body;
 
   if (!id || !Array.isArray(playlist)) {
     return res.status(400).send({ error: "Requête invalide" });
