@@ -202,7 +202,8 @@ app.post("/start-game", (req, res) => {
     playlist: uniqueTracks,
     currentRound: 1,
     nbRounds: uniqueTracks.length,
-    playersReady: []
+    playersReady: [],
+    admin
   };
 
   io.to(id).emit("game-started", {
