@@ -199,20 +199,20 @@ app.post("/start-game", (req, res) => {
   games[id] = {
     ...(games[id] || {}),
     config: params,
-    playlist: uniqueTracks,
+    playlist: playlist,
     currentRound: 1,
-    nbRounds: uniqueTracks.length,
+    nbRounds: playlist.length,
     playersReady: [],
     admin
   };
 
   io.to(id).emit("game-started", {
-    playlist: uniqueTracks.map((track, i) => ({ index: i + 1, ...track })),
-    nbRounds: uniqueTracks.length,
+    playlist: playlist.map((track, i) => ({ index: i + 1, ...track })),
+    nbRounds: playlist.length,
     config: params
   });
 
-  console.log(`🎬 Partie ${id} lancée avec ${uniqueTracks.length} morceaux (exclusion active)`);
+  console.log(`🎬 Partie ${id} lancée avec ${playlist.length} morceaux (exclusion active)`);
   console.log("📦 Paramètres de la partie :", params);
 
   res.status(200).send({ success: true });
