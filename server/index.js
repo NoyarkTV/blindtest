@@ -5,7 +5,7 @@ const open = (...args) => import('open').then(mod => mod.default(...args));
 let storedAccessToken = null;
 let storedRefreshToken = null;
 let ready = false;
-const playerProfiles = {};
+let playerProfiles = {};
 const adjectives = [
   "Groovy", "Sneaky", "Witty", "Epic", "Cheesy", "Cosmic", "Rebel", "Jazzy", "Funky", "Classy",
   "Legendary", "Wild", "Bizarre", "Electric", "Savage", "Majestic", "Spooky", "Shiny", "Vibrant", "Zany",
@@ -51,6 +51,44 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 const games = {};
 const alreadyPlayedUris = new Set();
+
+const fs = require("fs");
+const path = require("path");
+
+const STATS_FOLDER = path.join(__dirname, "data");
+const STATS_FILE = path.join(STATS_FOLDER, "profiles.json");
+
+// Crée le dossier s'il n'existe pas
+if (!fs.existsSync(STATS_FOLDER)) {
+  fs.mkdirSync(STATS_FOLDER);
+  console.log("📁 Dossier 'data' créé.");
+}
+
+// Crée un fichier vide s'il n'existe pas
+if (!fs.existsSync(STATS_FILE)) {
+  fs.writeFileSync(STATS_FILE, "{}");
+  console.log("📄 Fichier 'profiles.json' créé vide.");
+}
+
+// Chargement à l'ouverture
+if (fs.existsSync(STATS_FILE)) {
+  try {
+    playerProfiles = JSON.parse(fs.readFileSync(STATS_FILE, "utf-8"));
+    console.log("📂 Profils rechargés depuis le fichier.");
+  } catch (err) {
+    console.error("❌ Erreur de lecture du fichier de profils :", err);
+  }
+}
+
+// Fonction de sauvegarde
+function saveProfilesToFile() {
+  try {
+    fs.writeFileSync(STATS_FILE, JSON.stringify(playerProfiles, null, 2));
+    console.log("💾 Profils sauvegardés.");
+  } catch (err) {
+    console.error("❌ Erreur lors de la sauvegarde des profils :", err);
+  }
+}
 
 const cors = require("cors");
 app.use(cors({
@@ -471,6 +509,7 @@ app.post("/update-profile-stats", (req, res) => {
   if (profile.bestResponseTime === null || bestResponseTime < profile.bestResponseTime) {
     profile.bestResponseTime = bestResponseTime;
   }
+  saveProfilesToFile();
 
   res.send({ success: true, profile });
 });
