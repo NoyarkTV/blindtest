@@ -342,15 +342,15 @@ app.post("/generate-playlist", (req, res) => {
 if (!track.uri?.startsWith("spotify:track:")) {
   const sagaTrack = getRandomSagaTrack(track.uri?.trim());
   if (sagaTrack) {
-    enrichedTracks.push({
-      ...sagaTrack,
-      // on hérite du morceau placeholder ce qui manque
-      media: track.media,
-      categorie: track.categorie,
-      difficulte: track.difficulte,
-      pays: track.pays,
-      image: sagaTrack.image || null
-    });
+enrichedTracks.push({
+  ...sagaTrack,
+  media: track.media,
+  categorie: track.categorie,
+  difficulte: track.difficulte,
+  pays: track.pays,
+  saga: track.uri,
+  image: sagaTrack.image || null
+});
     alreadyPlayedUris.add(sagaTrack.uri);
   } else {
     console.warn(`⚠️ Saga introuvable : ${track.uri}`);
