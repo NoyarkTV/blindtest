@@ -240,78 +240,75 @@ useEffect(() => {
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  padding: "20px"
+  justifyContent: "center",
+  paddingTop: "20px"
 }}>
-  {/* LOGO EN HAUT À GAUCHE – NE PAS TOUCHER */}
-  <header style={{
-    position: "absolute",
-    top: "20px",
-    left: "20px",
-    fontSize: "2.5rem",
+  {/* Titre principal */}
+  <h1 style={{
+    fontSize: "3rem",
     fontFamily: "'Luckiest Guy', cursive",
-    color: "#f7b733"
+    color: "#f7b733",
+    marginBottom: "40px",
+    textAlign: "center"
   }}>
     Blindtest
-  </header>
+  </h1>
 
+  {/* Section centrale */}
   <div style={{
     display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
     gap: "60px",
     flexWrap: "wrap",
-    marginTop: "100px",
-    width: "100%",
-    maxWidth: "1100px"
+    justifyContent: "center",
+    alignItems: "flex-start"
   }}>
-    {/* PROFIL */}
+    {/* Profil */}
     <div style={{
       background: "rgba(255,255,255,0.05)",
-      padding: "30px",
+      padding: "20px 25px",
       borderRadius: "20px",
       boxShadow: "0 0 15px rgba(0,0,0,0.2)",
-      minWidth: "280px",
-      flex: "1 1 300px",
+      width: "240px",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       position: "relative",
-      gap: "16px"
+      gap: "12px"
     }}>
       {spotifyToken && (
         <div className="info-icon-container">
           <div className="info-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#f7b733" className="bi bi-info-circle" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#f7b733" viewBox="0 0 16 16">
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
               <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
             </svg>
             <div className="profile-tooltip">
-              <div>Temps moyen de réponse: {playerStats?.totalRoundsPlayed > 0 ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2) : "--"} sec</div>
-              <div>Nombre de rounds joués: {playerStats?.totalRoundsPlayed ?? "--"}</div>
-              <div>Nombre de rounds remportés: {playerStats?.totalRoundsWon ?? "--"}</div>
-              <div>Taux de réussite: {playerStats?.totalRoundsPlayed > 0 ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100) : "--"}%</div>
-              <div>Nombre de parties jouées: {playerStats?.gamesPlayed ?? "--"}</div>
-              <div>Meilleur temps de réponse: {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
-              <div>Score total cumulé: {playerStats?.totalScore ?? "--"}</div>
+              <div>Temps moyen : {playerStats?.totalRoundsPlayed > 0 ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2) : "--"} sec</div>
+              <div>Rounds joués : {playerStats?.totalRoundsPlayed ?? "--"}</div>
+              <div>Rounds gagnés : {playerStats?.totalRoundsWon ?? "--"}</div>
+              <div>Réussite : {playerStats?.totalRoundsPlayed > 0 ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100) : "--"}%</div>
+              <div>Parties jouées : {playerStats?.gamesPlayed ?? "--"}</div>
+              <div>Meilleur temps : {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
+              <div>Score cumulé : {playerStats?.totalScore ?? "--"}</div>
             </div>
           </div>
         </div>
       )}
 
       <div style={{
-        width: "120px",
-        height: "120px",
+        width: "80px",
+        height: "80px",
         borderRadius: "50%",
         backgroundColor: "#ccc",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: "2rem"
+        fontSize: "1.5rem"
       }}>
         👤
       </div>
 
-      <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</div>
+      <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
 
       <button
         className="btn"
@@ -320,13 +317,11 @@ useEffect(() => {
           backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
           color: "#1e2a38",
           fontWeight: "bold",
-          padding: "10px 24px",
-          fontSize: "1rem",
+          padding: "8px 20px",
+          fontSize: "0.95rem",
           border: "none",
           borderRadius: "50px",
-          cursor: "pointer",
-          width: "100%",
-          maxWidth: "240px"
+          cursor: "pointer"
         }}
       >
         {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
@@ -339,14 +334,13 @@ useEffect(() => {
             setSpotifyToken(null);
           }}
           style={{
-            marginTop: "8px",
             backgroundColor: "#444",
             color: "#fff",
-            padding: "6px 14px",
+            padding: "5px 12px",
             borderRadius: "20px",
             cursor: "pointer",
             border: "none",
-            fontSize: "0.9rem"
+            fontSize: "0.85rem"
           }}
         >
           Se déconnecter
@@ -354,17 +348,16 @@ useEffect(() => {
       )}
     </div>
 
-    {/* BOUTONS DROITE */}
+    {/* Zone de jeu */}
     <div style={{
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      gap: "25px",
-      flex: "1 1 300px",
-      maxWidth: "400px"
+      gap: "20px",
+      width: "260px"
     }}>
-      <h2 style={{ fontSize: "2rem", marginBottom: 0 }}>Jouer</h2>
+      <h2 style={{ fontSize: "1.8rem", marginBottom: 0 }}>Jouer</h2>
 
       <button className="btn" onClick={handleCreateGame} style={buttonStyle}>
         Créer une partie
@@ -385,7 +378,6 @@ useEffect(() => {
   </div>
 </div>
 </>
-
 );
 }
 
