@@ -227,10 +227,11 @@ const validerPartie = () => {
     });
 };
 
-const renderCheckboxGroup = (label, list, selected, setter) => (
-  <div style={{ marginTop: "10px" }}>
-    <div style={{ fontWeight: "bold", marginBottom: "6px" }}>{label}</div>
-    <div style={{ display: "flex", gap: "6px", marginBottom: "6px" }}>
+const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
+  <div style={{ marginTop: "15px" }}>
+    {/* Titre + boutons en ligne */}
+    <div className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+      <span style={{ fontWeight: "bold", flex: 1 }}>{label}</span>
       <button
         onClick={() => setter([...list])}
         style={{
@@ -240,13 +241,10 @@ const renderCheckboxGroup = (label, list, selected, setter) => (
           padding: "4px 10px",
           borderRadius: "8px",
           fontSize: "0.8rem",
-          cursor: "pointer",
-          transition: "background-color 0.2s",
+          cursor: "pointer"
         }}
-        onMouseOver={(e) => (e.target.style.backgroundColor = "#ffcc33")}
-        onMouseOut={(e) => (e.target.style.backgroundColor = "#f7b733")}
       >
-        Sélectionner tout
+        Tout sélectionner
       </button>
       <button
         onClick={() => setter([])}
@@ -257,24 +255,27 @@ const renderCheckboxGroup = (label, list, selected, setter) => (
           padding: "4px 10px",
           borderRadius: "8px",
           fontSize: "0.8rem",
-          cursor: "pointer",
-          transition: "background-color 0.2s",
+          cursor: "pointer"
         }}
-        onMouseOver={(e) => (e.target.style.backgroundColor = "#bbb")}
-        onMouseOut={(e) => (e.target.style.backgroundColor = "#ccc")}
       >
         Tout désélectionner
       </button>
     </div>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+
+    {/* Groupe des cases */}
+    <div className={`checkbox-group ${cssClass}`} style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px"
+    }}>
       {list.map((item) => (
         <label
           key={item}
           style={{
             background: selected.includes(item) ? "#f7b733" : "#eee",
             color: selected.includes(item) ? "#1c2541" : "#000",
-            padding: "4px 8px",
-            borderRadius: "12px",
+            padding: "5px 10px",
+            borderRadius: "15px",
             cursor: "pointer",
             fontSize: "0.85rem"
           }}
@@ -283,7 +284,7 @@ const renderCheckboxGroup = (label, list, selected, setter) => (
             type="checkbox"
             checked={selected.includes(item)}
             onChange={() => toggleSelection(item, selected, setter)}
-            style={{ marginRight: 4 }}
+            style={{ marginRight: 6 }}
           />
           {item}
         </label>
@@ -293,106 +294,150 @@ const renderCheckboxGroup = (label, list, selected, setter) => (
 );
 
 
-  return (
-    <div style={{ background: "#1c2541", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-      <div style={{ background: "white", color: "#1c2541", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
-        <div style={{ flex: 2, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
-          <h1 style={{ color: "#000000", fontSize: "2rem", margin: 0 }}>Configurer la partie</h1>
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontWeight: "bold" }}>Nombre de rounds</div>
-              <label><input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} /> Bonus compositeur</label>
-            </div>
-            {playerName === "thibchoffardet" && (
-  <div style={{ marginTop: "10px" }}>
-    <label>
-      <input
-        type="checkbox"
-        checked={testMode}
-        onChange={(e) => setTestMode(e.target.checked)}
-        style={{ marginRight: "6px" }}
-      />
-      Mode test (n'envoie pas les stats)
-    </label>
-  </div>
-)}
-            <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
+return (
+  <div style={{ background: "#1c2541", minHeight: "100vh", fontFamily: "Poppins, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+    <div style={{ background: "white", color: "#1c2541", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
+      
+      {/* Colonne de gauche – paramètres */}
+      <div style={{ flex: 2, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Paramètres</div>
 
-            <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1c2541" }}>
-  {filteredCount === 0
-    ? "Aucun morceau disponible avec ces filtres"
-    : `${filteredCount} morceaux disponibles`}
-</div>
-
-          </div>
-          <div>
-            <div style={{ fontWeight: "bold" }}>Temps par manche</div>
-            <input type="range" min="5" max="60" step="5" value={time} onChange={e => setTime(+e.target.value)} />
-            <div>{time} secondes</div>
-          </div>
-          <div>
-            <div style={{ fontWeight: "bold" }}>Années</div>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontWeight: "bold" }}>Nombre de rounds</div>
             <label>
-              De <input type="number" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ width: 70 }} /> à <input type="number" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ width: 70 }} />
+              <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
+              Bonus compositeur
             </label>
           </div>
-
-          {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia)}
-          {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie)}
-          {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte)}
-          {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays)}
+          {playerName === "thibchoffardet" && (
+            <div style={{ marginTop: "10px" }}>
+              <label>
+                <input type="checkbox" checked={testMode} onChange={(e) => setTestMode(e.target.checked)} style={{ marginRight: "6px" }} />
+                Mode test (n'envoie pas les stats)
+              </label>
+            </div>
+          )}
+          <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
+          <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1c2541" }}>
+            {filteredCount === 0 ? "Aucun morceau disponible avec ces filtres" : `${filteredCount} morceaux disponibles`}
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div className="section-title" style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Partie</div>
-          <div style={{ background: "#f2f2f2", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "5px" }}>
-{players.map((p, i) => (
-  <div
-    key={i}
-    style={{
-      fontWeight: "bold",
-      backgroundColor: p.name === playerName ? "#fff3cd" : "#e2e3e5",
-      padding: "5px 10px",
-      borderRadius: "10px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between"
-    }}
-  >
-    <span>{p.name}</span>
-  </div>
-))}
 
+        <div>
+          <div className="section-title" style={{ fontWeight: "bold", marginBottom: "5px" }}>Temps par manche</div>
+          <input
+            type="range"
+            min="5"
+            max="60"
+            step="5"
+            value={time}
+            onChange={e => setTime(+e.target.value)}
+            style={{
+              width: "100%",
+              background: `linear-gradient(to right, #f7b733 0%, #f7b733 ${(time - 5) / 55 * 100}%, #ddd ${(time - 5) / 55 * 100}%, #ddd 100%)`
+            }}
+          />
+          <div>{time} secondes</div>
+        </div>
 
-          </div>
-          <div className="code-box" style={{ display: "flex", gap: 10 }}>
-            <input value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold" }} />
-            <button
-  onClick={copierCode}
-  style={{
-    backgroundColor: "#f7b733",
-    color: "#1c2541",
-    border: "none",
-    borderRadius: "8px",
-    padding: "6px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    width: "80px", // pour garder une taille fixe
-    textAlign: "center"
-  }}
->
-  {copied ? "Copié !" : "Copier"}
-</button>
+        <div>
+          <div className="section-title" style={{ fontWeight: "bold", marginBottom: "5px" }}>Années</div>
+          <label>
+            De <input type="number" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ width: 70 }} />
+            à <input type="number" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ width: 70, marginLeft: 10 }} />
+          </label>
+        </div>
 
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#ccc", color: "#333", cursor: "pointer" }} onClick={() => navigate("/")}>Annuler</button>
-            <button style={{ flex: 1, padding: "8px", fontWeight: "bold", borderRadius: "10px", border: "none", backgroundColor: "#f7b733", color: "#1c2541", cursor: "pointer" }} onClick={validerPartie}>Lancer la partie</button>
-          </div>
+        {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
+        {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie, "categorie")}
+        {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
+        {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays, "pays")}
+      </div>
+
+      {/* Colonne de droite – Partie */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Partie</div>
+
+        {/* Bloc joueur – doit prendre le max de hauteur */}
+        <div style={{ background: "#f2f2f2", borderRadius: "10px", padding: "10px", flex: 1, display: "flex", flexDirection: "column", gap: "5px", minHeight: "0" }}>
+          {players.map((p, i) => (
+            <div
+              key={i}
+              style={{
+                fontWeight: "bold",
+                backgroundColor: p.name === playerName ? "#fff3cd" : "#e2e3e5",
+                padding: "5px 10px",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
+              }}
+            >
+              <span>{p.name}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Code partie */}
+        <div className="code-box" style={{ display: "flex", gap: 10 }}>
+          <input value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1 }} />
+          <button
+            onClick={copierCode}
+            style={{
+              backgroundColor: "#f7b733",
+              color: "#1c2541",
+              border: "none",
+              borderRadius: "8px",
+              padding: "6px 12px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              width: "80px",
+              textAlign: "center"
+            }}
+          >
+            {copied ? "Copié !" : "Copier"}
+          </button>
+        </div>
+
+        {/* Boutons bas */}
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            style={{
+              flex: 1,
+              padding: "8px",
+              fontWeight: "bold",
+              borderRadius: "10px",
+              border: "none",
+              backgroundColor: "#ccc",
+              color: "#333",
+              cursor: "pointer"
+            }}
+            onClick={() => navigate("/")}
+          >
+            Annuler
+          </button>
+          <button
+            style={{
+              flex: 1,
+              padding: "8px",
+              fontWeight: "bold",
+              borderRadius: "10px",
+              border: "none",
+              backgroundColor: "#f7b733",
+              color: "#1c2541",
+              cursor: "pointer"
+            }}
+            onClick={validerPartie}
+          >
+            Lancer la partie
+          </button>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default ConfigPage;
