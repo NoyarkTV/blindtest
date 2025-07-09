@@ -229,37 +229,39 @@ const validerPartie = () => {
 
 const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
   <div style={{ marginTop: "15px" }}>
-    {/* Titre + boutons en ligne */}
+    {/* Titre + boutons alignés à gauche */}
     <div className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-      <span style={{ fontWeight: "bold", flex: 1 }}>{label}</span>
-      <button
-        onClick={() => setter([...list])}
-        style={{
-          backgroundColor: "#f7b733",
-          color: "#1c2541",
-          border: "none",
-          padding: "4px 10px",
-          borderRadius: "8px",
-          fontSize: "0.8rem",
-          cursor: "pointer"
-        }}
-      >
-        Tout sélectionner
-      </button>
-      <button
-        onClick={() => setter([])}
-        style={{
-          backgroundColor: "#ccc",
-          color: "#333",
-          border: "none",
-          padding: "4px 10px",
-          borderRadius: "8px",
-          fontSize: "0.8rem",
-          cursor: "pointer"
-        }}
-      >
-        Tout désélectionner
-      </button>
+      <span style={{ fontWeight: "bold" }}>{label}</span>
+      <div style={{ display: "flex", gap: "6px", marginLeft: "12px" }}>
+        <button
+          onClick={() => setter([...list])}
+          style={{
+            backgroundColor: "#f7b733",
+            color: "#1c2541",
+            border: "none",
+            padding: "4px 10px",
+            borderRadius: "0px",
+            fontSize: "0.8rem",
+            cursor: "pointer"
+          }}
+        >
+          Tout sélectionner
+        </button>
+        <button
+          onClick={() => setter([])}
+          style={{
+            backgroundColor: "#ccc",
+            color: "#333",
+            border: "none",
+            padding: "4px 10px",
+            borderRadius: "0px",
+            fontSize: "0.8rem",
+            cursor: "pointer"
+          }}
+        >
+          Tout désélectionner
+        </button>
+      </div>
     </div>
 
     {/* Groupe des cases */}
@@ -293,12 +295,13 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
   </div>
 );
 
+
 return (
   <div style={{ background: "#1c2541", minHeight: "100vh", fontFamily: "Poppins, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
     <div style={{ background: "white", color: "#1c2541", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
       
       {/* Colonne de gauche – paramètre */}
-      <div style={{ flex: 2, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 1, minWidth: 0, maxWidth: "620px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Paramètres</div>
 
         <div>
@@ -311,10 +314,6 @@ return (
           </div>
           {playerName === "thibchoffardet" && (
             <div style={{ marginTop: "10px" }}>
-              <label>
-                <input type="checkbox" checked={testMode} onChange={(e) => setTestMode(e.target.checked)} style={{ marginRight: "6px" }} />
-                Mode test (n'envoie pas les stats)
-              </label>
             </div>
           )}
           <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
@@ -334,9 +333,14 @@ return (
             onChange={e => setTime(+e.target.value)}
             style={{
               width: "100%",
-              background: `linear-gradient(to right, #f7b733 0%, #f7b733 ${(time - 5) / 55 * 100}%, #ddd ${(time - 5) / 55 * 100}%, #ddd 100%)`
+              WebkitAppearance: "none",
+              height: "6px",
+              borderRadius: "3px",
+              background: `linear-gradient(to right, #f7b733 0%, #f7b733 ${(time - 5) / 55 * 100}%, #ddd ${(time - 5) / 55 * 100}%, #ddd 100%)`,
+              outline: "none"
             }}
           />
+
           <div>{time} secondes</div>
         </div>
 
@@ -355,7 +359,7 @@ return (
       </div>
 
       {/* Colonne de droite – Partie */}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 1, minWidth: 0, minWidth: "460px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Partie</div>
 
         {/* Bloc joueur – doit prendre le max de hauteur */}
