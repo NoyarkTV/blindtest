@@ -227,34 +227,71 @@ const validerPartie = () => {
     });
 };
 
-  const renderCheckboxGroup = (label, list, selected, setter) => (
-    <div>
-      <div style={{ fontWeight: "bold", marginTop: 10 }}>{label}</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-        {list.map((item) => (
-          <label
-            key={item}
-            style={{
-              background: selected.includes(item) ? "#f7b733" : "#eee",
-              color: selected.includes(item) ? "#1c2541" : "#000",
-              padding: "4px 8px",
-              borderRadius: "12px",
-              cursor: "pointer",
-              fontSize: "0.85rem"
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={selected.includes(item)}
-              onChange={() => toggleSelection(item, selected, setter)}
-              style={{ marginRight: 4 }}
-            />
-            {item}
-          </label>
-        ))}
-      </div>
+const renderCheckboxGroup = (label, list, selected, setter) => (
+  <div style={{ marginTop: "10px" }}>
+    <div style={{ fontWeight: "bold", marginBottom: "6px" }}>{label}</div>
+    <div style={{ display: "flex", gap: "6px", marginBottom: "6px" }}>
+      <button
+        onClick={() => setter([...list])}
+        style={{
+          backgroundColor: "#f7b733",
+          color: "#1c2541",
+          border: "none",
+          padding: "4px 10px",
+          borderRadius: "8px",
+          fontSize: "0.8rem",
+          cursor: "pointer",
+          transition: "background-color 0.2s",
+        }}
+        onMouseOver={(e) => (e.target.style.backgroundColor = "#ffcc33")}
+        onMouseOut={(e) => (e.target.style.backgroundColor = "#f7b733")}
+      >
+        Sélectionner tout
+      </button>
+      <button
+        onClick={() => setter([])}
+        style={{
+          backgroundColor: "#ccc",
+          color: "#333",
+          border: "none",
+          padding: "4px 10px",
+          borderRadius: "8px",
+          fontSize: "0.8rem",
+          cursor: "pointer",
+          transition: "background-color 0.2s",
+        }}
+        onMouseOver={(e) => (e.target.style.backgroundColor = "#bbb")}
+        onMouseOut={(e) => (e.target.style.backgroundColor = "#ccc")}
+      >
+        Tout désélectionner
+      </button>
     </div>
-  );
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {list.map((item) => (
+        <label
+          key={item}
+          style={{
+            background: selected.includes(item) ? "#f7b733" : "#eee",
+            color: selected.includes(item) ? "#1c2541" : "#000",
+            padding: "4px 8px",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "0.85rem"
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={selected.includes(item)}
+            onChange={() => toggleSelection(item, selected, setter)}
+            style={{ marginRight: 4 }}
+          />
+          {item}
+        </label>
+      ))}
+    </div>
+  </div>
+);
+
 
   return (
     <div style={{ background: "#1c2541", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
