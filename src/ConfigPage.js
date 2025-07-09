@@ -293,12 +293,11 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
   </div>
 );
 
-
 return (
   <div style={{ background: "#1c2541", minHeight: "100vh", fontFamily: "Poppins, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
     <div style={{ background: "white", color: "#1c2541", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
       
-      {/* Colonne de gauche – paramètres */}
+      {/* Colonne de gauche – paramètre */}
       <div style={{ flex: 2, minWidth: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Paramètres</div>
 
