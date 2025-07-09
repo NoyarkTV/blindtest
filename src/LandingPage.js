@@ -243,15 +243,16 @@ useEffect(() => {
 </style>
 
 <div style={{
-  minHeight: "100vh",
-  backgroundColor: "#1c2541",
-  color: "#ffffff",
-  fontFamily: "'Poppins', sans-serif",
+  height: "100vh",
+  overflow: "hidden",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  paddingTop: "0px"
+  fontFamily: "'Poppins', sans-serif",
+  backgroundColor: "#1c2541",
+  color: "#ffffff",
+  transform: "translateY(-40px)" 
 }}>
   {/* Titre principal */}
   <h1 style={{
