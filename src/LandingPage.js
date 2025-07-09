@@ -226,6 +226,11 @@ useEffect(() => {
     background-color: #ffc94a !important;
   }
 
+  /* Ne change pas la couleur si c’est un bouton spécial */
+.btn-spotify:hover {
+  background-color: #1db954 !important;
+}
+
   input:focus {
     outline: 2px solid #f7b733;
   }
@@ -246,7 +251,7 @@ useEffect(() => {
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  paddingTop: "20px"
+  paddingTop: "0px"
 }}>
   {/* Titre principal */}
   <h1 style={{
@@ -316,7 +321,7 @@ useEffect(() => {
       <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
 
       <button
-        className="btn"
+        className={`btn ${spotifyToken ? "btn-spotify" : ""}`}
         onClick={handleSpotifyConnect}
         style={{
           backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
