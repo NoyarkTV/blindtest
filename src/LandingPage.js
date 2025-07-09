@@ -252,7 +252,8 @@ useEffect(() => {
   fontFamily: "'Poppins', sans-serif",
   backgroundColor: "#1c2541",
   color: "#ffffff",
-  transform: "translateY(-40px)" 
+  transform: "translateY(-40px)",
+  marginBottom: "-40px" // 🧠 compense le vide créé par le transform
 }}>
   {/* Titre principal */}
   <h1 style={{
