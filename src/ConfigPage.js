@@ -27,7 +27,7 @@ function ConfigPage() {
   const [categorie, setCategorie] = useState([
     "Science-Fiction", "Fantasy", "Comédie", "Western", "Super-héro", "Thriller",
     "Horreur", "Action", "Disney", "Marvel", "Animation", "Drame",
-    "Histoire", "Musical", "Romance"
+    "Histoire", "Musical", "Romance", "Saga"
   ]);
   const [difficulte, setDifficulte] = useState(["Facile", "Moyen", "Difficile"]);
   const [pays, setPays] = useState(["Asie", "France", "USA", "UK", "Europe", "Espagne"]);
