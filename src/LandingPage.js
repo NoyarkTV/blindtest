@@ -229,6 +229,11 @@ useEffect(() => {
   input:focus {
     outline: 2px solid #f7b733;
   }
+  
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
 `}
 </style>
 
@@ -349,32 +354,42 @@ useEffect(() => {
     </div>
 
     {/* Zone de jeu */}
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "20px",
-      width: "260px"
-    }}>
-      <h2 style={{ fontSize: "1.8rem", marginBottom: 0 }}>Jouer</h2>
+<div style={{
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "20px",
+  width: "340px" // plus large !
+}}>
+  <h2 style={{ fontSize: "1.8rem", marginBottom: 0 }}>Jouer</h2>
 
-      <button className="btn" onClick={handleCreateGame} style={buttonStyle}>
-        Créer une partie
-      </button>
+  <button className="btn" onClick={handleCreateGame} style={buttonStyle}>
+    Créer une partie
+  </button>
 
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
-        <input
-          placeholder="Code de partie"
-          value={joinCode}
-          onChange={(e) => setJoinCode(e.target.value)}
-          style={inputStyle}
-        />
-        <button className="btn" style={buttonStyle} onClick={() => navigate(`/room/${joinCode}`)}>
-          Rejoindre
-        </button>
-      </div>
-    </div>
+  <div style={{
+    display: "flex",
+    gap: "10px",
+    flexWrap: "nowrap", // 🔥 force l’alignement
+    justifyContent: "center",
+    width: "100%"
+  }}>
+    <input
+      placeholder="Code de partie"
+      value={joinCode}
+      onChange={(e) => setJoinCode(e.target.value)}
+      style={{ ...inputStyle, flex: 1 }}
+    />
+    <button
+      className="btn"
+      style={buttonStyle}
+      onClick={() => navigate(`/room/${joinCode}`)}
+    >
+      Rejoindre
+    </button>
+  </div>
+</div>
   </div>
 </div>
 </>
