@@ -171,218 +171,221 @@ useEffect(() => {
   };
 
   return (
-  <>
+<>
 <style>
-  {`
-    .info-icon-container {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
+{`
+  .info-icon-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
 
-    .info-icon {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-    }
+  .info-icon {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
 
-.profile-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  top: 30px;
-  right: 0;
-  background-color: rgba(0, 0, 0, 0.9);
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  min-width: 240px; /* au moins 240px */
-  max-width: 400px; /* peut s'élargir jusqu'à 400px */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 20;
-  transition: opacity 0.3s;
-  word-wrap: break-word; /* si un mot est trop long */
-}
+  .profile-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    min-width: 240px;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 20;
+    transition: opacity 0.3s;
+    word-wrap: break-word;
+  }
 
-.profile-tooltip div {
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  /* on enlève les règles qui forçaient le texte sur une ligne */
-}
+  .profile-tooltip div {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
 
-.profile-tooltip div:last-child {
-  border-bottom: none;
-}
+  .profile-tooltip div:last-child {
+    border-bottom: none;
+  }
 
-.info-icon:hover .profile-tooltip,
-.profile-tooltip:hover {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-}
+  .info-icon:hover .profile-tooltip,
+  .profile-tooltip:hover {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
 
-    .info-icon:hover .profile-tooltip,
-    .profile-tooltip:hover {
-      visibility: visible;
-      opacity: 1;
-      pointer-events: auto;
-    }
-  `}
+  .btn:hover {
+    transform: scale(1.03);
+    background-color: #ffc94a !important;
+  }
+
+  input:focus {
+    outline: 2px solid #f7b733;
+  }
+`}
 </style>
 
+<div style={{
+  minHeight: "100vh",
+  backgroundColor: "#1c2541",
+  color: "#ffffff",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "20px"
+}}>
+  {/* LOGO EN HAUT À GAUCHE – NE PAS TOUCHER */}
+  <header style={{
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    fontSize: "2.5rem",
+    fontFamily: "'Luckiest Guy', cursive",
+    color: "#f7b733"
+  }}>
+    Blindtest
+  </header>
+
+  <div style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "60px",
+    flexWrap: "wrap",
+    marginTop: "100px",
+    width: "100%",
+    maxWidth: "1100px"
+  }}>
+    {/* PROFIL */}
     <div style={{
-      minHeight: "100vh",
-      backgroundColor: "#1c2541",
-      color: "#ffffff",
-      fontFamily: "'Poppins', sans-serif",
+      background: "rgba(255,255,255,0.05)",
+      padding: "30px",
+      borderRadius: "20px",
+      boxShadow: "0 0 15px rgba(0,0,0,0.2)",
+      minWidth: "280px",
+      flex: "1 1 300px",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      padding: "20px"
+      position: "relative",
+      gap: "16px"
     }}>
-      <header style={{
-        position: "absolute",
-        top: "20px",
-        left: "20px",
-        fontSize: "2.5rem",
-        fontFamily: "'Luckiest Guy', cursive",
-        color: "#f7b733"
-      }}>
-        Blindtest
-      </header>
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        gap: "60px",
-        flexWrap: "wrap",
-        marginTop: "100px"
-      }}>
-        {/* Profil à gauche */}
-        <div style={{
-          background: "rgba(255,255,255,0.05)",
-          padding: "30px",
-          borderRadius: "20px",
-          boxShadow: "0 0 10px rgba(0,0,0,0.3)",
-          minWidth: "250px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "15px",
-          position: "relative" // pour le position absolute du i
-        }}>
-{spotifyToken && (
-  <div className="info-icon-container">
-    <div className="info-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#f7b733" className="bi bi-info-circle" viewBox="0 0 16 16">
-        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-      </svg>
-      <div className="profile-tooltip">
-<div>
-Temps moyen de réponse: 
-  {playerStats?.totalRoundsPlayed > 0
-    ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2)
-    : "--"} sec
-</div>
-<div>Nombre de rounds joués: {playerStats?.totalRoundsPlayed ?? "--"}</div>
-<div>Nombre de rounds remportés: {playerStats?.totalRoundsWon ?? "--"}</div>
-<div>
-  Taux de réussite: 
-  {playerStats?.totalRoundsPlayed > 0
-    ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100)
-    : "--"} %
-</div>
+      {spotifyToken && (
+        <div className="info-icon-container">
+          <div className="info-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#f7b733" className="bi bi-info-circle" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+              <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+            </svg>
+            <div className="profile-tooltip">
+              <div>Temps moyen de réponse: {playerStats?.totalRoundsPlayed > 0 ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2) : "--"} sec</div>
+              <div>Nombre de rounds joués: {playerStats?.totalRoundsPlayed ?? "--"}</div>
+              <div>Nombre de rounds remportés: {playerStats?.totalRoundsWon ?? "--"}</div>
+              <div>Taux de réussite: {playerStats?.totalRoundsPlayed > 0 ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100) : "--"}%</div>
+              <div>Nombre de parties jouées: {playerStats?.gamesPlayed ?? "--"}</div>
+              <div>Meilleur temps de réponse: {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
+              <div>Score total cumulé: {playerStats?.totalScore ?? "--"}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
-<div>Nombre de parties jouées: {playerStats?.gamesPlayed ?? "--"}</div>
-<div>Meilleur temps de réponse: {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
-<div>Score total cumulé: {playerStats?.totalScore ?? "--"}</div>
+      <div style={{
+        width: "120px",
+        height: "120px",
+        borderRadius: "50%",
+        backgroundColor: "#ccc",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "2rem"
+      }}>
+        👤
+      </div>
+
+      <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</div>
+
+      <button
+        className="btn"
+        onClick={handleSpotifyConnect}
+        style={{
+          backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
+          color: "#1e2a38",
+          fontWeight: "bold",
+          padding: "10px 24px",
+          fontSize: "1rem",
+          border: "none",
+          borderRadius: "50px",
+          cursor: "pointer",
+          width: "100%",
+          maxWidth: "240px"
+        }}
+      >
+        {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+      </button>
+
+      {spotifyToken && (
+        <button
+          onClick={() => {
+            localStorage.removeItem("spotify_token");
+            setSpotifyToken(null);
+          }}
+          style={{
+            marginTop: "8px",
+            backgroundColor: "#444",
+            color: "#fff",
+            padding: "6px 14px",
+            borderRadius: "20px",
+            cursor: "pointer",
+            border: "none",
+            fontSize: "0.9rem"
+          }}
+        >
+          Se déconnecter
+        </button>
+      )}
+    </div>
+
+    {/* BOUTONS DROITE */}
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "25px",
+      flex: "1 1 300px",
+      maxWidth: "400px"
+    }}>
+      <h2 style={{ fontSize: "2rem", marginBottom: 0 }}>Jouer</h2>
+
+      <button className="btn" onClick={handleCreateGame} style={buttonStyle}>
+        Créer une partie
+      </button>
+
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+        <input
+          placeholder="Code de partie"
+          value={joinCode}
+          onChange={(e) => setJoinCode(e.target.value)}
+          style={inputStyle}
+        />
+        <button className="btn" style={buttonStyle} onClick={() => navigate(`/room/${joinCode}`)}>
+          Rejoindre
+        </button>
       </div>
     </div>
   </div>
-)}
-          <div style={{
-            width: "120px",
-            height: "120px",
-            borderRadius: "50%",
-            backgroundColor: "#ccc",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "2rem"
-          }}>
-            👤
-          </div>
+</div>
+</>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{playerName}</span>
-          </div>
-
-          <button
-            className="btn"
-            onClick={handleSpotifyConnect}
-            style={{
-              backgroundColor: spotifyToken ? "#1db954" : "#f7b733",
-              color: "#1e2a38",
-              fontWeight: "bold",
-              padding: "10px 20px",
-              fontSize: "1rem",
-              border: "none",
-              borderRadius: "50px",
-              cursor: "pointer"
-            }}
-          >
-            {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
-          </button>
-          {spotifyToken && (
-            <button
-              onClick={() => {
-                localStorage.removeItem("spotify_token");
-                setSpotifyToken(null);
-              }}
-              style={{
-                marginTop: "10px",
-                backgroundColor: "#444",
-                color: "#fff",
-                padding: "6px 12px",
-                borderRadius: "20px",
-                cursor: "pointer",
-                border: "none"
-              }}
-            >
-              Se déconnecter
-            </button>
-          )}
-        </div>
-
-        {/* Boutons à droite */}
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "20px"
-        }}>
-          <h2 style={{ marginBottom: "10px" }}>Jouer</h2>
-          <button className="btn" onClick={handleCreateGame} style={buttonStyle}>
-            Créer une partie
-          </button>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <input
-              placeholder="Code de partie"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-              style={inputStyle}
-            />
-            <button className="btn" style={buttonStyle} onClick={() => navigate(`/room/${joinCode}`)}>
-              Rejoindre
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </>
 );
 }
 
