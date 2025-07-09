@@ -629,7 +629,7 @@ fetch(GSheetSaga)
       const titre = row["Oeuvre"] || "";
       const reponses = (row["Réponse"] || "").split(",").map(r => r.trim()).filter(Boolean);
       const compositeur = row["Compositeur"] || "";
-      const theme = row["Titre"] || "";
+      const theme = row["Thème"] || "";
       const annee = parseInt(row["Année"]) || 0;
       const saga = row["Saga"] || "";
       const answers = [titre, ...reponses].filter(Boolean);
