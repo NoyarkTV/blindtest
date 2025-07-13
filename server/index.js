@@ -333,29 +333,33 @@ app.post("/generate-playlist", (req, res) => {
   // 4. Shuffle local
   const shuffled = fisherYatesShuffle(notPlayed);
 
-  // 5. Préparer la playlist avec gestion des sagas
+  // 5. Préparer la playlist avec gestion des sagas et morceaux normaux
   const enrichedTracks = [];
 
   for (let i = 0; i < shuffled.length && enrichedTracks.length < nbRounds; i++) {
     const track = shuffled[i];
 
-if (!track.uri?.startsWith("spotify:track:")) {
-  const sagaTrack = getRandomSagaTrack(track.uri?.trim());
-  if (sagaTrack) {
-enrichedTracks.push({
-  ...sagaTrack,
-  media: track.media,
-  categorie: track.categorie,
-  difficulte: track.difficulte,
-  pays: track.pays,
-  saga: track.uri,
-  image: sagaTrack.image || null
-});
-    alreadyPlayedUris.add(sagaTrack.uri);
-  } else {
-    console.warn(`⚠️ Saga introuvable : ${track.uri}`);
-  }
-}
+    if (!track.uri?.startsWith("spotify:track:")) {
+      const sagaTrack = getRandomSagaTrack(track.uri?.trim());
+      if (sagaTrack) {
+        enrichedTracks.push({
+          ...sagaTrack,
+          media: track.media,
+          categorie: track.categorie,
+          difficulte: track.difficulte,
+          pays: track.pays,
+          saga: track.uri,
+          image: sagaTrack.image || null
+        });
+        alreadyPlayedUris.add(sagaTrack.uri);
+      } else {
+        console.warn(`⚠️ Saga introuvable : ${track.uri}`);
+      }
+    } else {
+      // ✅ morceaux normaux ajoutés ici
+      enrichedTracks.push({ ...track, image: track.image || null });
+      alreadyPlayedUris.add(track.uri);
+    }
   }
 
   // 6. Complétion si nécessaire
@@ -373,7 +377,6 @@ enrichedTracks.push({
   console.log(`✅ Playlist générée (${enrichedTracks.length}/${nbRounds})`);
   res.send({ playlist: enrichedTracks });
 });
-
 
 app.get("/game/:id", (req, res) => {
   const { id } = req.params;
