@@ -308,8 +308,13 @@ useEffect(() => {
   setTimeLeft(params.time);
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
-  handleNextRoundPopup();
-  playCurrentTrack(deviceId);
+  // Fermer le popup de fin de round et pauser la musique en cours
+  setShowPopup(false);
+  handlePause().finally(() => {
+    // Attendre 500ms pour être sûr que le player est bien arrêté, puis lancer le nouveau morceau
+    setTimeout(() => playCurrentTrack(deviceId), 500);
+  });
+
   roundEndedRef.current = false;
 
   console.log("🔍 Contenu de scoreboard :", scoreboard);
@@ -324,7 +329,6 @@ useEffect(() => {
 useEffect(() => {
   if (deviceId && playlist.length > 0 && currentRound === 1) {
     setTimeLeft(params.time);
-    setIsTimerRunning(true);
     playCurrentTrack(deviceId);
     handleNextRoundPopup();
   }
@@ -727,7 +731,6 @@ setIsTimerRunning(true);
 
   // Reset timer
   setTimeLeft(params.time);
-  setIsTimerRunning(true);
 
   // Reset essais / points de base
   wrongAttemptsRef.current = 0;
