@@ -997,12 +997,6 @@ const handleNext = () => {
     )}
   </div>
 
-  {/* BOUTONS BAS */}
-  <div style={{ display: "flex", gap: 10 }}>
-    <button onClick={handleRestartRound} style={buttonStyle}>🔄 Relancer le round</button>
-    {isAdmin && <button onClick={handlePause} style={buttonStyle}>⏸ Pause</button>}
-    {isAdmin && <button onClick={handleNext} style={buttonStyle}>⏭ Next</button>}
-  </div>
 </div>
 
 {showPopup && popupInfo && (
