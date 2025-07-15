@@ -787,196 +787,217 @@ const handleNext = () => {
     handlePause();
   };
 
-return (
+  return (
+    <div style={{ padding: 20, color: "#fff", background: "#1c2541", minHeight: "100vh", alignItems: "center" }}>
+      <SpotifyPlayer token={token} onReady={handleReady} />
+      
+<style>
+{`
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  *, *::before, *::after {
+    box-sizing: inherit;
+  }
+
+  /* ✅ Ajoute ton animation ici */
+  @keyframes shake-pulse {
+    0% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
+    25% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
+    50% { transform: translateX(5px) scale(1); background-color: #ffe6e6; }
+    75% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
+    100% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
+  }
+
+  .wrong-answer {
+    animation: shake-pulse 0.6s;
+    border: 2px solid #f44336 !important;
+    background-color: #ffe6e6 !important;
+    color: #1c2541 !important;
+  }
+`}
+</style>
+
+
+
+{/* ROUND fixé en haut sans débordement */}
+<div style={{
+  position: "fixed",
+  top: 20,
+  left: 0,
+  width: "100%",
+  textAlign: "left",
+  paddingLeft: 20, // ✅ petit espace à gauche
+  fontFamily: "Luckiest Guy",
+  fontSize: 28,
+  color: "#f7b733",
+  zIndex: 10,
+  pointerEvents: "none" // évite tout clic parasite
+}}>
+  Round {currentRound} / {playlist.length}
+</div>
+
+{/* SCOREBOARD */}
+{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+  <div style={{
+    position: "fixed",           // fixé à l'écran
+    top: 20,
+    right: 20,
+    width: 220,                  // largeur contrôlée
+    backgroundColor: "#fff",     // ✅ fond blanc visible
+    borderRadius: 12,
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    padding: 12,
+    zIndex: 1000
+  }}>
+    <div style={{
+      fontWeight: "bold",
+      fontSize: 16,
+      marginBottom: 10,
+      color: "#1c2541"
+    }}>
+      🏆 Scoreboard
+    </div>
+
+    {scoreboard.map((p, i) => {
+      const isMe = p.name === playerName;
+      return (
+        <div
+          key={i}
+          style={{
+            fontWeight: isMe ? "bold" : "normal",
+            backgroundColor: isMe ? "#f7b733" : "transparent",
+            color: isMe ? "#1c2541" : "#333",
+            padding: "6px 8px",
+            borderRadius: 8,
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 4
+          }}
+        >
+          <span>{p.name}</span>
+          <span>{typeof p.score === "number" ? p.score : 0}</span>
+        </div>
+      );
+    })}
+  </div>
+)}
+
+{/* CONTENU CENTRAL NON SCROLLABLE */}
+<div style={{
+  position: "relative",
+  height: "100vh",
+  width: "100vw",
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "#1c2541",
+  color: "#fff"
+}}>
+
+  {/* TIMER CENTRÉ */}
   <div
     style={{
-      background: "#1c2541",
-      color: "#fff",
-      minHeight: "100vh",
-      width: "100vw",
+      width: 140,
+      height: 140,
+      borderRadius: "50%",
+      background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
       display: "flex",
-      flexDirection: "column",
       alignItems: "center",
-      padding: 20,
-      boxSizing: "border-box",
+      justifyContent: "center",
+      fontSize: 36,
+      fontWeight: "bold",
+      color: "#1c2541",
+      marginBottom: 30,
+      boxSizing: "border-box"
     }}
   >
-    <SpotifyPlayer token={token} onReady={handleReady} />
+    {Math.ceil(timeLeft ?? 0)}
+  </div>
 
-    {/* STYLE GÉNÉRAL */}
-    <style>{`
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        box-sizing: border-box;
-        overflow: hidden;
-      }
-      *, *::before, *::after {
-        box-sizing: inherit;
-      }
-      @keyframes shake-pulse {
-        0% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
-        25% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
-        50% { transform: translateX(5px) scale(1); background-color: #ffe6e6; }
-        75% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
-        100% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
-      }
-      .wrong-answer {
-        animation: shake-pulse 0.6s;
-        border: 2px solid #f44336 !important;
-        background-color: #ffe6e6 !important;
-        color: #1c2541 !important;
-      }
-    `}</style>
-
-    {/* HEADER */}
-    <div style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      width: "100%",
-      padding: "10px 0",
-      fontFamily: "Luckiest Guy",
-      fontSize: 28,
-      color: "#f7b733"
-    }}>
-      <div>Round {currentRound} / {playlist.length}</div>
-
-      {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-        <div style={{
-          backgroundColor: "#fff",
-          color: "#1c2541",
-          borderRadius: 12,
-          padding: "10px 16px",
-          fontSize: 14,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-          minWidth: 140
-        }}>
-          <div style={{ fontWeight: "bold", marginBottom: 6 }}>🏆 Scoreboard</div>
-          {scoreboard.map((p, i) => {
-            const isMe = p.name === playerName;
-            return (
-              <div key={i} style={{
-                backgroundColor: isMe ? "#f7b733" : "transparent",
-                color: isMe ? "#1c2541" : "#333",
-                fontWeight: isMe ? "bold" : "normal",
-                padding: "4px 6px",
-                borderRadius: 6,
-                display: "flex",
-                justifyContent: "space-between"
-              }}>
-                <span>{p.name}</span>
-                <span>{typeof p.score === "number" ? p.score : 0}</span>
-              </div>
-            );
-          })}
-        </div>
+  {/* INDICES */}
+  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 30, flexWrap: "wrap" }}>
+    <div style={indiceBoxStyle}>
+      <span style={{ marginRight: 8 }}>Média :</span>
+      {!showIndiceMedia ? (
+        <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
+      ) : (
+        <span>{playlist[currentRound - 1]?.media || "?"}</span>
       )}
     </div>
 
-    {/* MAIN */}
-    <div style={{
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 20,
-      width: "100%",
-      maxWidth: 600
-    }}>
-      {/* TIMER */}
-      <div style={{
-        width: 160,
-        height: 160,
-        borderRadius: "50%",
-        background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 48,
-        fontWeight: "bold",
-        color: "#1c2541"
-      }}>
-        {Math.ceil(timeLeft ?? 0)}
-      </div>
-
-      {/* INDICES */}
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: 12,
-        flexWrap: "wrap"
-      }}>
-        <div style={indiceBoxStyle}>
-          <span>Média :</span>
-          {!showIndiceMedia ? (
-            <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
-          ) : (
-            <span style={{ marginLeft: 6 }}>{playlist[currentRound - 1]?.media || "?"}</span>
-          )}
-        </div>
-        <div style={indiceBoxStyle}>
-          <span>Année :</span>
-          {!showIndiceAnnee ? (
-            <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
-          ) : (
-            <span style={{ marginLeft: 6 }}>{playlist[currentRound - 1]?.annee || "?"}</span>
-          )}
-        </div>
-      </div>
-
-      {/* BUZZ / INPUT */}
-      {!isBuzzed ? (
-        <button onClick={handleBuzz} style={buzzButtonStyle}>BUZZ</button>
+    <div style={indiceBoxStyle}>
+      <span style={{ marginRight: 8 }}>Année :</span>
+      {!showIndiceAnnee ? (
+        <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
       ) : (
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 10,
-          width: "100%"
-        }}>
+        <span>{playlist[currentRound - 1]?.annee || "?"}</span>
+      )}
+    </div>
+  </div>
+
+  {/* BUZZER OU RÉPONSE */}
+  <div style={{ marginBottom: 30 }}>
+    {!isBuzzed ? (
+      <button onClick={handleBuzz} style={buzzButtonStyle}> BUZZ</button>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <input
+        key={isWrongAnswer ? "wrong" : "normal"}
+          type="text"
+          placeholder="Votre réponse"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleValidate()}
+          ref={answerInputRef}
+          style={inputStyle}
+          className={isWrongAnswer ? "wrong-answer" : ""}
+        />
+        {bonusCompositeur && (
           <input
-            key={isWrongAnswer ? "wrong" : "normal"}
+          key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
             type="text"
-            placeholder="Votre réponse"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleValidate()}
-            ref={answerInputRef}
+            placeholder="Compositeur (facultatif)"
+            value={composerGuess}
+            onChange={(e) => setComposerGuess(e.target.value)}
             style={inputStyle}
             className={isWrongAnswer ? "wrong-answer" : ""}
           />
-          {bonusCompositeur && (
-            <input
-              key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
-              type="text"
-              placeholder="Compositeur (facultatif)"
-              value={composerGuess}
-              onChange={(e) => setComposerGuess(e.target.value)}
-              style={inputStyle}
-              className={isWrongAnswer ? "wrong-answer" : ""}
-            />
-          )}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={handleValidate} disabled={!answer && (!bonusCompositeur || !composerGuess)} style={validateButtonStyle}>Valider</button>
-            <button onClick={() => {
+        )}
+        <div>
+          <button
+            onClick={handleValidate}
+            disabled={!answer && (!bonusCompositeur || !composerGuess)}
+            style={validateButtonStyle}
+          >
+            Valider
+          </button>
+          <button
+            onClick={() => {
               setIsBuzzed(false);
               setAnswer("");
               setComposerGuess("");
               setIsTimerRunning(true);
               handlePlay();
-            }} style={cancelButtonStyle}>Annuler</button>
-          </div>
+            }}
+            style={cancelButtonStyle}
+          >
+            Annuler
+          </button>
         </div>
-      )}
-    </div>
+      </div>
+    )}
   </div>
-);
 
+</div>
 
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>
