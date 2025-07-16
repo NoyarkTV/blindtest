@@ -952,7 +952,7 @@ const handleNext = () => {
   {/* SCOREBOARD CENTRÉ EN FOND */}
   {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
     <div style={{
-      backgroundColor: "#1c2541",
+      backgroundColor: "#2d374f",
       borderRadius: 20,
       padding: 16,
       minWidth: 260,
