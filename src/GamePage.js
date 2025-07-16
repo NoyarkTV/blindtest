@@ -444,13 +444,12 @@ useEffect(() => {
     });
     handlePause();
     setShowPopup(true);
-    socket.emit("player-ready", { 
-  roomId: id, 
-  playerName, 
-  previousScore: score,            // score actuel avant ajout des points du round
-  responseTime: responseTimeValue  // temps de réponse en secondes (nombre ou string)
-});
-
+    socket.emit("player-ready", {
+      roomId: id,
+      playerName,
+      previousScore: score,
+      responseTime: "-"
+    });
   }
 }, [timeLeft]);
 
@@ -647,13 +646,12 @@ const handleValidate = () => {
 
     setTimeLeft(null);
     setShowPopup(true);
-    socket.emit("player-ready", { 
-  roomId: id, 
-  playerName, 
-  previousScore: score,            // score actuel avant ajout des points du round
-  responseTime: responseTimeValue  // temps de réponse en secondes (nombre ou string)
-});
-
+    socket.emit("player-ready", {
+      roomId: id,
+      playerName,
+      previousScore: score, // score AVANT ajout
+      responseTime: responseTime.toFixed(1)
+    });
     setPopupInfo({
       title: "Bonne réponse",
       points: `+${totalPoints} points${bonusText}`,
@@ -701,12 +699,13 @@ const handleValidate = () => {
 
     setTimeLeft(null);
     setShowPopup(true);
-    socket.emit("player-ready", { 
-  roomId: id, 
-  playerName, 
-  previousScore: score,            // score actuel avant ajout des points du round
-  responseTime: responseTimeValue  // temps de réponse en secondes (nombre ou string)
-});
+    socket.emit("player-ready", {
+      roomId: id,
+      playerName,
+      previousScore: score,
+      responseTime: "-"
+    });
+
     setPopupInfo({
       title: "Bonne réponse compositeur",
       points: `+${bonus} points (compositeur seul)`,
