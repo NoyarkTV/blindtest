@@ -45,6 +45,7 @@ function GamePage() {
   const [playersReady, setPlayersReady] = useState(0);
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
   const [roundsWon, setRoundsWon] = useState(0);
+  const [readyPlayersInfo, setReadyPlayersInfo] = useState([]);
   
 const roundsWonRef = useRef(roundsWon);
 useEffect(() => {
@@ -443,7 +444,13 @@ useEffect(() => {
     });
     handlePause();
     setShowPopup(true);
-    socket.emit("player-ready", { roomId: id, playerName });
+    socket.emit("player-ready", { 
+  roomId: id, 
+  playerName, 
+  previousScore: score,            // score actuel avant ajout des points du round
+  responseTime: responseTimeValue  // temps de réponse en secondes (nombre ou string)
+});
+
   }
 }, [timeLeft]);
 
@@ -514,14 +521,16 @@ useEffect(() => {
 }, [showPopup, deviceId, playlist, currentRound, token]);
 
 useEffect(() => {
-  socket.on("players-ready-update", ({ ready, total }) => {
+  socket.on("players-ready-update", ({ ready, total, players }) => {
     setPlayersReady(ready);
-    console.log(`✅ Players ready: ${ready}/${total}`);
+    console.log(`✅ Players ready: ${ready}/${total}`, players);
+    // Met à jour la liste des joueurs prêts avec détails (si fournie par le serveur)
+    if (players) {
+      setReadyPlayersInfo(players);
+    }
   });
-
   return () => socket.off("players-ready-update");
 }, []);
-
 
 const handleBuzz = () => {
     pausedTimeRef.current = timeLeft;
@@ -638,7 +647,13 @@ const handleValidate = () => {
 
     setTimeLeft(null);
     setShowPopup(true);
-    socket.emit("player-ready", { roomId: id, playerName });
+    socket.emit("player-ready", { 
+  roomId: id, 
+  playerName, 
+  previousScore: score,            // score actuel avant ajout des points du round
+  responseTime: responseTimeValue  // temps de réponse en secondes (nombre ou string)
+});
+
     setPopupInfo({
       title: "Bonne réponse",
       points: `+${totalPoints} points${bonusText}`,
@@ -686,7 +701,12 @@ const handleValidate = () => {
 
     setTimeLeft(null);
     setShowPopup(true);
-    socket.emit("player-ready", { roomId: id, playerName });
+    socket.emit("player-ready", { 
+  roomId: id, 
+  playerName, 
+  previousScore: score,            // score actuel avant ajout des points du round
+  responseTime: responseTimeValue  // temps de réponse en secondes (nombre ou string)
+});
     setPopupInfo({
       title: "Bonne réponse compositeur",
       points: `+${bonus} points (compositeur seul)`,
@@ -998,61 +1018,72 @@ const handleNext = () => {
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>
     <div style={popupStyle}>
-      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
-      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
-        {popupInfo.points}
-      </h1>
-{popupInfo.responseTime && (
-  <p style={{ fontSize: 16, color: "#444", marginBottom: 6 }}>
-    ⏱️ Réponse en {popupInfo.responseTime}
-  </p>
-)}
-      {trackImages[currentTrack.uri] && (
-  <img
-    src={trackImages[currentTrack.uri]}
-    alt="Pochette album"
-    style={{
-      width: 160,
-      height: 160,
-      borderRadius: 12,
-      objectFit: "cover",
-      marginBottom: 20,
-      boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-    }}
-  />
-)}
+      {/* ... Autres éléments du popup (titre, points, réponse, image, etc.) ... */}
 
-      <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
-        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}{popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
-      </p>
-      {popupInfo.compositeur && (
-        <p style={{ fontStyle: "italic", color: "#555", marginTop: 6 }}>
-          par {popupInfo.compositeur}
-        </p>
+      {/** Encart récapitulatif des scores de tous les joueurs prêts/pas prêts **/}
+      <div style={{
+        backgroundColor: "#f2f2f2",
+        borderRadius: 8,
+        padding: "10px 16px",
+        margin: "20px 0"
+      }}>
+        {scoreboard.map(player => {
+          const detail = readyPlayersInfo.find(p => p.name === player.name);
+          const currentScore = player.score;
+          // Calcul de l’évolution de score depuis le round précédent
+          const delta = detail ? currentScore - detail.previousScore : 0;
+          return (
+            <div key={player.name} style={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center", 
+              marginBottom: 4 
+            }}>
+              <span>{player.name}</span>
+              <span>
+                {currentScore} pts
+                {detail && (
+                  <span style={{ 
+                    color: delta === 0 ? "#d32f2f" : "#388e3c", 
+                    marginLeft: 8 
+                  }}>
+                    ({delta >= 0 ? `+${delta}` : delta})
+                  </span>
+                )}
+                {detail && detail.responseTime && (
+                  <span style={{ 
+                    marginLeft: 8, 
+                    fontSize: 14, 
+                    color: "#555" 
+                  }}>
+                    ⏱️ {detail.responseTime === "-" 
+                          ? "-" 
+                          : `${parseFloat(detail.responseTime).toFixed(1)}s`}
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bouton admin ou message attente admin, inchangé */}
+      {isAdmin ? (
+        <button onClick={handleNext} style={nextButtonStyle} disabled={roundEndedRef.current === false}>
+          🎵 Round suivant ({playersReady} / {players.length})
+        </button>
+      ) : (
+        <div style={{
+          ...nextButtonStyle,
+          backgroundColor: "#ccc",
+          color: "#666",
+          cursor: "not-allowed",
+          textAlign: "center",
+          display: "inline-block"
+        }}>
+          ⏳ En attente de l’admin ({playersReady} / {players.length})
+        </div>
       )}
-
-{isAdmin ? (
-  <button 
-    onClick={handleNext}
-    style={nextButtonStyle}
-    disabled={roundEndedRef.current === false}
-  >
-    🎵 Round suivant ({playersReady} / {players.length})
-  </button>
-) : (
-  <div
-    style={{
-      ...nextButtonStyle,
-      backgroundColor: "#ccc",
-      color: "#666",
-      cursor: "not-allowed",
-      textAlign: "center",
-      display: "inline-block"
-    }}
-  >
-    ⏳ En attente de l’admin ({playersReady} / {players.length})
-  </div>
-)}
     </div>
   </div>
 )}

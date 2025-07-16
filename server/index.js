@@ -563,20 +563,37 @@ socket.on("next-round", ({ roomId }) => {
     io.to(roomId).emit("game-over", games[roomId]?.scores || []);
   }
 });
-socket.on("player-ready", ({ roomId, playerName }) => {
+socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) => {
   const game = games[roomId];
   if (!game) {
     console.warn("❌ Partie non trouvée pour player-ready :", roomId);
     return;
   }
 
+  // Si ce joueur n’était pas encore marqué prêt pour ce round
   if (!game.playersReady.includes(playerName)) {
     game.playersReady.push(playerName);
     console.log(`✅ Player ready: ${playerName} (${game.playersReady.length} / ${game.players.length})`);
 
+    // Enregistre le score précédent et le temps de réponse dans l’objet du joueur
+    const playerObj = game.players.find(p => p.name === playerName);
+    if (playerObj) {
+      playerObj.previousScore = previousScore;
+      playerObj.responseTime = responseTime ?? null;
+    }
+
+    // Informe tous les clients du nouveau joueur prêt, en incluant les détails
     io.to(roomId).emit("players-ready-update", {
       ready: game.playersReady.length,
-      total: game.players.length
+      total: game.players.length,
+      players: game.playersReady.map(name => {
+        const p = game.players.find(pl => pl.name === name) || {};
+        return {
+          name: name,
+          previousScore: p.previousScore ?? 0,
+          responseTime: p.responseTime ?? null
+        };
+      })
     });
   }
 });
