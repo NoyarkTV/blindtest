@@ -523,11 +523,12 @@ useEffect(() => {
 }, []);
 
 
-const handleBuzz = async () => {
+const handleBuzz = () => {
     pausedTimeRef.current = timeLeft;
+    clearInterval(intervalRef.current);
     setIsTimerRunning(false);
     setIsBuzzed(true);
-    await handlePause();
+    handlePause().catch(err => console.error("Erreur pause :", err));
 };
 
 const normalize = str =>
@@ -594,7 +595,7 @@ const handleValidate = () => {
 
   // 🟢 Cas 1 : Titre correct (comme avant)
   if (isCorrect) {
-    const rawTimeLeft = pausedTimeRef.current ?? timeLeft;
+    const rawTimeLeft = pausedTimeRef.current;
     const responseTime = (params.time ?? 30) - rawTimeLeft;
     responseTimesRef.current.push(responseTime.toFixed(1));
     let multiplier = 1;
@@ -825,71 +826,22 @@ const handleNext = () => {
 </style>
 
 
-
-{/* ROUND fixé en haut sans débordement */}
+{/* HEADER : titre centré */}
 <div style={{
   position: "fixed",
   top: 20,
-  left: 0,
   width: "100%",
-  textAlign: "left",
-  paddingLeft: 20, // ✅ petit espace à gauche
+  textAlign: "center",
   fontFamily: "Luckiest Guy",
   fontSize: 28,
   color: "#f7b733",
   zIndex: 10,
-  pointerEvents: "none" // évite tout clic parasite
+  pointerEvents: "none"
 }}>
   Round {currentRound} / {playlist.length}
 </div>
 
-{/* SCOREBOARD */}
-{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-  <div style={{
-    position: "fixed",           // fixé à l'écran
-    top: 20,
-    right: 20,
-    width: 220,                  // largeur contrôlée
-    backgroundColor: "#fff",     // ✅ fond blanc visible
-    borderRadius: 12,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-    padding: 12,
-    zIndex: 1000
-  }}>
-    <div style={{
-      fontWeight: "bold",
-      fontSize: 16,
-      marginBottom: 10,
-      color: "#1c2541"
-    }}>
-      🏆 Scoreboard
-    </div>
-
-    {scoreboard.map((p, i) => {
-      const isMe = p.name === playerName;
-      return (
-        <div
-          key={i}
-          style={{
-            fontWeight: isMe ? "bold" : "normal",
-            backgroundColor: isMe ? "#f7b733" : "transparent",
-            color: isMe ? "#1c2541" : "#333",
-            padding: "6px 8px",
-            borderRadius: 8,
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 4
-          }}
-        >
-          <span>{p.name}</span>
-          <span>{typeof p.score === "number" ? p.score : 0}</span>
-        </div>
-      );
-    })}
-  </div>
-)}
-
-{/* CONTENU CENTRAL NON SCROLLABLE */}
+{/* CONTENU CENTRAL */}
 <div style={{
   position: "relative",
   height: "100vh",
@@ -903,7 +855,7 @@ const handleNext = () => {
   color: "#fff"
 }}>
 
-  {/* TIMER CENTRÉ */}
+  {/* TIMER */}
   <div
     style={{
       width: 140,
@@ -951,7 +903,7 @@ const handleNext = () => {
     ) : (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <input
-        key={isWrongAnswer ? "wrong" : "normal"}
+          key={isWrongAnswer ? "wrong" : "normal"}
           type="text"
           placeholder="Votre réponse"
           value={answer}
@@ -963,7 +915,7 @@ const handleNext = () => {
         />
         {bonusCompositeur && (
           <input
-          key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
+            key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
             type="text"
             placeholder="Compositeur (facultatif)"
             value={composerGuess}
@@ -997,7 +949,51 @@ const handleNext = () => {
     )}
   </div>
 
+  {/* SCOREBOARD CENTRÉ EN FOND */}
+  {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+    <div style={{
+      backgroundColor: "#1c2541",
+      borderRadius: 20,
+      padding: 16,
+      minWidth: 260,
+      boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6)",
+      marginTop: -10
+    }}>
+      <div style={{
+        fontWeight: "bold",
+        fontSize: 18,
+        color: "#f7b733",
+        marginBottom: 10,
+        textAlign: "center"
+      }}>
+        🏆 Scoreboard
+      </div>
+
+      {scoreboard.map((p, i) => {
+        const isMe = p.name === playerName;
+        return (
+          <div
+            key={i}
+            style={{
+              fontWeight: isMe ? "bold" : "normal",
+              backgroundColor: isMe ? "#f7b733" : "transparent",
+              color: isMe ? "#1c2541" : "#fff",
+              padding: "6px 12px",
+              borderRadius: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 4
+            }}
+          >
+            <span>{p.name}</span>
+            <span>{typeof p.score === "number" ? p.score : 0}</span>
+          </div>
+        );
+      })}
+    </div>
+  )}
 </div>
+
 
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>
