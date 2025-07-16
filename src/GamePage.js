@@ -1062,7 +1062,17 @@ const handleNext = () => {
         margin: "20px 0",
         textAlign: "left"
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: 10, color: "#1c2541" }}>📊 Résumé du round</h3>
+        <h4 style={{ 
+          marginTop: 0, 
+          marginBottom: 12, 
+          color: "#1c2541", 
+          textAlign: "center", 
+          fontSize: 18, 
+          fontWeight: "bold"
+        }}>
+          Scores
+        </h4>
+
         {scoreboard.map(player => {
           const detail = readyPlayersInfo.find(p => p.name === player.name);
           const currentScore = player.score;
