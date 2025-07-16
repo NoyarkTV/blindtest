@@ -1013,51 +1013,96 @@ const handleNext = () => {
   )}
 </div>
 
-
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>
     <div style={popupStyle}>
-      {/* ... Autres éléments du popup (titre, points, réponse, image, etc.) ... */}
+      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
 
-      {/** Encart récapitulatif des scores de tous les joueurs prêts/pas prêts **/}
+      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
+        {popupInfo.points}
+      </h1>
+
+      {popupInfo.responseTime && (
+        <p style={{ fontSize: 16, color: "#444", marginBottom: 6 }}>
+          ⏱️ Réponse en {popupInfo.responseTime}
+        </p>
+      )}
+
+      {trackImages[currentTrack.uri] && (
+        <img
+          src={trackImages[currentTrack.uri]}
+          alt="Pochette album"
+          style={{
+            width: 160,
+            height: 160,
+            borderRadius: 12,
+            objectFit: "cover",
+            marginBottom: 20,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+          }}
+        />
+      )}
+
+      <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
+        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
+        {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
+      </p>
+
+      {popupInfo.compositeur && (
+        <p style={{ fontStyle: "italic", color: "#555", marginTop: 6 }}>
+          par {popupInfo.compositeur}
+        </p>
+      )}
+
+      {/* ✅ Résumé du round */}
       <div style={{
         backgroundColor: "#f2f2f2",
         borderRadius: 8,
         padding: "10px 16px",
-        margin: "20px 0"
+        margin: "20px 0",
+        textAlign: "left"
       }}>
+        <h3 style={{ marginTop: 0, marginBottom: 10, color: "#1c2541" }}>📊 Résumé du round</h3>
         {scoreboard.map(player => {
           const detail = readyPlayersInfo.find(p => p.name === player.name);
           const currentScore = player.score;
-          // Calcul de l’évolution de score depuis le round précédent
-          const delta = detail ? currentScore - detail.previousScore : 0;
+          const delta = detail ? currentScore - detail.previousScore : null;
+          const isMe = player.name === playerName;
+
           return (
-            <div key={player.name} style={{ 
-              display: "flex", 
-              justifyContent: "space-between", 
-              alignItems: "center", 
-              marginBottom: 4 
-            }}>
+            <div
+              key={player.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 6,
+                padding: "6px 8px",
+                backgroundColor: isMe ? "#f7b733" : "transparent",
+                color: isMe ? "#1c2541" : "#1c2541",
+                borderRadius: 8,
+                fontWeight: isMe ? "bold" : "normal"
+              }}
+            >
               <span>{player.name}</span>
               <span>
                 {currentScore} pts
                 {detail && (
-                  <span style={{ 
-                    color: delta === 0 ? "#d32f2f" : "#388e3c", 
-                    marginLeft: 8 
+                  <span style={{
+                    marginLeft: 8,
+                    color: delta > 0 ? "#388e3c" : "#d32f2f",
+                    fontWeight: "bold"
                   }}>
                     ({delta >= 0 ? `+${delta}` : delta})
                   </span>
                 )}
-                {detail && detail.responseTime && (
-                  <span style={{ 
-                    marginLeft: 8, 
-                    fontSize: 14, 
-                    color: "#555" 
+                {detail?.responseTime && (
+                  <span style={{
+                    marginLeft: 8,
+                    fontSize: 14,
+                    color: "#555"
                   }}>
-                    ⏱️ {detail.responseTime === "-" 
-                          ? "-" 
-                          : `${parseFloat(detail.responseTime).toFixed(1)}s`}
+                    ⏱️ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
                   </span>
                 )}
               </span>
@@ -1066,20 +1111,26 @@ const handleNext = () => {
         })}
       </div>
 
-      {/* Bouton admin ou message attente admin, inchangé */}
+      {/* ✅ Bouton ou attente admin */}
       {isAdmin ? (
-        <button onClick={handleNext} style={nextButtonStyle} disabled={roundEndedRef.current === false}>
+        <button
+          onClick={handleNext}
+          style={nextButtonStyle}
+          disabled={roundEndedRef.current === false}
+        >
           🎵 Round suivant ({playersReady} / {players.length})
         </button>
       ) : (
-        <div style={{
-          ...nextButtonStyle,
-          backgroundColor: "#ccc",
-          color: "#666",
-          cursor: "not-allowed",
-          textAlign: "center",
-          display: "inline-block"
-        }}>
+        <div
+          style={{
+            ...nextButtonStyle,
+            backgroundColor: "#ccc",
+            color: "#666",
+            cursor: "not-allowed",
+            textAlign: "center",
+            display: "inline-block"
+          }}
+        >
           ⏳ En attente de l’admin ({playersReady} / {players.length})
         </div>
       )}
