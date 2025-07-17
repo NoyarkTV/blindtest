@@ -172,7 +172,16 @@ useEffect(() => {
   };
 
 return (
-  <div className="app" style={{ paddingTop: "60px", alignItems: "center" }}>
+  <div className="app" style={{
+  height: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "40px 20px",
+  boxSizing: "border-box"
+}}>
+
     {/* Titre principal */}
     <div className="logo" style={{ width: "280px", maxWidth: "100%" }}>
       <img src="/Logo.svg" alt="Blindtest Logo" style={{ width: "100%" }} />
