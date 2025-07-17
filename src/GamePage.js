@@ -929,8 +929,8 @@ return (
     </div>
 
 {showPopup && popupInfo && (
-  <div style={popup-rep-overlay}>
-    <div style={popup}>
+  <div className="popup-rep-overlay">
+    <div className="popup-rep">
       <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
 
       <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
@@ -1056,12 +1056,8 @@ return (
 )}
 
 {showEndPopup && (
-  <div style={popup-rep-overlay}>
-    <div style={{ 
-      ...popup, 
-      minWidth: 320, 
-      paddingBottom: 24 
-    }}>
+  <div className="popup-rep-overlay">
+    <div className="popup-rep" style={{ paddingBottom: 24 }}>
       <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
 
       {finalScores.length > 0 && (
