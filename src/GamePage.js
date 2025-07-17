@@ -812,15 +812,7 @@ return (
     <SpotifyPlayer token={token} onReady={handleReady} />
 
     {/* HEADER */}
-    <div className="title" style={{
-      position: "fixed",
-      top: 20,
-      width: "100%",
-      textAlign: "center",
-      zIndex: 10,
-      pointerEvents: "none",
-      color: "var(--color-primary)"
-    }}>
+    <div className="round-header">
       Round {currentRound} / {playlist.length}
     </div>
 
@@ -834,19 +826,12 @@ return (
       width: "100vw",
       overflow: "hidden"
     }}>
-      {/* TIMER circulaire personnalisé */}
-      <div style={{
-        width: 140,
-        height: 140,
-        borderRadius: "50%",
-        background: `conic-gradient(#ff7c2c ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 36,
-        fontWeight: "bold",
-        color: "#1c2541",
-        marginBottom: 30
+      {/* TIMER avec contour dégradé */}
+      <div className="timer" style={{
+        background: "#1a1835",
+        border: "5px solid transparent",
+        borderImage: `conic-gradient(var(--gradient-main) ${360 * (timeLeft / timer)}deg, transparent ${360 * (timeLeft / timer)}deg)`,
+        borderImageSlice: 1
       }}>
         {Math.ceil(timeLeft ?? 0)}
       </div>
@@ -860,13 +845,9 @@ return (
           const value = playlist[currentRound - 1]?.[type] || "?";
 
           return (
-            <div key={i} className="popup" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span>{label} :</span>
-              {!visible
-                ? <button className="btn btn-cancel" onClick={toggle}>👁️</button>
-                : <span>{value}</span>
-              }
-            </div>
+            <button key={i} className="indice-button" onClick={toggle}>
+              {visible ? `${label} : ${value}` : `👁️ ${label}`}
+            </button>
           );
         })}
       </div>
@@ -874,7 +855,7 @@ return (
       {/* BUZZER ou CHAMP RÉPONSE */}
       <div style={{ marginBottom: 30 }}>
         {!isBuzzed ? (
-          <button className="btn btn-confirm" onClick={handleBuzz}>BUZZ</button>
+          <button className="buzz-button" onClick={handleBuzz}>BUZZ</button>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
             <input
@@ -926,38 +907,14 @@ return (
 
       {/* SCOREBOARD */}
       {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-        <div className="popup" style={{
-          backgroundColor: "#2d374f",
-          borderRadius: 20,
-          padding: 16,
-          minWidth: 260,
-          boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6)"
-        }}>
-          <div style={{
-            fontWeight: "bold",
-            fontSize: 18,
-            color: "#f7b733",
-            marginBottom: 10,
-            textAlign: "center"
-          }}>
-            🏆 Scoreboard
-          </div>
-
+        <div className="scoreboard-popup">
+          <h3>Scores</h3>
           {scoreboard.map((p, i) => {
             const isMe = p.name === playerName;
             return (
               <div
                 key={i}
-                style={{
-                  fontWeight: isMe ? "bold" : "normal",
-                  backgroundColor: isMe ? "#f7b733" : "transparent",
-                  color: isMe ? "#1c2541" : "#fff",
-                  padding: "6px 12px",
-                  borderRadius: 8,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 4
-                }}
+                className={`scoreboard-entry ${isMe ? "me" : ""}`}
               >
                 <span>{p.name}</span>
                 <span>{typeof p.score === "number" ? p.score : 0}</span>
