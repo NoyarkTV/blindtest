@@ -300,9 +300,9 @@ return (
           <div className="title3" style={{ marginBottom: "5px" }}>Temps par manche</div>
           <input
             type="range"
-            min="5"
+            min="1"
             max="60"
-            step="5"
+            step="1"
             value={time}
             onChange={e => setTime(+e.target.value)}
             style={{ width: "100%" }}
@@ -310,13 +310,27 @@ return (
           <div>{time} secondes</div>
         </div>
 
-        <div>
-          <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <input type="number" className="text-input" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ maxWidth: 80 }} />
-            <input type="number" className="text-input" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ maxWidth: 80 }} />
-          </div>
-        </div>
+<div>
+  <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
+  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <span style={{ color: "#aaa" }}>De</span>
+    <input
+      type="number"
+      className="text-input"
+      value={anneeMin}
+      onChange={e => setAnneeMin(+e.target.value)}
+      style={{ maxWidth: 80 }}
+    />
+    <span style={{ color: "#aaa" }}>à</span>
+    <input
+      type="number"
+      className="text-input"
+      value={anneeMax}
+      onChange={e => setAnneeMax(+e.target.value)}
+      style={{ maxWidth: 80 }}
+    />
+  </div>
+</div>
 
         {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
         {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie, "categorie")}
