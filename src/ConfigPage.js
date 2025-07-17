@@ -171,11 +171,10 @@ const copierCode = () => {
 useEffect(() => {
   const slider = document.querySelector('input[type="range"]');
   if (slider) {
-    const val = (time - 5) / 55 * 100;
-    slider.style.setProperty('--progress', `${val}%`);
+    const percentage = ((time - 5) / 55) * 100;
+    slider.style.setProperty('--progress', `${percentage}%`);
   }
 }, [time]);
-
 
 const validerPartie = () => {
   const params = {
@@ -300,9 +299,9 @@ return (
           <div className="title3" style={{ marginBottom: "5px" }}>Temps par manche</div>
           <input
             type="range"
-            min="1"
+            min="5"
             max="60"
-            step="1"
+            step="5"
             value={time}
             onChange={e => setTime(+e.target.value)}
             style={{ width: "100%" }}
@@ -313,7 +312,7 @@ return (
 <div>
   <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-    <span style={{ color: "#aaa" }}>De</span>
+    <span style={{ color: "#ffffff" }}>De</span>
     <input
       type="number"
       className="text-input"
@@ -321,7 +320,7 @@ return (
       onChange={e => setAnneeMin(+e.target.value)}
       style={{ maxWidth: 80 }}
     />
-    <span style={{ color: "#aaa" }}>à</span>
+    <span style={{ color: "#ffffff" }}>à</span>
     <input
       type="number"
       className="text-input"
