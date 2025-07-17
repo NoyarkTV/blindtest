@@ -98,7 +98,7 @@ body {
   cursor: pointer;
   text-transform: uppercase;
   background: var(--gradient-main);
-  color: #000;
+  color: #fff;
   transition: transform 0.2s ease;
 }
 
@@ -405,6 +405,108 @@ main {
   max-width: 400px;
   margin: 2rem auto;
 }
+
+.popup-rep-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup-rep {
+  background: var(--color-bg-popup);
+  color: white;
+  padding: 32px;
+  border-radius: 24px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.popup h1 {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.popup h2 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.popup h4 {
+  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.popup img {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.popup .score-block {
+  background-color: #282548;
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin: 20px 0;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.popup .score-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  color: white;
+}
+
+.popup .score-entry.me {
+  background: var(--gradient-main);
+  color: white;
+  font-weight: bold;
+}
+
+.popup .button-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.popup .btn-next {
+  background: var(--gradient-main);
+  color: #1c2541;
+  font-weight: bold;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.popup .btn-next:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
 
 /* TOOLTIP */
 .info-icon-container {

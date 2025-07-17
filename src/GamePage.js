@@ -929,65 +929,37 @@ return (
     </div>
 
 {showPopup && popupInfo && (
-  <div style={popupOverlayStyle}>
-    <div style={popupStyle}>
-      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
+  <div className="popup-rep-overlay">
+    <div className="popup-rep">
+      <h2>{popupInfo.title}</h2>
 
-      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
+      <h1 style={{ color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
         {popupInfo.points}
       </h1>
 
       {popupInfo.responseTime && (
-        <p style={{ fontSize: 16, color: "#444", marginBottom: 6 }}>
+        <p style={{ opacity: 0.6 }}>
           ⏱️ Réponse en {popupInfo.responseTime}
         </p>
       )}
 
       {trackImages[currentTrack.uri] && (
-        <img
-          src={trackImages[currentTrack.uri]}
-          alt="Pochette album"
-          style={{
-            width: 160,
-            height: 160,
-            borderRadius: 12,
-            objectFit: "cover",
-            marginBottom: 20,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-          }}
-        />
+        <img src={trackImages[currentTrack.uri]} alt="Pochette album" />
       )}
 
-      <p style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>
+      <p style={{ fontWeight: "600", fontSize: 20 }}>
         {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
         {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
       </p>
 
       {popupInfo.compositeur && (
-        <p style={{ fontStyle: "italic", color: "#555", marginTop: 6 }}>
+        <p style={{ fontStyle: "italic", opacity: 0.6 }}>
           par {popupInfo.compositeur}
         </p>
       )}
 
-      {/* ✅ Résumé du round */}
-      <div style={{
-        backgroundColor: "#f2f2f2",
-        borderRadius: 8,
-        padding: "10px 16px",
-        margin: "20px 0",
-        textAlign: "left"
-      }}>
-        <h4 style={{ 
-          marginTop: 0, 
-          marginBottom: 12, 
-          color: "#1c2541", 
-          textAlign: "center", 
-          fontSize: 18, 
-          fontWeight: "bold"
-        }}>
-          Scores
-        </h4>
-
+      <div className="score-block">
+        <h4>Scores</h4>
         {scoreboard.map(player => {
           const detail = readyPlayersInfo.find(p => p.name === player.name);
           const currentScore = player.score;
@@ -995,38 +967,17 @@ return (
           const isMe = player.name === playerName;
 
           return (
-            <div
-              key={player.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 6,
-                padding: "6px 8px",
-                backgroundColor: isMe ? "#f7b733" : "transparent",
-                color: isMe ? "#1c2541" : "#1c2541",
-                borderRadius: 8,
-                fontWeight: isMe ? "bold" : "normal"
-              }}
-            >
+            <div key={player.name} className={`score-entry${isMe ? " me" : ""}`}>
               <span>{player.name}</span>
               <span>
                 {currentScore} pts
                 {detail && (
-                  <span style={{
-                    marginLeft: 8,
-                    color: delta > 0 ? "#388e3c" : "#d32f2f",
-                    fontWeight: "bold"
-                  }}>
+                  <span style={{ marginLeft: 8, color: delta > 0 ? "#388e3c" : "#d32f2f" }}>
                     ({delta >= 0 ? `+${delta}` : delta})
                   </span>
                 )}
                 {detail?.responseTime && (
-                  <span style={{
-                    marginLeft: 8,
-                    fontSize: 14,
-                    color: "#555"
-                  }}>
+                  <span style={{ marginLeft: 8, opacity: 0.6 }}>
                     ⏱️ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
                   </span>
                 )}
@@ -1036,24 +987,21 @@ return (
         })}
       </div>
 
-      {/* ✅ Bouton ou attente admin */}
       {isAdmin ? (
         <button
+          className="btn-next"
           onClick={handleNext}
-          style={nextButtonStyle}
           disabled={roundEndedRef.current === false}
         >
           🎵 Round suivant ({playersReady} / {players.length})
         </button>
       ) : (
         <div
+          className="btn-next"
           style={{
-            ...nextButtonStyle,
             backgroundColor: "#ccc",
             color: "#666",
-            cursor: "not-allowed",
-            textAlign: "center",
-            display: "inline-block"
+            cursor: "not-allowed"
           }}
         >
           ⏳ En attente de l’admin ({playersReady} / {players.length})
@@ -1064,13 +1012,9 @@ return (
 )}
 
 {showEndPopup && (
-  <div style={popupOverlayStyle}>
-    <div style={{ 
-      ...popupStyle, 
-      minWidth: 320, 
-      paddingBottom: 24 
-    }}>
-      <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
+  <div className="popup-rep-overlay">
+    <div className="popup-rep" style={{ minWidth: 320, paddingBottom: 24 }}>
+      <h2>Fin de la partie !</h2>
 
       {finalScores.length > 0 && (
         <p style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
@@ -1078,28 +1022,13 @@ return (
         </p>
       )}
 
-      <div style={{
-        backgroundColor: "#f2f2f2",
-        borderRadius: 12,
-        padding: "10px 16px",
-        marginBottom: 20,
-        width: "100%",
-        boxSizing: "border-box"
-      }}>
+      <div className="score-block">
         {finalScores.map((p, i) => {
           const isMe = p.name === playerName;
           return (
             <div
               key={p.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "6px 8px",
-                backgroundColor: isMe ? "#f7b733" : "transparent",
-                borderRadius: 8,
-                fontWeight: isMe ? "bold" : "normal",
-                marginBottom: 4
-              }}
+              className={`score-entry${isMe ? " me" : ""}`}
             >
               <span>{i + 1}. {p.name}</span>
               <span>{p.score} pts</span>
@@ -1108,19 +1037,16 @@ return (
         })}
       </div>
 
-      <p style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
+      <p style={{ marginTop: 12, fontSize: 16, opacity: 0.8 }}>
         Votre temps de réponse moyen est de {averageTime} sec
       </p>
 
       <button
+        className="btn-next"
+        style={{ padding: "10px 18px", fontSize: 16 }}
         onClick={() => {
           setShowEndPopup(false);
           navigate("/");
-        }}
-        style={{
-          ...nextButtonStyle,
-          padding: "10px 18px",
-          fontSize: 16
         }}
       >
         Quitter
@@ -1128,109 +1054,9 @@ return (
     </div>
   </div>
 )}
-
-
     </div>
   );
 }
 
-const buttonStyle = {
-  padding: "10px 20px",
-  fontSize: "16px",
-  borderRadius: "8px",
-  border: "none",
-  background: "#f7b733",
-  color: "#1c2541",
-  fontWeight: "bold",
-  cursor: "pointer"
-};
-
-const buzzButtonStyle = {
-  padding: "15px 40px",
-  fontSize: 24,
-  borderRadius: 30,
-  background: "#f7b733",
-  color: "#1c2541",
-  border: "none",
-  cursor: "pointer"
-};
-
-const inputStyle = {
-  padding: 10,
-  fontSize: 16,
-  borderRadius: 10,
-  width: 300,
-  backgroundColor: "#fff",
-  transition: "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease"
-};
-
-const validateButtonStyle = {
-  marginRight: 10,
-  padding: "10px 20px",
-  borderRadius: 10,
-  background: "#4caf50",
-  color: "white",
-  border: "none",
-  fontWeight: "bold",
-  cursor: "pointer"
-};
-
-const cancelButtonStyle = {
-  padding: "10px 20px",
-  borderRadius: 10,
-  background: "#f44336",
-  color: "white",
-  border: "none",
-  fontWeight: "bold",
-  cursor: "pointer"
-};
-
-const indiceBoxStyle = {
-  background: "#fff",
-  color: "#1c2541",
-  borderRadius: "20px",
-  padding: "6px 12px",
-  display: "flex",
-  alignItems: "center",
-  fontSize: 14,
-  fontWeight: 500,
-  boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-};
-
-const indiceButtonStyle = {
-  border: "none",
-  background: "transparent",
-  cursor: "pointer"
-};
-
-const popupOverlayStyle = {
-  position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-  background: "rgba(0,0,0,0.7)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999
-};
-
-const popupStyle = {
-  background: "#fff",
-  padding: "30px 40px",
-  borderRadius: "20px",
-  textAlign: "center",
-  color: "#1c2541",
-  maxWidth: 480,
-  width: "90%",
-  boxShadow: "0 0 20px rgba(0,0,0,0.4)",
-  fontFamily: "Arial, sans-serif"
-};
-
-const nextButtonStyle = {
-  marginTop: 30,
-  padding: "12px 30px",
-  fontSize: 16,
-  borderRadius: 10,
-  background: "#f7b733",
-  color: "#1c2541",
-  fontWeight: "bold",
-  border: "none",
-  cursor: "pointer",
-  boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
-};
 
 export default GamePage;
