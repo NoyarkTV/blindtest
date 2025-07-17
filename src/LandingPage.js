@@ -174,21 +174,16 @@ useEffect(() => {
 return (
   <div className="app" style={{ paddingTop: "60px", alignItems: "center" }}>
     {/* Titre principal */}
-    <h1 className="title logo" style={{
-      fontSize: "3.5rem",
-      background: "var(--gradient-main)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent"
-    }}>
-      Blindtest
-    </h1>
+    <div className="logo" style={{ width: "280px", maxWidth: "100%" }}>
+      <img src="/Logo.svg" alt="Blindtest Logo" style={{ width: "100%" }} />
+    </div>
 
     <div style={{
       display: "flex",
       gap: "60px",
       flexWrap: "wrap",
       justifyContent: "center",
-      alignItems: "flex-start",
+      alignItems: "stretch",
       marginTop: "40px"
     }}>
       {/* Profil joueur */}
@@ -259,13 +254,14 @@ return (
       </div>
 
       {/* Zone de jeu */}
-      <div style={{
-        width: "340px",
-        gap: "20px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-      }}>
+        <div style={{
+          width: "340px",
+          gap: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center" // <-- ajoute ceci
+        }}>
         <h2 className="title2" style={{ marginBottom: 0 }}>Jouer</h2>
 
         <button className="btn btn-confirm" onClick={handleCreateGame}>
