@@ -229,64 +229,29 @@ const validerPartie = () => {
 
 const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
   <div style={{ marginTop: "15px" }}>
-    {/* Titre + boutons alignés à gauche */}
     <div className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-      <span style={{ fontWeight: "bold" }}>{label}</span>
+      <span>{label}</span>
       <div style={{ display: "flex", gap: "6px", marginLeft: "12px" }}>
-        <button
-          onClick={() => setter([...list])}
-          style={{
-            backgroundColor: "#f7b733",
-            color: "#1c2541",
-            border: "none",
-            padding: "4px 10px",
-            borderRadius: "0px",
-            fontSize: "0.8rem",
-            cursor: "pointer"
-          }}
-        >
+        <button className="btn btn-confirm" style={{ padding: "4px 12px", fontSize: "0.75rem" }} onClick={() => setter([...list])}>
           Tout sélectionner
         </button>
-        <button
-          onClick={() => setter([])}
-          style={{
-            backgroundColor: "#ccc",
-            color: "#333",
-            border: "none",
-            padding: "4px 10px",
-            borderRadius: "0px",
-            fontSize: "0.8rem",
-            cursor: "pointer"
-          }}
-        >
+        <button className="btn btn-cancel" style={{ padding: "4px 12px", fontSize: "0.75rem" }} onClick={() => setter([])}>
           Tout désélectionner
         </button>
       </div>
     </div>
-
-    {/* Groupe des cases */}
-    <div className={`checkbox-group ${cssClass}`} style={{
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "10px"
-    }}>
+    <div className={`checkbox-group ${cssClass}`} style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
       {list.map((item) => (
         <label
           key={item}
-          style={{
-            background: selected.includes(item) ? "#f7b733" : "#eee",
-            color: selected.includes(item) ? "#1c2541" : "#000",
-            padding: "5px 10px",
-            borderRadius: "15px",
-            cursor: "pointer",
-            fontSize: "0.85rem"
-          }}
+          className={selected.includes(item) ? "selected" : ""}
+          onClick={() => toggleSelection(item, selected, setter)}
         >
           <input
             type="checkbox"
             checked={selected.includes(item)}
             onChange={() => toggleSelection(item, selected, setter)}
-            style={{ marginRight: 6 }}
+            style={{ display: "none" }}
           />
           {item}
         </label>
@@ -295,35 +260,35 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
   </div>
 );
 
-
 return (
-  <div style={{ background: "#1c2541", minHeight: "100vh", fontFamily: "Poppins, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-    <div style={{ background: "white", color: "#1c2541", borderRadius: "20px", padding: "20px", maxWidth: "1100px", width: "100%", display: "flex", gap: "30px", flexWrap: "wrap" }}>
-      
-      {/* Colonne de gauche – paramètre */}
+  <div className="app" style={{ padding: "40px 20px" }}>
+    <div className="popup" style={{
+      maxWidth: "1100px",
+      width: "100%",
+      display: "flex",
+      gap: "30px",
+      flexWrap: "wrap"
+    }}>
+      {/* Colonne gauche — Paramètres */}
       <div style={{ flex: 1, minWidth: 0, maxWidth: "620px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Paramètres</div>
+        <div className="title2">Paramètres</div>
 
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontWeight: "bold" }}>Nombre de rounds</div>
-            <label>
+            <label className="checkbox-label">
               <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
               Bonus compositeur
             </label>
           </div>
-          {playerName === "thibchoffardet" && (
-            <div style={{ marginTop: "10px" }}>
-            </div>
-          )}
-          <input type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
-          <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "red" : "#1c2541" }}>
+          <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
+          <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "var(--color-red)" : "var(--color-text)" }}>
             {filteredCount === 0 ? "Aucun morceau disponible avec ces filtres" : `${filteredCount} morceaux disponibles`}
           </div>
         </div>
 
         <div>
-          <div className="section-title" style={{ fontWeight: "bold", marginBottom: "5px" }}>Temps par manche</div>
+          <div className="title3" style={{ marginBottom: "5px" }}>Temps par manche</div>
           <input
             type="range"
             min="5"
@@ -331,24 +296,15 @@ return (
             step="5"
             value={time}
             onChange={e => setTime(+e.target.value)}
-            style={{
-              width: "100%",
-              WebkitAppearance: "none",
-              height: "6px",
-              borderRadius: "3px",
-              background: `linear-gradient(to right, #f7b733 0%, #f7b733 ${(time - 5) / 55 * 100}%, #ddd ${(time - 5) / 55 * 100}%, #ddd 100%)`,
-              outline: "none"
-            }}
           />
-
           <div>{time} secondes</div>
         </div>
 
         <div>
-          <div className="section-title" style={{ fontWeight: "bold", marginBottom: "5px" }}>Années</div>
-          <label>
-            De <input type="number" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ width: 70 }} />
-            à <input type="number" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ width: 70, marginLeft: 10 }} />
+          <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
+          <label className="checkbox-label">
+            De <input type="number" className="text-input" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ width: 80 }} />
+            à <input type="number" className="text-input" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ width: 80, marginLeft: 10 }} />
           </label>
         </div>
 
@@ -358,84 +314,38 @@ return (
         {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays, "pays")}
       </div>
 
-      {/* Colonne de droite – Partie */}
-      <div style={{ flex: 1, minWidth: 0, minWidth: "460px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div className="section-title" style={{ fontSize: "1.4rem", fontWeight: "bold" }}>Partie</div>
+      {/* Colonne droite — Partie */}
+      <div style={{ flex: 1, minWidth: "460px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="title2">Partie</div>
 
-        {/* Bloc joueur – doit prendre le max de hauteur */}
-        <div style={{ background: "#f2f2f2", borderRadius: "10px", padding: "10px", flex: 1, display: "flex", flexDirection: "column", gap: "5px", minHeight: "0" }}>
+        <div className="popup" style={{
+          background: "var(--color-bg-popup)",
+          padding: "16px",
+          gap: "8px",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1
+        }}>
           {players.map((p, i) => (
-            <div
-              key={i}
-              style={{
-                fontWeight: "bold",
-                backgroundColor: p.name === playerName ? "#fff3cd" : "#e2e3e5",
-                padding: "5px 10px",
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between"
-              }}
-            >
+            <div key={i} className="player-item" style={{
+              backgroundColor: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
+              color: p.name === playerName ? "#000" : "#fff"
+            }}>
               <span>{p.name}</span>
             </div>
           ))}
         </div>
 
-        {/* Code partie */}
-        <div className="code-box" style={{ display: "flex", gap: 10 }}>
-          <input value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1 }} />
-          <button
-            onClick={copierCode}
-            style={{
-              backgroundColor: "#f7b733",
-              color: "#1c2541",
-              border: "none",
-              borderRadius: "8px",
-              padding: "6px 12px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              width: "80px",
-              textAlign: "center"
-            }}
-          >
+        <div style={{ display: "flex", gap: 10 }}>
+          <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1 }} />
+          <button className="btn btn-confirm" onClick={copierCode} style={{ width: "80px", textAlign: "center" }}>
             {copied ? "Copié !" : "Copier"}
           </button>
         </div>
 
-        {/* Boutons bas */}
         <div style={{ display: "flex", gap: 10 }}>
-          <button
-            style={{
-              flex: 1,
-              padding: "8px",
-              fontWeight: "bold",
-              borderRadius: "10px",
-              border: "none",
-              backgroundColor: "#ccc",
-              color: "#333",
-              cursor: "pointer"
-            }}
-            onClick={() => navigate("/")}
-          >
-            Annuler
-          </button>
-          <button
-            style={{
-              flex: 1,
-              padding: "8px",
-              fontWeight: "bold",
-              borderRadius: "10px",
-              border: "none",
-              backgroundColor: "#f7b733",
-              color: "#1c2541",
-              cursor: "pointer"
-            }}
-            onClick={validerPartie}
-          >
-            Lancer la partie
-          </button>
+          <button className="btn btn-cancel" style={{ flex: 1 }} onClick={() => navigate("/")}>Annuler</button>
+          <button className="btn btn-confirm" style={{ flex: 1 }} onClick={validerPartie}>Lancer la partie</button>
         </div>
       </div>
     </div>
