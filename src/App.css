@@ -87,22 +87,6 @@ body {
   background-color: #1ed760 !important;
 }
 
-.timer {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background-color: #1a1835;
-  border: 5px solid transparent;
-  border-image: var(--gradient-main) 1;
-  border-image-slice: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  font-weight: bold;
-  color: #fff;
-  margin: 0 auto;
-}
 
 .buzz-button {
   font-size: 2rem;
@@ -127,8 +111,8 @@ body {
   top: 20px;
   width: 100%;
   text-align: center;
-  font-family: 'Luckiest Guy', cursive;
   font-size: 28px;
+  font-weight: bold;
   color: #fff;
   text-transform: uppercase;
   z-index: 10;
@@ -140,7 +124,9 @@ body {
   border-radius: 16px;
   padding: 20px;
   min-width: 260px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .scoreboard-popup h3 {
@@ -164,9 +150,6 @@ body {
   background: var(--gradient-main);
   color: white;
   font-weight: bold;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .indice-button {
@@ -174,19 +157,26 @@ body {
   color: white;
   border: none;
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 10px 14px;
   font-size: 0.85rem;
   cursor: pointer;
   transition: 0.2s ease;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-width: 90px;
+  text-align: center;
+}
+
+.indice-button span:first-child {
+  margin-bottom: 2px;
+  font-size: 1.2rem;
 }
 
 .indice-button:hover {
   background: #3a375a;
 }
-
 
 /* INPUTS */
 .text-input {
@@ -371,15 +361,27 @@ main {
   border-radius: 50%;
   background-color: #1a1835;
   border: 5px solid transparent;
-  border-image: var(--gradient-main) 1;
-  border-image-slice: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
   font-weight: bold;
   color: #fff;
-  margin: 0 auto;
+  margin: 0 auto 40px auto;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.timer::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  background: conic-gradient(var(--gradient-main) var(--progress, 100%), transparent 0%);
+  z-index: -1;
 }
 
 /* POPUP */
