@@ -811,21 +811,51 @@ return (
   <div className="app">
     <SpotifyPlayer token={token} onReady={handleReady} />
 
-    {/* HEADER */}
-    <div className="round-header">
-      ROUND {currentRound} / {playlist.length}
-    </div>
+{/* HEADER GLOBAL */}
+<header style={{
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 60,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "0 20px",
+  zIndex: 20
+}}>
+  <img
+    src="/logo-line.svg"
+    alt="Logo"
+    onClick={() => navigate("/")}
+    style={{
+      height: 40,
+      cursor: "pointer"
+    }}
+  />
+</header>
 
-    {/* CONTENU CENTRAL */}
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      width: "100vw",
-      overflow: "hidden"
-    }}>
+{/* CONTENU CENTRAL */}
+<div style={{
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "100vh",
+  width: "100vw",
+  overflow: "hidden"
+}}>
+  {/* TITRE ROUND */}
+  <div style={{
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#fff",
+    textTransform: "uppercase",
+    marginBottom: 20,
+    marginTop: 60 // espace sous le header
+  }}>
+    ROUND {currentRound} / {playlist.length}
+  </div>
       {/* TIMER avec contour dégradé animé */}
 <div
   className="timer"
@@ -1003,7 +1033,7 @@ return (
                 alignItems: "center",
                 marginBottom: 6,
                 padding: "6px 8px",
-                backgroundColor: isMe ? "var(--gradient-main)" : "transparent",
+                background: isMe ? "var(--gradient-main)" : "transparent",
                 color: isMe ? "#fff" : "#fff",
                 borderRadius: 8,
                 fontWeight: isMe ? "bold" : "normal"
@@ -1083,7 +1113,7 @@ return (
                 display: "flex",
                 justifyContent: "space-between",
                 padding: "6px 8px",
-                backgroundColor: isMe ? "var(--gradient-main)" : "transparent",
+                background: isMe ? "var(--gradient-main)" : "transparent",
                 borderRadius: 8,
                 fontWeight: isMe ? "bold" : "normal",
                 marginBottom: 4,
@@ -1107,7 +1137,7 @@ return (
           navigate("/");
         }}
         className="btn btn-confirm"
-        style={{ padding: "10px 18px", fontSize: 16 }}
+        style={{ padding: "10px 18px", fontSize: 20 }}
       >
         Quitter
       </button>
