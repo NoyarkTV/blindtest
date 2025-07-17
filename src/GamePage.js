@@ -807,211 +807,166 @@ const handleNext = () => {
     handlePause();
   };
 
-  return (
-    <div style={{ padding: 20, color: "#fff", background: "#1c2541", minHeight: "100vh", alignItems: "center" }}>
-      <SpotifyPlayer token={token} onReady={handleReady} />
-      
-<style>
-{`
-  html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
-    box-sizing: border-box;
-  }
+return (
+  <div className="app">
+    <SpotifyPlayer token={token} onReady={handleReady} />
 
-  *, *::before, *::after {
-    box-sizing: inherit;
-  }
+    {/* HEADER */}
+    <div className="title" style={{
+      position: "fixed",
+      top: 20,
+      width: "100%",
+      textAlign: "center",
+      zIndex: 10,
+      pointerEvents: "none",
+      color: "var(--color-primary)"
+    }}>
+      Round {currentRound} / {playlist.length}
+    </div>
 
-  /* ✅ Ajoute ton animation ici */
-  @keyframes shake-pulse {
-    0% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
-    25% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
-    50% { transform: translateX(5px) scale(1); background-color: #ffe6e6; }
-    75% { transform: translateX(-5px) scale(1.05); background-color: #f44336; color: #fff; }
-    100% { transform: translateX(0) scale(1); background-color: #ffe6e6; }
-  }
-
-  .wrong-answer {
-    animation: shake-pulse 0.6s;
-    border: 2px solid #f44336 !important;
-    background-color: #ffe6e6 !important;
-    color: #1c2541 !important;
-  }
-`}
-</style>
-
-
-{/* HEADER : titre centré */}
-<div style={{
-  position: "fixed",
-  top: 20,
-  width: "100%",
-  textAlign: "center",
-  fontFamily: "Luckiest Guy",
-  fontSize: 28,
-  color: "#f7b733",
-  zIndex: 10,
-  pointerEvents: "none"
-}}>
-  Round {currentRound} / {playlist.length}
-</div>
-
-{/* CONTENU CENTRAL */}
-<div style={{
-  position: "relative",
-  height: "100vh",
-  width: "100vw",
-  overflow: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "#1c2541",
-  color: "#fff"
-}}>
-
-  {/* TIMER */}
-  <div
-    style={{
-      width: 140,
-      height: 140,
-      borderRadius: "50%",
-      background: `conic-gradient(#f7b733 ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
+    {/* CONTENU CENTRAL */}
+    <div style={{
       display: "flex",
+      flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 36,
-      fontWeight: "bold",
-      color: "#1c2541",
-      marginBottom: 30,
-      boxSizing: "border-box"
-    }}
-  >
-    {Math.ceil(timeLeft ?? 0)}
-  </div>
-
-  {/* INDICES */}
-  <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 30, flexWrap: "wrap" }}>
-    <div style={indiceBoxStyle}>
-      <span style={{ marginRight: 8 }}>Média :</span>
-      {!showIndiceMedia ? (
-        <button onClick={() => setShowIndiceMedia(true)} style={indiceButtonStyle}>👁️</button>
-      ) : (
-        <span>{playlist[currentRound - 1]?.media || "?"}</span>
-      )}
-    </div>
-
-    <div style={indiceBoxStyle}>
-      <span style={{ marginRight: 8 }}>Année :</span>
-      {!showIndiceAnnee ? (
-        <button onClick={() => setShowIndiceAnnee(true)} style={indiceButtonStyle}>👁️</button>
-      ) : (
-        <span>{playlist[currentRound - 1]?.annee || "?"}</span>
-      )}
-    </div>
-  </div>
-
-  {/* BUZZER OU RÉPONSE */}
-  <div style={{ marginBottom: 30 }}>
-    {!isBuzzed ? (
-      <button onClick={handleBuzz} style={buzzButtonStyle}> BUZZ</button>
-    ) : (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-        <input
-          key={isWrongAnswer ? "wrong" : "normal"}
-          type="text"
-          placeholder="Votre réponse"
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleValidate()}
-          ref={answerInputRef}
-          style={inputStyle}
-          className={isWrongAnswer ? "wrong-answer" : ""}
-        />
-        {bonusCompositeur && (
-          <input
-            key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
-            type="text"
-            placeholder="Compositeur (facultatif)"
-            value={composerGuess}
-            onChange={(e) => setComposerGuess(e.target.value)}
-            style={inputStyle}
-            className={isWrongAnswer ? "wrong-answer" : ""}
-          />
-        )}
-        <div>
-          <button
-            onClick={handleValidate}
-            disabled={!answer && (!bonusCompositeur || !composerGuess)}
-            style={validateButtonStyle}
-          >
-            Valider
-          </button>
-          <button
-            onClick={() => {
-              setIsBuzzed(false);
-              setAnswer("");
-              setComposerGuess("");
-              setIsTimerRunning(true);
-              handlePlay();
-            }}
-            style={cancelButtonStyle}
-          >
-            Annuler
-          </button>
-        </div>
-      </div>
-    )}
-  </div>
-
-  {/* SCOREBOARD CENTRÉ EN FOND */}
-  {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-    <div style={{
-      backgroundColor: "#2d374f",
-      borderRadius: 20,
-      padding: 16,
-      minWidth: 260,
-      boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6)",
-      marginTop: -10
+      height: "100vh",
+      width: "100vw",
+      overflow: "hidden"
     }}>
+      {/* TIMER circulaire personnalisé */}
       <div style={{
+        width: 140,
+        height: 140,
+        borderRadius: "50%",
+        background: `conic-gradient(#ff7c2c ${360 * (timeLeft / timer)}deg, #555 ${360 * (timeLeft / timer)}deg)`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 36,
         fontWeight: "bold",
-        fontSize: 18,
-        color: "#f7b733",
-        marginBottom: 10,
-        textAlign: "center"
+        color: "#1c2541",
+        marginBottom: 30
       }}>
-        🏆 Scoreboard
+        {Math.ceil(timeLeft ?? 0)}
       </div>
 
-      {scoreboard.map((p, i) => {
-        const isMe = p.name === playerName;
-        return (
-          <div
-            key={i}
-            style={{
-              fontWeight: isMe ? "bold" : "normal",
-              backgroundColor: isMe ? "#f7b733" : "transparent",
-              color: isMe ? "#1c2541" : "#fff",
-              padding: "6px 12px",
-              borderRadius: 8,
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 4
-            }}
-          >
-            <span>{p.name}</span>
-            <span>{typeof p.score === "number" ? p.score : 0}</span>
+      {/* INDICES */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 30, flexWrap: "wrap" }}>
+        {["media", "annee"].map((type, i) => {
+          const visible = type === "media" ? showIndiceMedia : showIndiceAnnee;
+          const toggle = type === "media" ? () => setShowIndiceMedia(true) : () => setShowIndiceAnnee(true);
+          const label = type === "media" ? "Média" : "Année";
+          const value = playlist[currentRound - 1]?.[type] || "?";
+
+          return (
+            <div key={i} className="popup" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span>{label} :</span>
+              {!visible
+                ? <button className="btn btn-cancel" onClick={toggle}>👁️</button>
+                : <span>{value}</span>
+              }
+            </div>
+          );
+        })}
+      </div>
+
+      {/* BUZZER ou CHAMP RÉPONSE */}
+      <div style={{ marginBottom: 30 }}>
+        {!isBuzzed ? (
+          <button className="btn btn-confirm" onClick={handleBuzz}>BUZZ</button>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            <input
+              key={isWrongAnswer ? "wrong" : "normal"}
+              type="text"
+              placeholder="Votre réponse"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleValidate()}
+              ref={answerInputRef}
+              className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
+              style={{ width: 300 }}
+            />
+            {bonusCompositeur && (
+              <input
+                key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
+                type="text"
+                placeholder="Compositeur (facultatif)"
+                value={composerGuess}
+                onChange={(e) => setComposerGuess(e.target.value)}
+                className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
+                style={{ width: 300 }}
+              />
+            )}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                className="btn btn-confirm"
+                onClick={handleValidate}
+                disabled={!answer && (!bonusCompositeur || !composerGuess)}
+              >
+                Valider
+              </button>
+              <button
+                className="btn btn-cancel"
+                onClick={() => {
+                  setIsBuzzed(false);
+                  setAnswer("");
+                  setComposerGuess("");
+                  setIsTimerRunning(true);
+                  handlePlay();
+                }}
+              >
+                Annuler
+              </button>
+            </div>
           </div>
-        );
-      })}
+        )}
+      </div>
+
+      {/* SCOREBOARD */}
+      {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+        <div className="popup" style={{
+          backgroundColor: "#2d374f",
+          borderRadius: 20,
+          padding: 16,
+          minWidth: 260,
+          boxShadow: "inset 0 4px 12px rgba(0,0,0,0.6)"
+        }}>
+          <div style={{
+            fontWeight: "bold",
+            fontSize: 18,
+            color: "#f7b733",
+            marginBottom: 10,
+            textAlign: "center"
+          }}>
+            🏆 Scoreboard
+          </div>
+
+          {scoreboard.map((p, i) => {
+            const isMe = p.name === playerName;
+            return (
+              <div
+                key={i}
+                style={{
+                  fontWeight: isMe ? "bold" : "normal",
+                  backgroundColor: isMe ? "#f7b733" : "transparent",
+                  color: isMe ? "#1c2541" : "#fff",
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 4
+                }}
+              >
+                <span>{p.name}</span>
+                <span>{typeof p.score === "number" ? p.score : 0}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
-  )}
-</div>
 
 {showPopup && popupInfo && (
   <div style={popupOverlayStyle}>

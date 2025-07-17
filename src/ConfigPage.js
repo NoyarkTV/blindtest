@@ -346,7 +346,8 @@ return (
           display: "flex",
           flexDirection: "column",
           gap: "5px",
-          minHeight: "0"
+          minHeight: "0",
+          borderRadius: "12px"
         }}>
           {players.map((p, i) => (
             <div
