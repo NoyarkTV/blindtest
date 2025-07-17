@@ -283,7 +283,7 @@ return (
 
         <div>
           <div className="title3">Nombre de rounds</div>
-          <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "120px" }}>
             <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} style={{ maxWidth: 80 }} />
             <label className="text-input" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}>
               <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />

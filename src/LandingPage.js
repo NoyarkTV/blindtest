@@ -262,7 +262,7 @@ return (
           alignItems: "center",
           justifyContent: "center" // <-- ajoute ceci
         }}>
-        <h2 className="title2" style={{ marginBottom: 0 }}>Jouer</h2>
+        <h2 className="title2" style={{ marginBottom: 0, color: "white" }}>Jouer</h2>
 
         <button className="btn btn-confirm" onClick={handleCreateGame}>
           Créer une partie
