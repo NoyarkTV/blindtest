@@ -268,8 +268,11 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
 return (
 <div className="app" style={{
   height: "100vh",
-  overflowY: "auto",
-  padding: "40px 10px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "0 10px",
+  overflow: "hidden",
   boxSizing: "border-box"
 }}>
     <div className="popup" style={{
