@@ -232,7 +232,7 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
     <div className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
       <span>{label}</span>
       <div style={{ display: "flex", gap: "6px", marginLeft: "12px" }}>
-        <button className="btn btn-cancel" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([...list])}>
+        <button className="btn btn-orange" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([...list])}>
           Tout sélectionner
         </button>
         <button className="btn btn-cancel" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([])}>
@@ -244,7 +244,7 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
       {list.map((item) => (
         <label
           key={item}
-          className={`checkbox-tag ${selected.includes(item) ? "selected" : ""}`}
+          className={`checkbox-tag ${selected.includes(item) ? "selected-orange" : ""}`}
           style={{ display: "flex", alignItems: "center", gap: "6px" }}
         >
           <input
@@ -276,14 +276,14 @@ return (
         <div className="title2">Paramètres</div>
 
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontWeight: "bold" }}>Nombre de rounds</div>
-            <label className="checkbox-label">
+          <div className="title3">Nombre de rounds</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} style={{ maxWidth: 80 }} />
+            <label className="checkbox-tag">
               <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
               Bonus compositeur
             </label>
           </div>
-          <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} style={{ maxWidth: 80 }} />
           <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "var(--color-red)" : "var(--color-text)" }}>
             {filteredCount === 0 ? "Aucun morceau disponible avec ces filtres" : `${filteredCount} morceaux disponibles`}
           </div>
@@ -349,7 +349,7 @@ return (
 
         <div style={{ display: "flex", gap: 10 }}>
           <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1, maxWidth: 200 }} />
-          <button className="btn btn-cancel" onClick={copierCode} style={{ width: "80px", textAlign: "center" }}>
+          <button className="btn btn-orange" onClick={copierCode} style={{ whiteSpace: "nowrap" }}>
             {copied ? "Copié !" : "Copier"}
           </button>
         </div>

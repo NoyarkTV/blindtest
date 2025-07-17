@@ -185,6 +185,45 @@ main {
   margin: 0 10px;
 }
 
+.btn-orange {
+  background-color: #ff7c2c;
+  color: #1c2541;
+  font-weight: bold;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.checkbox-group label,
+.checkbox-tag {
+  background: #1c1a3d;
+  color: var(--color-primary);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  border: 1px solid white;
+}
+
+.checkbox-group label.selected-orange,
+.checkbox-tag.selected-orange {
+  background: #ff7c2c;
+  color: #1c2541;
+}
+
+.checkbox-group input[type="checkbox"],
+.checkbox-tag input[type="checkbox"] {
+  appearance: auto;
+  width: 16px;
+  height: 16px;
+}
+
 .controls button:hover,
 .answer-box button:hover {
   transform: scale(1.05);
