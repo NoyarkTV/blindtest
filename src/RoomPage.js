@@ -53,72 +53,98 @@ useEffect(() => {
 
   const config = game.config || {};
 
-  return (
-<div style={{
-  minHeight: "100vh",
-  backgroundColor: "#1c2541", // fond général blanc
-  color: "#1c2541",           // texte sombre
-  fontFamily: "'Poppins', sans-serif",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  padding: "40px 20px"
-}}>
-  <h1 style={{
-    fontSize: "2.5rem",
-    fontFamily: "'Luckiest Guy', cursive",
-    color: "#f7b733",
-    marginBottom: 30
-  }}>
-    Salle d'attente
-  </h1>
+return (
+  <div className="app" style={{ minHeight: "100vh", padding: "40px 20px" }}>
+    {/* Header avec logo cliquable */}
+    <header style={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 60,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      padding: "0 20px",
+      zIndex: 10
+    }}>
+      <img
+        src="/logo-line.svg"
+        alt="Retour accueil"
+        onClick={() => navigate("/")}
+        style={{ height: 40, cursor: "pointer" }}
+      />
+    </header>
 
-  <div style={{
-    background: "#ffffff",
-    padding: "30px",
-    borderRadius: "20px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "600px"
-  }}>
-    <h2 style={{ color: "#1a1a1a", fontSize: "1.4rem" }}>Joueurs connectés</h2>
-    <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
-      {players.map((p, i) => (
-        <li key={i} style={{
-          backgroundColor: "#f0f0f0",
-          color: "#1c2541",
-          padding: "8px 12px",
-          marginBottom: 8,
-          borderRadius: 8
+    {/* Titre */}
+    <h1 className="title" style={{ color: "#f7b733", fontSize: "2.5rem", marginTop: 60, marginBottom: 30 }}>
+      Salle d'attente
+    </h1>
+
+    {/* Bloc principal */}
+    <div className="popup" style={{ maxWidth: 600, width: "100%" }}>
+      <h2 className="title2" style={{ color: "#fff", marginBottom: 16 }}>Joueurs connectés</h2>
+
+      {/* Liste des joueurs */}
+      <div style={{
+        backgroundColor: "#1e1a3a",
+        borderRadius: 8,
+        padding: "12px 16px",
+        marginBottom: 30
+      }}>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {players.map((p, i) => (
+            <li key={i} style={{
+              color: "#fff",
+              padding: "8px 12px",
+              marginBottom: 6,
+              borderRadius: 6,
+              backgroundColor: "transparent"
+            }}>
+              {p.name}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Message d'attente */}
+      <div
+        className="btn btn-cancel"
+        style={{
+          width: "100%",
+          textAlign: "center",
+          fontSize: "1rem",
+          padding: "16px",
+          borderRadius: 12,
+          background: "transparent",
+          cursor: "default",
+          pointerEvents: "none",
+          color: "#aaa"
+        }}
+      >
+        En attente que l’organisateur lance la partie...
+      </div>
+
+      {/* ID de la room */}
+      <p style={{
+        marginTop: 25,
+        textAlign: "center",
+        fontSize: 14,
+        color: "#999"
+      }}>
+        ID de la salle :{" "}
+        <code style={{
+          background: "#2d2b45",
+          color: "#fff",
+          padding: "2px 8px",
+          borderRadius: "6px",
+          fontSize: 14
         }}>
-          {p.name}
-        </li>
-      ))}
-    </ul>
-
-
-    <div style={{
-      marginTop: 40,
-      fontSize: 18,
-      background: "#e0e0e0",
-      color: "#666",
-      padding: "20px",
-      borderRadius: "12px",
-      textAlign: "center"
-    }}>
-      ⏳ En attente que l'organisateur lance la partie...
+          {id}
+        </code>
+      </p>
     </div>
-
-    <p style={{
-      marginTop: 25,
-      textAlign: "center",
-      fontSize: 14,
-      color: "#999"
-    }}>
-      ID de la salle : <code style={{ background: "#f5f5f5", padding: "2px 6px", borderRadius: "6px" }}>{id}</code>
-    </p>
   </div>
-</div>
 );
 }
 

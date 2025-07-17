@@ -1078,7 +1078,7 @@ return (
           color: "#aaa",
           cursor: "default"
         }}>
-          ⏳ En attente de l’admin ({playersReady} / {players.length})
+          En attente de l’admin ({playersReady} / {players.length})
         </div>
       )}
     </div>

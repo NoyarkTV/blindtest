@@ -122,28 +122,34 @@ body {
 .scoreboard-popup {
   background: var(--color-bg-popup);
   border-radius: 16px;
-  padding: 20px;
-  min-width: 260px;
+  padding: 12px 16px;
+  width: fit-content;
+  min-width: 180px;
+  max-width: 300px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  margin: 0 auto;
 }
 
 .scoreboard-popup h3 {
   font-size: 20px;
   color: #b494f8;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin: 0 0 10px 0;
   text-align: center;
 }
 
 .scoreboard-entry {
   display: flex;
   justify-content: space-between;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: white;
+  background: transparent;
+  transition: background 0.3s;
 }
 
 .scoreboard-entry.me {
