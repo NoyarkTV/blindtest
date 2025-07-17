@@ -54,7 +54,7 @@ useEffect(() => {
   const config = game.config || {};
 
 return (
-  <div className="app" style={{ minHeight: "100vh", padding: "40px 20px" }}>
+  <div className="app" style={{ minHeight: "100vh", paddingTop: 60, display: "flex", flexDirection: "column" }}>
     {/* Header avec logo cliquable */}
     <header style={{
       position: "absolute",
@@ -76,68 +76,89 @@ return (
       />
     </header>
 
-    {/* Bloc principal */}
-    <div className="popup" style={{ maxWidth: 600, width: "100%" }}>
-      <h2 className="title2" style={{ color: "#b494f8", marginBottom: 16 }}>Joueurs connectés</h2>
+    {/* Contenu centré sous le header */}
+    <div style={{
+      flex: 1,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "40px 20px"
+    }}>
+      <div className="popup" style={{ maxWidth: 600, width: "100%" }}>
+        <h2 className="title2" style={{ color: "#fff", marginBottom: 16 }}>
+          Salle d'attente
+        </h2>
 
-      {/* Liste des joueurs */}
-      <div style={{
-        backgroundColor: "#1e1a3a",
-        borderRadius: 8,
-        padding: "12px 16px",
-        marginBottom: 30
-      }}>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {players.map((p, i) => (
-            <li key={i} style={{
-              color: "#fff",
-              padding: "8px 12px",
-              marginBottom: 6,
-              borderRadius: 6,
-              backgroundColor: "transparent"
-            }}>
-              {p.name}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Message d'attente */}
-<div
-  className="btn btn-cancel"
-  style={{
-    alignSelf: "center",
-    textAlign: "center",
-    fontSize: "1rem",
-    padding: "12px 24px",
-    borderRadius: 20,
-    background: "transparent",
-    cursor: "default",
-    pointerEvents: "none",
-    color: "#fff"
-  }}
->
-  En attente que l’organisateur lance la partie...
-</div>
-
-      {/* ID de la room */}
-      <p style={{
-        marginTop: 25,
-        textAlign: "center",
-        fontSize: 14,
-        color: "#999"
-      }}>
-        ID de la salle :{" "}
-        <code style={{
-          background: "#2d2b45",
-          color: "#fff",
-          padding: "2px 8px",
-          borderRadius: "6px",
-          fontSize: 14
+        {/* Liste des joueurs */}
+        <div style={{
+          backgroundColor: "#1e1a3a",
+          borderRadius: 8,
+          padding: "16px",
+          marginBottom: 30
         }}>
-          {id}
-        </code>
-      </p>
+          <h3 style={{
+            color: "#b494f8",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            textAlign: "center",
+            marginBottom: 12,
+            marginTop: 0
+          }}>
+            Joueurs connectés
+          </h3>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {players.map((p, i) => (
+              <li key={i} style={{
+                color: "#fff",
+                padding: "8px 12px",
+                marginBottom: 6,
+                borderRadius: 6
+              }}>
+                {p.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Message d'attente */}
+        <div
+          className="btn btn-cancel"
+          style={{
+            display: "inline-block",
+            textAlign: "center",
+            fontSize: "1rem",
+            padding: "12px 24px",
+            borderRadius: 20,
+            background: "transparent",
+            cursor: "default",
+            pointerEvents: "none",
+            color: "#fff",
+            maxWidth: "calc(100% - 32px)",
+            whiteSpace: "normal"
+          }}
+        >
+          En attente que l’organisateur lance la partie...
+        </div>
+
+        {/* ID de la room */}
+        <p style={{
+          marginTop: 25,
+          textAlign: "center",
+          fontSize: 14,
+          color: "#999"
+        }}>
+          ID de la salle :{" "}
+          <code style={{
+            background: "#2d2b45",
+            color: "#fff",
+            padding: "2px 8px",
+            borderRadius: "6px",
+            fontSize: 14
+          }}>
+            {id}
+          </code>
+        </p>
+      </div>
     </div>
   </div>
 );
