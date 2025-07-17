@@ -958,7 +958,7 @@ return (
         />
       )}
 
-      <p style={{ fontSize: 20, fontWeight: 600, margin: 0, color: "#000" }}>
+      <p style={{ fontSize: 20, fontWeight: 600, margin: 0, color: "#fff" }}>
         {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
         {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
       </p>
@@ -971,7 +971,7 @@ return (
 
       {/* ✅ Résumé du round */}
       <div style={{
-        backgroundColor: "#1a3a",
+        backgroundColor: "#1e1a3a",
         borderRadius: 8,
         padding: "10px 16px",
         margin: "20px 0",
