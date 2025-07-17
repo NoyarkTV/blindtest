@@ -208,7 +208,7 @@ main {
   gap: 6px;
   cursor: pointer;
   transition: 0.2s ease;
-  border: 1px solid white;
+  border: none;
 }
 
 .checkbox-group label.selected-orange,
@@ -247,7 +247,7 @@ main {
 }
 
 .checkbox-group label {
-  background: #eee;
+  background: #1f1a48;
   color: #000;
   padding: 6px 12px;
   border-radius: 999px;
