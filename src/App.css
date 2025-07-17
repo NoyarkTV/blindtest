@@ -435,6 +435,10 @@ main {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+.popup > *:first-child {
+  margin-top: 0 !important;
+}
+
 .popup h1 {
   font-size: 48px;
   font-weight: bold;
