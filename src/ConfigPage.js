@@ -279,7 +279,7 @@ return (
       borderRadius: "16px"
     }}>
       {/* Colonne gauche — Paramètres */}
-      <div style={{ flex: 1, minWidth: 0, maxWidth: "680px", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 1.3, minWidth: 0, maxWidth: "680px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="title2">Paramètres</div>
 
         <div>
@@ -325,7 +325,7 @@ return (
       </div>
 
       {/* Colonne droite — Partie */}
-      <div style={{ flex: 1, minWidth: "400px", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 0.7, minWidth: "400px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="title2">Partie</div>
 
         <div style={{
