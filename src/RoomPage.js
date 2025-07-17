@@ -76,14 +76,9 @@ return (
       />
     </header>
 
-    {/* Titre */}
-    <h1 className="title" style={{ color: "#f7b733", fontSize: "2.5rem", marginTop: 60, marginBottom: 30 }}>
-      Salle d'attente
-    </h1>
-
     {/* Bloc principal */}
     <div className="popup" style={{ maxWidth: 600, width: "100%" }}>
-      <h2 className="title2" style={{ color: "#fff", marginBottom: 16 }}>Joueurs connectés</h2>
+      <h2 className="title2" style={{ color: "#b494f8", marginBottom: 16 }}>Joueurs connectés</h2>
 
       {/* Liste des joueurs */}
       <div style={{
@@ -108,22 +103,22 @@ return (
       </div>
 
       {/* Message d'attente */}
-      <div
-        className="btn btn-cancel"
-        style={{
-          width: "100%",
-          textAlign: "center",
-          fontSize: "1rem",
-          padding: "16px",
-          borderRadius: 12,
-          background: "transparent",
-          cursor: "default",
-          pointerEvents: "none",
-          color: "#aaa"
-        }}
-      >
-        En attente que l’organisateur lance la partie...
-      </div>
+<div
+  className="btn btn-cancel"
+  style={{
+    alignSelf: "center",
+    textAlign: "center",
+    fontSize: "1rem",
+    padding: "12px 24px",
+    borderRadius: 20,
+    background: "transparent",
+    cursor: "default",
+    pointerEvents: "none",
+    color: "#fff"
+  }}
+>
+  En attente que l’organisateur lance la partie...
+</div>
 
       {/* ID de la room */}
       <p style={{
