@@ -359,8 +359,7 @@ main {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background-color: #1a1835;
-  border: 5px solid transparent;
+  background: conic-gradient(#ff7c2c var(--progress, 100%), #1a1835 0%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -370,18 +369,24 @@ main {
   margin: 0 auto 40px auto;
   position: relative;
   box-sizing: border-box;
+  border: none;
 }
 
 .timer::before {
   content: "";
   position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
   border-radius: 50%;
-  background: var(--gradient-main);
-  z-index: -1;
+  background-color: #1a1835;
+  z-index: 0;
+}
+
+.timer > span {
+  position: relative;
+  z-index: 1;
 }
 
 /* POPUP */

@@ -831,7 +831,7 @@ return (
   className="timer"
   style={{ "--progress": `${(timeLeft / timer) * 360}deg` }}
 >
-  {Math.ceil(timeLeft ?? 0)}
+  <span>{Math.ceil(timeLeft ?? 0)}</span>
 </div>
 
       {/* INDICES */}

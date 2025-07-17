@@ -355,7 +355,7 @@ return (
               className="player-item"
               style={{
                 background: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
-                color: p.name === playerName ? "#000" : "#fff",
+                color: p.name === playerName ? "#fff" : "#fff",
                 fontWeight: "bold",
                 borderRadius: "12px",
                 padding: "8px 12px"
