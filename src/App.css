@@ -380,7 +380,7 @@ main {
   right: -5px;
   bottom: -5px;
   border-radius: 50%;
-  background: conic-gradient(var(--gradient-main) var(--progress, 100%), transparent 0%);
+  background: var(--gradient-main);
   z-index: -1;
 }
 

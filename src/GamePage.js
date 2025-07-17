@@ -827,7 +827,10 @@ return (
       overflow: "hidden"
     }}>
       {/* TIMER avec contour dégradé animé */}
-<div className="timer" style={{ "--progress": `${(timeLeft / timer) * 100}%` }}>
+<div
+  className="timer"
+  style={{ "--progress": `${(timeLeft / timer) * 360}deg` }}
+>
   {Math.ceil(timeLeft ?? 0)}
 </div>
 
