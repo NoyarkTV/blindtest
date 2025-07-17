@@ -168,6 +168,13 @@ const copierCode = () => {
     .catch(err => console.error("❌ Erreur copie :", err));
 };
 
+useEffect(() => {
+  const slider = document.querySelector('input[type="range"]');
+  if (slider) {
+    const val = (time - 5) / 55 * 100;
+    slider.style.setProperty('--progress', `${val}%`);
+  }
+}, [time]);
 
 
 const validerPartie = () => {
