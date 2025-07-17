@@ -232,10 +232,10 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
     <div className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
       <span>{label}</span>
       <div style={{ display: "flex", gap: "6px", marginLeft: "12px" }}>
-        <button className="btn btn-confirm" style={{ padding: "4px 12px", fontSize: "0.75rem" }} onClick={() => setter([...list])}>
+        <button className="btn btn-cancel" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([...list])}>
           Tout sélectionner
         </button>
-        <button className="btn btn-cancel" style={{ padding: "4px 12px", fontSize: "0.75rem" }} onClick={() => setter([])}>
+        <button className="btn btn-cancel" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([])}>
           Tout désélectionner
         </button>
       </div>
@@ -244,14 +244,13 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
       {list.map((item) => (
         <label
           key={item}
-          className={selected.includes(item) ? "selected" : ""}
-          onClick={() => toggleSelection(item, selected, setter)}
+          className={`checkbox-tag ${selected.includes(item) ? "selected" : ""}`}
+          style={{ display: "flex", alignItems: "center", gap: "6px" }}
         >
           <input
             type="checkbox"
             checked={selected.includes(item)}
             onChange={() => toggleSelection(item, selected, setter)}
-            style={{ display: "none" }}
           />
           {item}
         </label>
@@ -267,7 +266,10 @@ return (
       width: "100%",
       display: "flex",
       gap: "30px",
-      flexWrap: "wrap"
+      flexWrap: "wrap",
+      background: "var(--color-bg-popup)",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+      borderRadius: "16px"
     }}>
       {/* Colonne gauche — Paramètres */}
       <div style={{ flex: 1, minWidth: 0, maxWidth: "620px", display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -281,7 +283,7 @@ return (
               Bonus compositeur
             </label>
           </div>
-          <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} />
+          <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} style={{ maxWidth: 80 }} />
           <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "var(--color-red)" : "var(--color-text)" }}>
             {filteredCount === 0 ? "Aucun morceau disponible avec ces filtres" : `${filteredCount} morceaux disponibles`}
           </div>
@@ -296,16 +298,17 @@ return (
             step="5"
             value={time}
             onChange={e => setTime(+e.target.value)}
+            style={{ width: "100%" }}
           />
           <div>{time} secondes</div>
         </div>
 
         <div>
           <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
-          <label className="checkbox-label">
-            De <input type="number" className="text-input" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ width: 80 }} />
-            à <input type="number" className="text-input" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ width: 80, marginLeft: 10 }} />
-          </label>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <input type="number" className="text-input" value={anneeMin} onChange={e => setAnneeMin(+e.target.value)} style={{ maxWidth: 80 }} />
+            <input type="number" className="text-input" value={anneeMax} onChange={e => setAnneeMax(+e.target.value)} style={{ maxWidth: 80 }} />
+          </div>
         </div>
 
         {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
@@ -318,27 +321,35 @@ return (
       <div style={{ flex: 1, minWidth: "460px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="title2">Partie</div>
 
-        <div className="popup" style={{
-          background: "var(--color-bg-popup)",
-          padding: "16px",
-          gap: "8px",
+        <div style={{
+          background: "transparent",
+          padding: "10px",
+          flex: 1,
           display: "flex",
           flexDirection: "column",
-          flex: 1
+          gap: "5px",
+          minHeight: "0"
         }}>
           {players.map((p, i) => (
-            <div key={i} className="player-item" style={{
-              backgroundColor: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
-              color: p.name === playerName ? "#000" : "#fff"
-            }}>
-              <span>{p.name}</span>
+            <div
+              key={i}
+              className="player-item"
+              style={{
+                background: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
+                color: p.name === playerName ? "#000" : "#fff",
+                fontWeight: "bold",
+                borderRadius: "12px",
+                padding: "8px 12px"
+              }}
+            >
+              {p.name}
             </div>
           ))}
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
-          <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1 }} />
-          <button className="btn btn-confirm" onClick={copierCode} style={{ width: "80px", textAlign: "center" }}>
+          <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1, maxWidth: 200 }} />
+          <button className="btn btn-cancel" onClick={copierCode} style={{ width: "80px", textAlign: "center" }}>
             {copied ? "Copié !" : "Copier"}
           </button>
         </div>
@@ -351,6 +362,7 @@ return (
     </div>
   </div>
 );
+
 }
 
 export default ConfigPage;
