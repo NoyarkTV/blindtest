@@ -44,7 +44,7 @@ body {
 .title3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-secondary);
+  color: var(--color-primary);
 }
 
 @keyframes fadeIn {
@@ -249,16 +249,6 @@ main {
   color: var(--color-primary);
   width: 300px;
   outline: none;
-}
-
-.checkbox-group label {
-  background: #1f1a48;
-  color: #000;
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: 0.2s ease;
 }
 
 .checkbox-group label.selected {
