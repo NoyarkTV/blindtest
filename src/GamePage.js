@@ -929,17 +929,17 @@ return (
     </div>
 
 {showPopup && popupInfo && (
-  <div className="popup-rep-overlay">
-    <div className="popup-rep">
-      <h2>{popupInfo.title}</h2>
+  <div style={popup-rep-overlay}>
+    <div style={popup}>
+      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
 
-      <h1 style={{ color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
+      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
         {popupInfo.points}
       </h1>
 
       {popupInfo.responseTime && (
-        <p style={{ fontStyle: "italic", opacity: 0.6, marginBottom: 6 }}>
-          ⏱️ Réponse en {popupInfo.responseTime}
+        <p style={{ fontSize: 16, color: "#ccc", marginBottom: 6 }}>
+          ⏱ Réponse en {popupInfo.responseTime}
         </p>
       )}
 
@@ -952,26 +952,42 @@ return (
             height: 160,
             borderRadius: 12,
             objectFit: "cover",
-            marginBottom: 20
+            marginBottom: 20,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
           }}
         />
       )}
 
-      <p style={{ fontWeight: "bold", fontSize: 20, marginBottom: 0 }}>
-        {popupInfo.theme}
-      </p>
-      <p style={{ fontSize: 18 }}>
-        {popupInfo.titre} {popupInfo.annee && `(${popupInfo.annee})`}
+      <p style={{ fontSize: 20, fontWeight: 600, margin: 0, color: "#000" }}>
+        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
+        {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
       </p>
 
       {popupInfo.compositeur && (
-        <p style={{ fontStyle: "italic", opacity: 0.6 }}>
+        <p style={{ fontStyle: "italic", color: "#ccc", marginTop: 6 }}>
           par {popupInfo.compositeur}
         </p>
       )}
 
-      <div className="score-block">
-        <h4>Scores</h4>
+      {/* ✅ Résumé du round */}
+      <div style={{
+        backgroundColor: "#1a3a",
+        borderRadius: 8,
+        padding: "10px 16px",
+        margin: "20px 0",
+        textAlign: "left"
+      }}>
+        <h4 style={{ 
+          marginTop: 0, 
+          marginBottom: 12, 
+          color: "#b494f8", 
+          textAlign: "center", 
+          fontSize: 18, 
+          fontWeight: "bold"
+        }}>
+          Scores
+        </h4>
+
         {scoreboard.map(player => {
           const detail = readyPlayersInfo.find(p => p.name === player.name);
           const currentScore = player.score;
@@ -979,17 +995,38 @@ return (
           const isMe = player.name === playerName;
 
           return (
-            <div key={player.name} className={`score-entry${isMe ? " me" : ""}`}>
+            <div
+              key={player.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 6,
+                padding: "6px 8px",
+                backgroundColor: isMe ? "var(--gradient-main)" : "transparent",
+                color: isMe ? "#fff" : "#fff",
+                borderRadius: 8,
+                fontWeight: isMe ? "bold" : "normal"
+              }}
+            >
               <span>{player.name}</span>
               <span>
                 {currentScore} pts
                 {detail && (
-                  <span style={{ marginLeft: 8, color: delta > 0 ? "#388e3c" : "#d32f2f" }}>
+                  <span style={{
+                    marginLeft: 8,
+                    color: delta > 0 ? "#388e3c" : "#d32f2f",
+                    fontWeight: "bold"
+                  }}>
                     ({delta >= 0 ? `+${delta}` : delta})
                   </span>
                 )}
                 {detail?.responseTime && (
-                  <span style={{ marginLeft: 8, opacity: 0.6, fontSize: 14 }}>
+                  <span style={{
+                    marginLeft: 8,
+                    fontSize: 14,
+                    color: "#ccc"
+                  }}>
                     ⏱️ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
                   </span>
                 )}
@@ -999,7 +1036,8 @@ return (
         })}
       </div>
 
-      {isAdmin ? (
+      {/* ✅ Bouton ou attente admin */}
+{isAdmin ? (
         <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
           🎵 Round suivant ({playersReady} / {players.length})
         </button>
@@ -1018,21 +1056,44 @@ return (
 )}
 
 {showEndPopup && (
-  <div className="popup-rep-overlay">
-    <div className="popup-rep" style={{ paddingBottom: 24 }}>
-      <h2>Fin de la partie !</h2>
+  <div style={popup-rep-overlay}>
+    <div style={{ 
+      ...popup, 
+      minWidth: 320, 
+      paddingBottom: 24 
+    }}>
+      <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
 
       {finalScores.length > 0 && (
-        <p style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+        <p style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16, color: "#fff" }}>
           Le gagnant est : {finalScores[0].name}
         </p>
       )}
 
-      <div className="score-block">
+      <div style={{
+        backgroundColor: "#1e1a3a",
+        borderRadius: 12,
+        padding: "10px 16px",
+        marginBottom: 20,
+        width: "100%",
+        boxSizing: "border-box"
+      }}>
         {finalScores.map((p, i) => {
           const isMe = p.name === playerName;
           return (
-            <div key={p.name} className={`score-entry${isMe ? " me" : ""}`}>
+            <div
+              key={p.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "6px 8px",
+                backgroundColor: isMe ? "var(--gradient-main)" : "transparent",
+                borderRadius: 8,
+                fontWeight: isMe ? "bold" : "normal",
+                marginBottom: 4,
+                color: "#fff"
+              }}
+            >
               <span>{i + 1}. {p.name}</span>
               <span>{p.score} pts</span>
             </div>
@@ -1040,7 +1101,7 @@ return (
         })}
       </div>
 
-      <p style={{ marginTop: 12, fontSize: 16, opacity: 0.8 }}>
+      <p style={{ marginTop: 12, fontSize: 16, color: "#ccc" }}>
         Votre temps de réponse moyen est de {averageTime} sec
       </p>
 
@@ -1057,7 +1118,6 @@ return (
     </div>
   </div>
 )}
-
 
 
     </div>
