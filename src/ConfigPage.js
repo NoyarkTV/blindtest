@@ -266,24 +266,23 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
 );
 
 return (
-  <div className="app" style={{ padding: "40px 20px" }}>
+  <div className="app" style={{ padding: "40px 10px" }}>
     <div className="popup" style={{
-      maxWidth: "1100px",
+      maxWidth: "1200px",
       width: "100%",
       display: "flex",
       gap: "30px",
       flexWrap: "wrap",
       background: "var(--color-bg-popup)",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
       borderRadius: "16px"
     }}>
       {/* Colonne gauche — Paramètres */}
-      <div style={{ flex: 1.3, minWidth: 0, maxWidth: "680px", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 1.2, minWidth: 0, maxWidth: "680px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="title2">Paramètres</div>
 
         <div>
           <div className="title3">Nombre de rounds</div>
-          <div style={{ display: "flex", alignItems: "center", gap: "120px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "180px" }}>
             <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} style={{ maxWidth: 80 }} />
             <label className="text-input" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}>
               <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
@@ -337,11 +336,11 @@ return (
       </div>
 
       {/* Colonne droite — Partie */}
-      <div style={{ flex: 0.7, minWidth: "400px", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 0.8, minWidth: "400px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="title2">Partie</div>
 
         <div style={{
-          background: "#1f1a48",
+          background: "#1a1835",
           padding: "10px",
           flex: 1,
           display: "flex",
