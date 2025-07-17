@@ -184,7 +184,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .btn-spotify {
   background-color: #1db954;
-  color: #000;
+  color: white;
 }
 
 .text-input {
@@ -253,6 +253,13 @@ input[type="range"]::-webkit-slider-thumb {
   background-color: #1ed760 !important;
 }
 
+
+.popup {
+  transition: transform 0.3s ease;
+}
+.popup:hover {
+  transform: translateY(-2px);
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
