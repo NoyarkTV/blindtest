@@ -827,11 +827,9 @@ return (
       overflow: "hidden"
     }}>
       {/* TIMER avec contour dégradé animé */}
-      <div className="timer" style={{
-        "--progress": `${(timeLeft / timer) * 100}%`
-      }}>
-        {Math.ceil(timeLeft ?? 0)}
-      </div>
+<div className="timer" style={{ "--progress": `${(timeLeft / timer) * 100}%` }}>
+  {Math.ceil(timeLeft ?? 0)}
+</div>
 
       {/* INDICES */}
       <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 40, flexWrap: "wrap" }}>
