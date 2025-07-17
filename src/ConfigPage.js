@@ -304,7 +304,6 @@ return (
             step="5"
             value={time}
             onChange={e => setTime(+e.target.value)}
-            style={{ width: "100%" }}
           />
           <div>{time} secondes</div>
         </div>
