@@ -938,18 +938,30 @@ return (
       </h1>
 
       {popupInfo.responseTime && (
-        <p style={{ opacity: 0.6 }}>
+        <p style={{ fontStyle: "italic", opacity: 0.6, marginBottom: 6 }}>
           ⏱️ Réponse en {popupInfo.responseTime}
         </p>
       )}
 
       {trackImages[currentTrack.uri] && (
-        <img src={trackImages[currentTrack.uri]} alt="Pochette album" />
+        <img
+          src={trackImages[currentTrack.uri]}
+          alt="Pochette album"
+          style={{
+            width: 160,
+            height: 160,
+            borderRadius: 12,
+            objectFit: "cover",
+            marginBottom: 20
+          }}
+        />
       )}
 
-      <p style={{ fontWeight: "600", fontSize: 20 }}>
-        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
-        {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
+      <p style={{ fontWeight: "bold", fontSize: 20, marginBottom: 0 }}>
+        {popupInfo.theme}
+      </p>
+      <p style={{ fontSize: 18 }}>
+        {popupInfo.titre} {popupInfo.annee && `(${popupInfo.annee})`}
       </p>
 
       {popupInfo.compositeur && (
@@ -977,7 +989,7 @@ return (
                   </span>
                 )}
                 {detail?.responseTime && (
-                  <span style={{ marginLeft: 8, opacity: 0.6 }}>
+                  <span style={{ marginLeft: 8, opacity: 0.6, fontSize: 14 }}>
                     ⏱️ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
                   </span>
                 )}
@@ -988,22 +1000,16 @@ return (
       </div>
 
       {isAdmin ? (
-        <button
-          className="btn-next"
-          onClick={handleNext}
-          disabled={roundEndedRef.current === false}
-        >
+        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
           🎵 Round suivant ({playersReady} / {players.length})
         </button>
       ) : (
-        <div
-          className="btn-next"
-          style={{
-            backgroundColor: "#ccc",
-            color: "#666",
-            cursor: "not-allowed"
-          }}
-        >
+        <div className="btn btn-cancel" style={{
+          pointerEvents: "none",
+          background: "transparent",
+          color: "#aaa",
+          cursor: "default"
+        }}>
           ⏳ En attente de l’admin ({playersReady} / {players.length})
         </div>
       )}
@@ -1013,7 +1019,7 @@ return (
 
 {showEndPopup && (
   <div className="popup-rep-overlay">
-    <div className="popup-rep" style={{ minWidth: 320, paddingBottom: 24 }}>
+    <div className="popup-rep" style={{ paddingBottom: 24 }}>
       <h2>Fin de la partie !</h2>
 
       {finalScores.length > 0 && (
@@ -1026,10 +1032,7 @@ return (
         {finalScores.map((p, i) => {
           const isMe = p.name === playerName;
           return (
-            <div
-              key={p.name}
-              className={`score-entry${isMe ? " me" : ""}`}
-            >
+            <div key={p.name} className={`score-entry${isMe ? " me" : ""}`}>
               <span>{i + 1}. {p.name}</span>
               <span>{p.score} pts</span>
             </div>
@@ -1042,21 +1045,22 @@ return (
       </p>
 
       <button
-        className="btn-next"
-        style={{ padding: "10px 18px", fontSize: 16 }}
         onClick={() => {
           setShowEndPopup(false);
           navigate("/");
         }}
+        className="btn btn-confirm"
+        style={{ padding: "10px 18px", fontSize: 16 }}
       >
         Quitter
       </button>
     </div>
   </div>
 )}
+
+
+
     </div>
   );
 }
-
-
 export default GamePage;
