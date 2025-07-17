@@ -259,7 +259,7 @@ return (
       </div>
 
       {/* Zone de jeu */}
-      <div className="popup" style={{
+      <div style={{
         width: "340px",
         gap: "20px",
         display: "flex",
