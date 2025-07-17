@@ -195,10 +195,9 @@ main {
   cursor: pointer;
   transition: 0.2s ease;
 }
-
 .checkbox-group label,
 .checkbox-tag {
-  background: #1c1a3d;
+  background: transparent;
   color: var(--color-primary);
   border-radius: 999px;
   padding: 6px 12px;
@@ -208,20 +207,37 @@ main {
   gap: 6px;
   cursor: pointer;
   transition: 0.2s ease;
-  border: none;
+  border: 2px solid white;
 }
 
 .checkbox-group label.selected-orange,
 .checkbox-tag.selected-orange {
-  background: #ff7c2c;
-  color: #1c2541;
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid white;
 }
 
 .checkbox-group input[type="checkbox"],
 .checkbox-tag input[type="checkbox"] {
-  appearance: auto;
+  appearance: none;
   width: 16px;
   height: 16px;
+  border: 2px solid white;
+  border-radius: 2px;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"]:checked::after,
+.checkbox-tag input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 0;
+  left: 2px;
+  color: white;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .controls button:hover,
