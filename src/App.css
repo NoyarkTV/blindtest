@@ -69,7 +69,7 @@ body {
 }
 
 .btn-cancel {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0);
   color: var(--color-primary);
   border: 2px solid var(--color-primary);
 }
@@ -219,25 +219,14 @@ main {
 
 .checkbox-group input[type="checkbox"],
 .checkbox-tag input[type="checkbox"] {
-  appearance: none;
+  appearance: auto;
+  -webkit-appearance: auto;
   width: 16px;
   height: 16px;
-  border: 2px solid white;
   border-radius: 2px;
+  border: 2px solid white;
   background: transparent;
-  position: relative;
   cursor: pointer;
-}
-
-.checkbox-group input[type="checkbox"]:checked::after,
-.checkbox-tag input[type="checkbox"]:checked::after {
-  content: "✓";
-  position: absolute;
-  top: 0;
-  left: 2px;
-  color: white;
-  font-size: 12px;
-  line-height: 16px;
 }
 
 .controls button:hover,

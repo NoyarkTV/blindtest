@@ -322,7 +322,7 @@ return (
         <div className="title2">Partie</div>
 
         <div style={{
-          background: "transparent",
+          background: "#1f1a48",
           padding: "10px",
           flex: 1,
           display: "flex",
@@ -348,7 +348,7 @@ return (
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
-          <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1, maxWidth: 200 }} />
+          <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1, maxWidth: 250 }} />
           <button className="btn btn-orange" onClick={copierCode} style={{ whiteSpace: "nowrap" }}>
             {copied ? "Copié !" : "Copier"}
           </button>
