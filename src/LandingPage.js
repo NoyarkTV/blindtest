@@ -73,16 +73,20 @@ const handleAvatarConfirm = () => {
     fetch(customAvatarPath).then(res => {
       if (res.ok) {
         setProfilePhoto(customAvatarPath);
+        localStorage.setItem("profilePhoto", customAvatarPath);
       } else {
         const fallbackIndex = Math.floor(Math.random() * 35) + 1;
         setProfilePhoto(`/avatarDefault/avatar${fallbackIndex}.png`);
+        localStorage.setItem("profilePhoto", `/avatarDefault/avatar${fallbackIndex}.png`);
       }
     }).catch(() => {
       const fallbackIndex = Math.floor(Math.random() * 35) + 1;
       setProfilePhoto(`/avatarDefault/avatar${fallbackIndex}.png`);
+      localStorage.setItem("profilePhoto", `/avatarDefault/avatar${fallbackIndex}.png`);
     });
   } else {
     setProfilePhoto(selectedAvatar);
+    localStorage.setItem("profilePhoto", selectedAvatar);
   }
 
   setShowAvatarModal(false);
@@ -114,11 +118,13 @@ useEffect(() => {
             if (res.ok) {
               // Image personnalisée trouvée
               setProfilePhoto(customAvatarPath);
+              localStorage.setItem("profilePhoto", customAvatarPath);
             } else {
               // Image non trouvée, choisir une image par défaut au hasard
               const randomIndex = Math.floor(Math.random() * 35) + 1;
               const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
               setProfilePhoto(defaultAvatarPath);
+              localStorage.setItem("profilePhoto", defaultAvatarPath);
             }
           })
           .catch(() => {
@@ -126,6 +132,7 @@ useEffect(() => {
             const randomIndex = Math.floor(Math.random() * 35) + 1;
             const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
             setProfilePhoto(defaultAvatarPath);
+            localStorage.setItem("profilePhoto", defaultAvatarPath);
           });
 
         // Mise à jour du nom et des stats
@@ -144,6 +151,7 @@ useEffect(() => {
         const randomIndex = Math.floor(Math.random() * 35) + 1;
         const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
         setProfilePhoto(defaultAvatarPath);
+        localStorage.setItem("profilePhoto", defaultAvatarPath);
       });
   }
 }, [spotifyToken]);

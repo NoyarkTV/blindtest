@@ -8,6 +8,7 @@ function RoomPage() {
   const [game, setGame] = useState(null);
   const [players, setPlayers] = useState([]);
   const playerName = localStorage.getItem("playerName") || "Joueur";
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem("profilePhoto") || "");
 
   // 🔁 Rejoindre la room et écouter les événements
 useEffect(() => {
@@ -33,21 +34,29 @@ useEffect(() => {
 }, [id]);
 
   // 👤 Ajout du joueur à la partie
-  useEffect(() => {
-    const player = { name: playerName };
-    fetch("https://blindtest-69h7.onrender.com/join-game", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, player })
-    }).then(() => {
-      fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
-        .then(res => res.json())
-        .then(data => {
-          setPlayers(data.players || []);
-          setGame(data);
-        });
-    });
-  }, [id]);
+useEffect(() => {
+  if (!playerName) return; // on évite d’envoyer si pas encore chargé
+  const photo = localStorage.getItem("profilePhoto") || "";
+
+  const player = {
+    name: playerName,
+    photo: photo
+  };
+
+  fetch("https://blindtest-69h7.onrender.com/join-game", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, player })
+  }).then(() => {
+    fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        setPlayers(data.players || []);
+        setGame(data);
+      });
+  });
+}, [id, playerName]);
+
 
   if (!game) return <div style={{ color: "white", textAlign: "center" }}>Chargement...</div>;
 
@@ -89,36 +98,51 @@ return (
           Salle d'attente
         </h2>
 
-        {/* Liste des joueurs */}
-        <div style={{
-          backgroundColor: "#1e1a3a",
-          borderRadius: 8,
-          padding: "16px",
-          marginBottom: 30
-        }}>
-          <h3 style={{
-            color: "#b494f8",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            textAlign: "center",
-            marginBottom: 12,
-            marginTop: 0
-          }}>
-            Joueurs connectés
-          </h3>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {players.map((p, i) => (
-              <li key={i} style={{
-                color: "#fff",
-                padding: "8px 12px",
-                marginBottom: 6,
-                borderRadius: 6
-              }}>
-                {p.name}
-              </li>
-            ))}
-          </ul>
-        </div>
+{/* Liste des joueurs */}
+<div style={{
+  backgroundColor: "#1e1a3a",
+  borderRadius: 8,
+  padding: "16px",
+  marginBottom: 30
+}}>
+  <h3 style={{
+    color: "#b494f8",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 12,
+    marginTop: 0
+  }}>
+    Joueurs connectés
+  </h3>
+  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+    {players.map((p, i) => (
+      <li key={i} style={{
+        color: "#fff",
+        padding: "6px 10px",
+        marginBottom: 6,
+        borderRadius: 6,
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        backgroundColor: "#27224c"
+      }}>
+        <img
+          src={p.photo || "/ppDefault.png"}
+          alt="Avatar"
+          style={{
+            width: "28px",
+            height: "28px",
+            borderRadius: "50%",
+            objectFit: "cover",
+            flexShrink: 0
+          }}
+        />
+        <span>{p.name}</span>
+      </li>
+    ))}
+  </ul>
+</div>
 
         {/* Message d'attente */}
         <div

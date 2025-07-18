@@ -36,6 +36,7 @@ function ConfigPage() {
   const [selectedCategorie, setSelectedCategorie] = useState([...categorie]);
   const [selectedDifficulte, setSelectedDifficulte] = useState([...difficulte]);
   const [selectedPays, setSelectedPays] = useState([...pays]);
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem("profilePhoto") || "");
 
 useEffect(() => {
   socket.emit("join-room", id);
@@ -111,7 +112,12 @@ useEffect(() => {
 
 useEffect(() => {
   const playerName = localStorage.getItem("playerName") || "Joueur";
-  const player = { name: playerName };
+  const photo = localStorage.getItem("profilePhoto") || "";
+
+  const player = {
+    name: playerName,
+    photo: photo
+  };
 
   fetch("https://blindtest-69h7.onrender.com/join-game", {
     method: "POST",
@@ -357,21 +363,37 @@ return (
           minHeight: "0",
           borderRadius: "12px"
         }}>
-          {players.map((p, i) => (
-            <div
-              key={i}
-              className="player-item"
-              style={{
-                background: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
-                color: p.name === playerName ? "#fff" : "#fff",
-                fontWeight: "bold",
-                borderRadius: "12px",
-                padding: "8px 12px"
-              }}
-            >
-              {p.name}
-            </div>
-          ))}
+          
+{players.map((p, i) => (
+  <div
+    key={i}
+    className="player-item"
+    style={{
+      background: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
+      color: "#fff",
+      fontWeight: "bold",
+      borderRadius: "12px",
+      padding: "6px 10px",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px"
+    }}
+  >
+    <img
+      src={p.photo || "/ppDefault.png"}
+      alt="Avatar"
+      style={{
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        objectFit: "cover",
+        flexShrink: 0
+      }}
+    />
+    <span>{p.name}</span>
+  </div>
+))}
+
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
