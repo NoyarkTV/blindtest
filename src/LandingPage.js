@@ -9,6 +9,7 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const [joinCode, setJoinCode] = useState("");
   const [spotifyToken, setSpotifyToken] = useState(null);
   const [playerStats, setPlayerStats] = useState(null);
+  const [profilePhoto, setProfilePhoto] = useState("");
   const adjectives = [
   "Groovy", "Sneaky", "Witty", "Epic", "Cheesy", "Cosmic", "Rebel", "Jazzy", "Funky", "Classy",
   "Legendary", "Wild", "Bizarre", "Electric", "Savage", "Majestic", "Spooky", "Shiny", "Vibrant", "Zany",
