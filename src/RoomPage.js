@@ -116,31 +116,42 @@ return (
     Joueurs connectés
   </h3>
   <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-    {players.map((p, i) => (
-      <li key={i} style={{
-        color: "#fff",
-        padding: "6px 10px",
-        marginBottom: 6,
-        borderRadius: 6,
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        backgroundColor: "#27224c"
-      }}>
-        <img
-          src={p.photo || "/ppDefault.png"}
-          alt="Avatar"
-          style={{
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
-            objectFit: "cover",
-            flexShrink: 0
-          }}
-        />
-        <span>{p.name}</span>
-      </li>
-    ))}
+{players.map((p, i) => (
+  <li key={i} style={{
+    color: "#fff",
+    padding: "6px 10px",
+    marginBottom: 6,
+    borderRadius: 6,
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    backgroundColor: "#27224c"
+  }}>
+    <div style={{
+      width: "28px",
+      height: "28px",
+      borderRadius: "50%",
+      overflow: "hidden",
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <img
+        src={p.photo || "/ppDefault.png"}
+        alt="Avatar"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+          transform: "translateY(40%)"
+        }}
+      />
+    </div>
+    <span>{p.name}</span>
+  </li>
+))}
   </ul>
 </div>
 
