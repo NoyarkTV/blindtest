@@ -305,7 +305,9 @@ useEffect(() => {
 
   if (currentRound > playlist.length) {
     console.log("🏁 Fin de partie détectée côté client");
-    const sorted = [...scoreboard].sort((a, b) => b.score - a.score);
+
+    // ✅ Utiliser la ref pour garantir la bonne version du scoreboard
+    const sorted = [...scoreboardRef.current].sort((a, b) => b.score - a.score);
     setFinalScores(sorted);
 
     setShowPopup(false);
@@ -319,18 +321,16 @@ useEffect(() => {
   setTimeLeft(params.time);
   setShowIndiceMedia(false);
   setShowIndiceAnnee(false);
-  // Fermer le popup de fin de round et pauser la musique en cours
+
   setShowPopup(false);
   handlePause().finally(() => {
-    // Attendre 500ms pour être sûr que le player est bien arrêté, puis lancer le nouveau morceau
     setTimeout(() => playCurrentTrack(deviceId), 500);
   });
 
   roundEndedRef.current = false;
 
-  console.log("🔍 Contenu de scoreboard :", scoreboard);
+  console.log("🔍 Contenu de scoreboard :", scoreboardRef.current);
 }, [currentRound]);
-
 
 useEffect(() => {
   setShowPopup(false);
