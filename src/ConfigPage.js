@@ -398,7 +398,7 @@ return (
       height: "100%",
       objectFit: "cover",
       display: "block",
-      transform: "translateY(3%)" // 👈 ajuste visuellement vers le bas
+      transform: "translateY(40%)" // 👈 ajuste visuellement vers le bas
     }}
   />
 </div>
