@@ -186,18 +186,27 @@ useEffect(() => {
     .then(res => res.json())
     .then(data => {
       if (data.players) {
-        const rawPlayers = data.players;
-        console.log("👥 Joueurs extraits :", rawPlayers);
-        setPlayers(rawPlayers);
+// Étape 1 : tu gardes ton mapping des noms
+const rawPlayers = data.players.map(obj => Object.values(obj)[0]);
+setPlayers(rawPlayers);
 
-        const localPlayer = localStorage.getItem("playerName");
-        const initialScoreboard = rawPlayers.map(p => ({
-          name: p.name,
-          photo: p.photo || "/ppDefault.png",
-          score: 0,
-          isMe: p.name === localPlayer
-        }));
-        setScoreboard(initialScoreboard);
+// Étape 2 : tu construis une map { name: photo }
+const photoMap = {};
+data.players.forEach(p => {
+  if (p.name && p.photo) {
+    photoMap[p.name] = p.photo;
+  }
+});
+
+// Étape 3 : tu construis le scoreboard en réutilisant la map
+const localPlayer = localStorage.getItem("playerName");
+const initialScoreboard = rawPlayers.map(name => ({
+  name,
+  photo: photoMap[name] || "/ppDefault.png",
+  score: 0,
+  isMe: name === localPlayer
+}));
+setScoreboard(initialScoreboard);
 
         // 🎯 Ensuite on récupère les scores actuels si dispo
         fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
