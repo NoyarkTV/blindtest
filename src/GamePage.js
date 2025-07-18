@@ -943,7 +943,7 @@ return (
       </div>
 
       {/* SCOREBOARD */}
-{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+{Array.isArray(scoreboard) && scoreboard.every(p => typeof p === "object" && typeof p.name === "string") && (
   <div className="scoreboard-popup">
     <h3>Scores</h3>
     {scoreboard.map((p, i) => {
