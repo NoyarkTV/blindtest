@@ -9,7 +9,10 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const [joinCode, setJoinCode] = useState("");
   const [spotifyToken, setSpotifyToken] = useState(null);
   const [playerStats, setPlayerStats] = useState(null);
-  const [profilePhoto, setProfilePhoto] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem("profilePhoto") || "");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const defaultAvatars = Array.from({ length: 35 }, (_, i) => `/avatarDefault/avatar${i + 1}.png`);
   const adjectives = [
   "Groovy", "Sneaky", "Witty", "Epic", "Cheesy", "Cosmic", "Rebel", "Jazzy", "Funky", "Classy",
   "Legendary", "Wild", "Bizarre", "Electric", "Savage", "Majestic", "Spooky", "Shiny", "Vibrant", "Zany",
@@ -58,6 +61,32 @@ const handleJoinGame = () => {
   if (!trimmed) return;
 
   navigate(`/room/${trimmed}`);
+};
+
+const handleAvatarConfirm = () => {
+  if (!selectedAvatar) return;
+
+  if (selectedAvatar === "auto") {
+    const cleanName = playerName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const customAvatarPath = `/avatarCustom/pp_${cleanName}.png`;
+
+    fetch(customAvatarPath).then(res => {
+      if (res.ok) {
+        setProfilePhoto(customAvatarPath);
+      } else {
+        const fallbackIndex = Math.floor(Math.random() * 35) + 1;
+        setProfilePhoto(`/avatarDefault/avatar${fallbackIndex}.png`);
+      }
+    }).catch(() => {
+      const fallbackIndex = Math.floor(Math.random() * 35) + 1;
+      setProfilePhoto(`/avatarDefault/avatar${fallbackIndex}.png`);
+    });
+  } else {
+    setProfilePhoto(selectedAvatar);
+  }
+
+  setShowAvatarModal(false);
+  setSelectedAvatar(null);
 };
 
 useEffect(() => {
@@ -268,10 +297,7 @@ return (
     />
     {/* Bouton rond orange avec crayon */}
     <button
-      onClick={() => {
-        // → Ouvre un popup de modification (fonctionnalité à faire plus tard)
-        console.log("Ouverture du popup de modification");
-      }}
+      onClick={() => setShowAvatarModal(true)}
       style={{
         position: "absolute",
         bottom: "0",
@@ -318,6 +344,66 @@ return (
     </button>
   )}
 </div>
+
+{showAvatarModal && (
+  <div className="avatar-modal-overlay" style={{
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    background: "rgba(0, 0, 0, 0.6)", display: "flex",
+    alignItems: "center", justifyContent: "center", zIndex: 999
+  }}>
+    <div className="avatar-modal" style={{
+      background: "#2d2b45", padding: "20px", borderRadius: "8px", width: "90%", maxWidth: "400px"
+    }}>
+      <h3 style={{ color: "#fff", textAlign: "center", marginTop: 0 }}>Choisir un avatar</h3>
+
+      <div className="avatar-grid" style={{
+        display: "flex", flexWrap: "wrap", gap: "10px",
+        maxHeight: "300px", overflowY: "auto", justifyContent: "center", margin: "20px 0"
+      }}>
+        {/* Avatar automatique via playerName */}
+        <img 
+          src="/ppCustom.png" 
+          alt="Avatar automatique"
+          title="Avatar personnalisé"
+          onClick={() => setSelectedAvatar("auto")}
+          style={{
+            width: "60px", height: "60px", borderRadius: "50%", cursor: "pointer",
+            border: selectedAvatar === "auto" ? "3px solid #b494f8" : "3px solid transparent"
+          }}
+        />
+        {/* Avatars par défaut */}
+        {defaultAvatars.map((src, idx) => (
+          <img 
+            key={idx}
+            src={src}
+            alt={`Avatar ${idx + 1}`}
+            onClick={() => setSelectedAvatar(src)}
+            style={{
+              width: "60px", height: "60px", borderRadius: "50%", cursor: "pointer",
+              border: selectedAvatar === src ? "3px solid #b494f8" : "3px solid transparent"
+            }}
+          />
+        ))}
+      </div>
+
+      <div style={{ textAlign: "right", marginTop: "10px" }}>
+        <button className="btn btn-cancel" onClick={() => { 
+          setShowAvatarModal(false); setSelectedAvatar(null);
+        }} style={{ marginRight: "8px" }}>
+          Annuler
+        </button>
+        <button 
+          className="btn btn-confirm" 
+          onClick={handleAvatarConfirm} 
+          disabled={!selectedAvatar}
+        >
+          Valider
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Zone de jeu */}
         <div style={{
