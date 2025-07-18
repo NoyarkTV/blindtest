@@ -363,7 +363,7 @@ return (
           minHeight: "0",
           borderRadius: "12px"
         }}>
-          
+
 {players.map((p, i) => (
   <div
     key={i}
@@ -383,16 +383,18 @@ return (
       src={p.photo || "/ppDefault.png"}
       alt="Avatar"
       style={{
-        width: "32px",
-        height: "32px",
+        width: "28px",
+        height: "28px",
         borderRadius: "50%",
         objectFit: "cover",
-        flexShrink: 0
+        flexShrink: 0,
+        marginTop: "1px"
       }}
     />
-    <span>{p.name}</span>
+    <span style={{ lineHeight: "1.2" }}>{p.name}</span>
   </div>
 ))}
+
 
         </div>
 
