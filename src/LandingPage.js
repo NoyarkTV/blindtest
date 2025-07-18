@@ -168,26 +168,24 @@ useEffect(() => {
   })
 }, []);
 
-
-
 const handleCreateGame = async () => {
   const generateSimpleId = (length = 5) => {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let id = '';
-  for (let i = 0; i < length; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return id;
-};
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let id = '';
+    for (let i = 0; i < length; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+  };
 
-const gameId = generateSimpleId();
-
+  const gameId = generateSimpleId();
   const playerName = localStorage.getItem("playerName") || "";
+  const profilePhoto = localStorage.getItem("profilePhoto") || "";
 
   const game = {
     id: gameId,
     admin: playerName,
-    players: [{ name: playerName }],
+    players: [{ name: playerName, photo: profilePhoto }],
     // plus tard : playlist, settings, etc.
   };
 
