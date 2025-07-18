@@ -373,28 +373,37 @@ return (
       color: "#fff",
       fontWeight: "bold",
       borderRadius: "12px",
-      padding: "6px 10px",
+      padding: "8px 12px",
       display: "flex",
       alignItems: "center",
-      gap: "10px"
+      gap: "10px",
+      lineHeight: "1"
     }}
   >
-    <img
-      src={p.photo || "/ppDefault.png"}
-      alt="Avatar"
-      style={{
-        width: "28px",
-        height: "28px",
-        borderRadius: "50%",
-        objectFit: "cover",
-        flexShrink: 0,
-        marginTop: "1px"
-      }}
-    />
-    <span style={{ lineHeight: "1.2" }}>{p.name}</span>
+    <div style={{
+      width: "28px",
+      height: "28px",
+      borderRadius: "50%",
+      overflow: "hidden",
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <img
+        src={p.photo || "/ppDefault.png"}
+        alt="Avatar"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: "block"
+        }}
+      />
+    </div>
+    <span style={{ fontSize: "0.95rem" }}>{p.name}</span>
   </div>
 ))}
-
 
         </div>
 
