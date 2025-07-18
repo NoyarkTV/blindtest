@@ -186,35 +186,42 @@ useEffect(() => {
     .then(res => res.json())
     .then(data => {
       if (data.players) {
-// Étape 1 : tu gardes ton mapping des noms
-const rawPlayers = data.players.map(obj => Object.values(obj)[0]);
-setPlayers(rawPlayers);
+        // Étape 1 : mapping des noms
+        const rawPlayers = data.players.map(obj => Object.values(obj)[0]);
+        setPlayers(rawPlayers);
 
-// Étape 2 : tu construis une map { name: photo }
-const photoMap = {};
-data.players.forEach(p => {
-  if (p.name && p.photo) {
-    photoMap[p.name] = p.photo;
-  }
-});
+        // Étape 2 : map { name → photo }
+        const photoMap = {};
+        data.players.forEach(p => {
+          if (p.name && p.photo) {
+            photoMap[p.name] = p.photo;
+          }
+        });
 
-// Étape 3 : tu construis le scoreboard en réutilisant la map
-const localPlayer = localStorage.getItem("playerName");
-const initialScoreboard = rawPlayers.map(name => ({
-  name,
-  photo: photoMap[name] || "/ppDefault.png",
-  score: 0,
-  isMe: name === localPlayer
-}));
-setScoreboard(initialScoreboard);
+        // Étape 3 : scoreboard initial (score à 0)
+        const localPlayer = localStorage.getItem("playerName");
+        const initialScoreboard = rawPlayers.map(name => ({
+          name,
+          photo: photoMap[name] || "/ppDefault.png",
+          score: 0,
+          isMe: name === localPlayer
+        }));
+        setScoreboard(initialScoreboard);
 
-        // 🎯 Ensuite on récupère les scores actuels si dispo
+        // Étape 4 : charger les scores réels et merger avec photoMap
         fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
           .then(res => res.json())
           .then(scores => {
             if (Array.isArray(scores)) {
               console.log("📥 Scores initiaux récupérés :", scores);
-              setScoreboard(scores);
+
+              const updatedScoreboard = scores.map(p => ({
+                ...p,
+                photo: photoMap[p.name] || "/ppDefault.png",
+                isMe: p.name === localPlayer
+              }));
+
+              setScoreboard(updatedScoreboard);
             }
           })
           .catch(err => console.warn("⚠️ Pas de scores initiaux :", err));
@@ -222,8 +229,6 @@ setScoreboard(initialScoreboard);
     })
     .catch(err => console.error("❌ Erreur lors de la récupération des joueurs :", err));
 }, [id]);
-
-
 
 useEffect(() => {
   if (players.length === 0 || !playerName) return;
@@ -996,7 +1001,6 @@ return (
                   height: "100%",
                   objectFit: "cover",
                   display: "block",
-                  transform: "translateY(40%)"
                 }}
               />
             </div>
