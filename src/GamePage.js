@@ -186,13 +186,14 @@ useEffect(() => {
     .then(res => res.json())
     .then(data => {
       if (data.players) {
-        const rawPlayers = data.players.map(obj => Object.values(obj)[0]); // ✅ extrait { name: "xxx" } propre
+        const rawPlayers = data.players;
         console.log("👥 Joueurs extraits :", rawPlayers);
         setPlayers(rawPlayers);
 
         const localPlayer = localStorage.getItem("playerName");
         const initialScoreboard = rawPlayers.map(p => ({
           name: p.name,
+          photo: p.photo || "/ppDefault.png",
           score: 0,
           isMe: p.name === localPlayer
         }));
@@ -942,20 +943,62 @@ return (
       </div>
 
       {/* SCOREBOARD */}
-      {Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
-        <div className="scoreboard-popup">
-          <h3>Scores</h3>
-          {scoreboard.map((p, i) => {
-            const isMe = p.name === playerName;
-            return (
-              <div key={i} className={`scoreboard-entry${isMe ? " me" : ""}`}>
-                <span>{p.name}</span>
-                <span>{typeof p.score === "number" ? p.score : 0}</span>
-              </div>
-            );
-          })}
+{Array.isArray(scoreboard) && scoreboard.every(p => typeof p.name === "string") && (
+  <div className="scoreboard-popup">
+    <h3>Scores</h3>
+    {scoreboard.map((p, i) => {
+      const isMe = p.name === playerName;
+      return (
+        <div
+          key={i}
+          className={`scoreboard-entry${isMe ? " me" : ""}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "10px",
+            padding: "6px 8px",
+            borderRadius: 8,
+            background: isMe ? "var(--gradient-main)" : "transparent",
+            color: "#fff",
+            fontWeight: isMe ? "bold" : "normal"
+          }}
+        >
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px"
+          }}>
+            <div style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              overflow: "hidden",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
+              <img
+                src={p.photo || "/ppDefault.png"}
+                alt="Avatar"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                  transform: "translateY(40%)"
+                }}
+              />
+            </div>
+            <span>{p.name}</span>
+          </div>
+          <span>{typeof p.score === "number" ? p.score : 0}</span>
         </div>
-      )}
+      );
+    })}
+  </div>
+)}
     </div>
 
 {showPopup && popupInfo && (
@@ -1019,57 +1062,85 @@ return (
         </h4>
 
         {scoreboard.map(player => {
-          const detail = readyPlayersInfo.find(p => p.name === player.name);
-          const currentScore = player.score;
-          const delta = detail ? currentScore - detail.previousScore : null;
-          const isMe = player.name === playerName;
+  const detail = readyPlayersInfo.find(p => p.name === player.name);
+  const currentScore = player.score;
+  const delta = detail ? currentScore - detail.previousScore : null;
+  const isMe = player.name === playerName;
 
-          return (
-            <div
-              key={player.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 6,
-                padding: "6px 8px",
-                background: isMe ? "var(--gradient-main)" : "transparent",
-                color: isMe ? "#fff" : "#fff",
-                borderRadius: 8,
-                fontWeight: isMe ? "bold" : "normal"
-              }}
-            >
-              <span>{player.name}</span>
-              <span>
-                {currentScore} pts
-                {detail && (
-                  <span style={{
-                    marginLeft: 8,
-                    color: delta > 0 ? "#388e3c" : "#d32f2f",
-                    fontWeight: "bold"
-                  }}>
-                    ({delta >= 0 ? `+${delta}` : delta})
-                  </span>
-                )}
-                {detail?.responseTime && (
-                  <span style={{
-                    marginLeft: 8,
-                    fontSize: 14,
-                    color: "#ccc"
-                  }}>
-                    ⏱️ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
-                  </span>
-                )}
-              </span>
-            </div>
-          );
-        })}
+  return (
+    <div
+      key={player.name}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 6,
+        padding: "6px 8px",
+        background: isMe ? "var(--gradient-main)" : "transparent",
+        color: isMe ? "#fff" : "#fff",
+        borderRadius: 8,
+        fontWeight: isMe ? "bold" : "normal"
+      }}
+    >
+      {/* Nom + avatar à gauche */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{
+          width: "28px",
+          height: "28px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <img
+            src={player.photo || "/ppDefault.png"}
+            alt="Avatar"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+              transform: "translateY(40%)"
+            }}
+          />
+        </div>
+        <span>{player.name}</span>
+      </div>
+
+      {/* Score + bonus à droite */}
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <span>{currentScore} pts</span>
+        {detail && (
+          <span style={{
+            marginLeft: 8,
+            color: delta > 0 ? "#388e3c" : "#d32f2f",
+            fontWeight: "bold"
+          }}>
+            ({delta >= 0 ? `+${delta}` : delta})
+          </span>
+        )}
+        {detail?.responseTime && (
+          <span style={{
+            marginLeft: 8,
+            fontSize: 14,
+            color: "#ccc"
+          }}>
+            ⏱ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+})}
+
       </div>
 
       {/* ✅ Bouton ou attente admin */}
 {isAdmin ? (
         <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
-          🎵 Round suivant ({playersReady} / {players.length})
+          Round suivant ({playersReady} / {players.length})
         </button>
       ) : (
         <div className="btn btn-cancel" style={{
@@ -1090,12 +1161,40 @@ return (
     <div className="popup-rep" style={{ paddingBottom: 24 }}>
       <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
 
+      {/* Affichage du gagnant avec avatar */}
       {finalScores.length > 0 && (
-        <p style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16, color: "#fff" }}>
-          Le gagnant est : {finalScores[0].name}
-        </p>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: 20
+        }}>
+          <div style={{
+            width: "72px",
+            height: "72px",
+            borderRadius: "50%",
+            overflow: "hidden",
+            marginBottom: 8
+          }}>
+            <img
+              src={finalScores[0].photo || "/ppDefault.png"}
+              alt="Avatar gagnant"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                transform: "translateY(40%)"
+              }}
+            />
+          </div>
+          <p style={{ fontSize: 20, fontWeight: "bold", color: "#fff", margin: 0 }}>
+            Le gagnant est : {finalScores[0].name}
+          </p>
+        </div>
       )}
 
+      {/* Liste des scores */}
       <div style={{
         backgroundColor: "#1e1a3a",
         borderRadius: 12,
@@ -1112,6 +1211,7 @@ return (
               style={{
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
                 padding: "6px 8px",
                 background: isMe ? "var(--gradient-main)" : "transparent",
                 borderRadius: 8,
@@ -1120,7 +1220,31 @@ return (
                 color: "#fff"
               }}
             >
-              <span>{i + 1}. {p.name}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}>
+                  <img
+                    src={p.photo || "/ppDefault.png"}
+                    alt="Avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                      transform: "translateY(40%)"
+                    }}
+                  />
+                </div>
+                <span>{i + 1}. {p.name}</span>
+              </div>
               <span>{p.score} pts</span>
             </div>
           );
@@ -1144,7 +1268,6 @@ return (
     </div>
   </div>
 )}
-
 
     </div>
   );
