@@ -368,10 +368,8 @@ main {
   height: 160px;
   border-radius: 50%;
   background: conic-gradient(
-    #7b1daf 0deg,
-    #c22fa4 120deg,
-    #ff7c2c var(--progress, 360deg),
-    #1a1835 0deg
+    #ff7c2c 0deg var(--progress, 360deg),
+    #1a1835 var(--progress, 360deg) 360deg
   );
   display: flex;
   align-items: center;

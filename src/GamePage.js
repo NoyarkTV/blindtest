@@ -187,7 +187,7 @@ useEffect(() => {
     .then(data => {
       if (data.players) {
         // Étape 1 : mapping des noms
-        const rawPlayers = data.players.map(obj => Object.values(obj)[0]);
+        const rawPlayers = data.players.map(p => p.name);
         setPlayers(rawPlayers);
 
         // Étape 2 : map { name → photo }
@@ -1115,7 +1115,6 @@ return (
               height: "100%",
               objectFit: "cover",
               display: "block",
-              transform: "translateY(40%)"
             }}
           />
         </div>
@@ -1197,7 +1196,6 @@ return (
                 height: "100%",
                 objectFit: "cover",
                 display: "block",
-                transform: "translateY(40%)"
               }}
             />
           </div>
@@ -1252,7 +1250,6 @@ return (
                       height: "100%",
                       objectFit: "cover",
                       display: "block",
-                      transform: "translateY(40%)"
                     }}
                   />
                 </div>
