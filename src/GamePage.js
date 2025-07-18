@@ -384,31 +384,20 @@ useEffect(() => {
 
     setAverageTime(averageResponseTime.toFixed(1));
 
-    // ✅ Fusionne scores + photos
-    const finalWithPhotos = scores.map(p => {
-      const existing = scoreboard.find(e => e.name === p.name);
+    const enriched = scores.map(p => {
+      const previous = scoreboardRef.current.find(e => e.name === p.name);
       return {
         ...p,
-        photo: existing?.photo || "/ppDefault.png",
+        photo: previous?.photo || "/ppDefault.png",
         isMe: p.name === playerNameRef.current
       };
     });
 
-    // ✅ Trie du plus haut au plus bas
-    const sorted = finalWithPhotos.sort((a, b) => b.score - a.score);
+    const sorted = enriched.sort((a, b) => b.score - a.score);
     setFinalScores(sorted);
 
     setShowPopup(false);
     setShowEndPopup(true);
-
-    console.log("📤 Envoi des stats de fin de partie :", {
-      playerName,
-      averageResponseTime,
-      roundsPlayed: playlist.length,
-      roundsWon,
-      bestResponseTime,
-      totalScore: score
-    });
 
     fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
       method: "POST",

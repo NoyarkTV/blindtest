@@ -528,6 +528,10 @@ main {
   cursor: pointer;
 }
 
+.avatar-grid img:hover {
+  transform: scale(1.1);
+}
+
 .profile-tooltip {
   visibility: hidden;
   opacity: 0;

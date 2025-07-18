@@ -361,26 +361,45 @@ return (
     alignItems: "center", justifyContent: "center", zIndex: 999
   }}>
     <div className="avatar-modal" style={{
-      background: "#2d2b45", padding: "20px", borderRadius: "8px", width: "90%", maxWidth: "400px"
+      background: "#2d2b45",
+      padding: "30px",
+      borderRadius: "12px",
+      width: "90%",
+      maxWidth: "700px"
     }}>
-      <h3 style={{ color: "#fff", textAlign: "center", marginTop: 0 }}>Choisir un avatar</h3>
+      <h3 style={{
+        color: "#fff",
+        textAlign: "center",
+        marginTop: 0,
+        fontSize: 22
+      }}>
+        Choisir un avatar
+      </h3>
 
       <div className="avatar-grid" style={{
-        display: "flex", flexWrap: "wrap", gap: "10px",
-        maxHeight: "300px", overflowY: "auto", justifyContent: "center", margin: "20px 0"
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "16px",
+        maxHeight: "400px",
+        overflowY: "auto",
+        justifyContent: "center",
+        margin: "30px 0"
       }}>
-        {/* Avatar automatique via playerName */}
+        {/* Avatar personnalisé */}
         <img 
           src="/ppCustom.png" 
-          alt="Avatar automatique"
+          alt="Avatar personnalisé"
           title="Avatar personnalisé"
           onClick={() => setSelectedAvatar("auto")}
           style={{
-            width: "60px", height: "60px", borderRadius: "50%", cursor: "pointer",
-            border: selectedAvatar === "auto" ? "3px solid #b494f8" : "3px solid transparent"
+            width: "80px", height: "80px",
+            borderRadius: "50%",
+            cursor: "pointer",
+            border: selectedAvatar === "auto" ? "3px solid #b494f8" : "3px solid transparent",
+            transition: "transform 0.2s ease",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
           }}
         />
-        {/* Avatars par défaut */}
         {defaultAvatars.map((src, idx) => (
           <img 
             key={idx}
@@ -388,22 +407,31 @@ return (
             alt={`Avatar ${idx + 1}`}
             onClick={() => setSelectedAvatar(src)}
             style={{
-              width: "60px", height: "60px", borderRadius: "50%", cursor: "pointer",
-              border: selectedAvatar === src ? "3px solid #b494f8" : "3px solid transparent"
+              width: "80px", height: "80px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              border: selectedAvatar === src ? "3px solid #b494f8" : "3px solid transparent",
+              transition: "transform 0.2s ease",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
             }}
           />
         ))}
       </div>
 
       <div style={{ textAlign: "right", marginTop: "10px" }}>
-        <button className="btn btn-cancel" onClick={() => { 
-          setShowAvatarModal(false); setSelectedAvatar(null);
-        }} style={{ marginRight: "8px" }}>
+        <button
+          className="btn btn-cancel"
+          onClick={() => {
+            setShowAvatarModal(false);
+            setSelectedAvatar(null);
+          }}
+          style={{ marginRight: "8px" }}
+        >
           Annuler
         </button>
-        <button 
-          className="btn btn-confirm" 
-          onClick={handleAvatarConfirm} 
+        <button
+          className="btn btn-confirm"
+          onClick={handleAvatarConfirm}
           disabled={!selectedAvatar}
         >
           Valider
@@ -412,7 +440,6 @@ return (
     </div>
   </div>
 )}
-
 
       {/* Zone de jeu */}
         <div style={{
