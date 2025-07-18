@@ -397,8 +397,8 @@ return (
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      objectPosition: "center center", // 💡 la clé !
-      display: "block"
+      display: "block",
+      transform: "translateY(3%)" // 👈 ajuste visuellement vers le bas
     }}
   />
 </div>
