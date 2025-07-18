@@ -66,32 +66,34 @@ const handleJoinGame = () => {
 const handleAvatarConfirm = () => {
   if (!selectedAvatar) return;
 
+  const savePhoto = (path) => {
+    setProfilePhoto(path);
+    localStorage.setItem("profilePhoto", path);
+  };
+
   if (selectedAvatar === "auto") {
     const cleanName = playerName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
     const customAvatarPath = `/avatarCustom/pp_${cleanName}.png`;
 
     fetch(customAvatarPath).then(res => {
       if (res.ok) {
-        setProfilePhoto(customAvatarPath);
-        localStorage.setItem("profilePhoto", customAvatarPath);
+        savePhoto(customAvatarPath);
       } else {
-        const fallbackIndex = Math.floor(Math.random() * 35) + 1;
-        setProfilePhoto(`/avatarDefault/avatar${fallbackIndex}.png`);
-        localStorage.setItem("profilePhoto", `/avatarDefault/avatar${fallbackIndex}.png`);
+        const fallback = `/avatarDefault/avatar${Math.floor(Math.random() * 35) + 1}.png`;
+        savePhoto(fallback);
       }
     }).catch(() => {
-      const fallbackIndex = Math.floor(Math.random() * 35) + 1;
-      setProfilePhoto(`/avatarDefault/avatar${fallbackIndex}.png`);
-      localStorage.setItem("profilePhoto", `/avatarDefault/avatar${fallbackIndex}.png`);
+      const fallback = `/avatarDefault/avatar${Math.floor(Math.random() * 35) + 1}.png`;
+      savePhoto(fallback);
     });
   } else {
-    setProfilePhoto(selectedAvatar);
-    localStorage.setItem("profilePhoto", selectedAvatar);
+    savePhoto(selectedAvatar);
   }
 
   setShowAvatarModal(false);
   setSelectedAvatar(null);
 };
+
 
 useEffect(() => {
   if (spotifyToken) {
@@ -100,61 +102,51 @@ useEffect(() => {
     })
       .then(res => res.json())
       .then(data => {
-        let finalName;
+        let finalName = data.playerName || generateRandomName();
+        setPlayerName(finalName);
+        localStorage.setItem("playerName", finalName);
+        setPlayerStats(data.stats || null);
 
-        if (data.playerName) {
-          finalName = data.playerName;
-        } else {
-          finalName = generateRandomName();
+        // Ne pas écraser la photo si elle existe déjà en local
+        const alreadySet = localStorage.getItem("profilePhoto");
+        if (alreadySet) {
+          setProfilePhoto(alreadySet);
+          return;
         }
 
-        // Nettoyage du pseudo : suppression des caractères spéciaux
         const cleanName = finalName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
         const customAvatarPath = `/avatarCustom/pp_${cleanName}.png`;
 
-        // Vérification si l'image personnalisée existe
         fetch(customAvatarPath)
-          .then((res) => {
+          .then(res => {
             if (res.ok) {
-              // Image personnalisée trouvée
               setProfilePhoto(customAvatarPath);
               localStorage.setItem("profilePhoto", customAvatarPath);
             } else {
-              // Image non trouvée, choisir une image par défaut au hasard
-              const randomIndex = Math.floor(Math.random() * 35) + 1;
-              const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
-              setProfilePhoto(defaultAvatarPath);
-              localStorage.setItem("profilePhoto", defaultAvatarPath);
+              const fallback = `/avatarDefault/avatar${Math.floor(Math.random() * 35) + 1}.png`;
+              setProfilePhoto(fallback);
+              localStorage.setItem("profilePhoto", fallback);
             }
           })
           .catch(() => {
-            // En cas d’erreur, fallback aussi vers un avatar aléatoire
-            const randomIndex = Math.floor(Math.random() * 35) + 1;
-            const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
-            setProfilePhoto(defaultAvatarPath);
-            localStorage.setItem("profilePhoto", defaultAvatarPath);
+            const fallback = `/avatarDefault/avatar${Math.floor(Math.random() * 35) + 1}.png`;
+            setProfilePhoto(fallback);
+            localStorage.setItem("profilePhoto", fallback);
           });
-
-        // Mise à jour du nom et des stats
-        setPlayerName(finalName);
-        localStorage.setItem("playerName", finalName);
-        setPlayerStats(data.stats ? data.stats : null);
       })
       .catch(() => {
-        // Erreur de fetch profil → fallback complet
         const fallbackName = generateRandomName();
         setPlayerName(fallbackName);
         localStorage.setItem("playerName", fallbackName);
         setPlayerStats(null);
 
-        // Avatar par défaut aléatoire
-        const randomIndex = Math.floor(Math.random() * 35) + 1;
-        const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
-        setProfilePhoto(defaultAvatarPath);
-        localStorage.setItem("profilePhoto", defaultAvatarPath);
+        const fallback = `/avatarDefault/avatar${Math.floor(Math.random() * 35) + 1}.png`;
+        setProfilePhoto(fallback);
+        localStorage.setItem("profilePhoto", fallback);
       });
   }
 }, [spotifyToken]);
+
 
 useEffect(() => {
   fetch("https://blindtest-69h7.onrender.com/profile", {
