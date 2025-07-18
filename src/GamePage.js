@@ -236,17 +236,6 @@ useEffect(() => {
 }, [id]);
 
 useEffect(() => {
-  if (players.length === 0 || !playerName) return;
-
-  const board = players.map(name => ({
-    name,
-    score: name === playerName ? score : 0
-  }));
-
-  setScoreboard(board);
-}, [players, playerName, score]);
-
-useEffect(() => {
   if (isTimerRunning) {
     intervalRef.current = setInterval(() => {
       setTimeLeft(prev => Math.max((prev - 0.1), 0));
