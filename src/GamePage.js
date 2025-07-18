@@ -46,6 +46,7 @@ function GamePage() {
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
   const [roundsWon, setRoundsWon] = useState(0);
   const [readyPlayersInfo, setReadyPlayersInfo] = useState([]);
+  const scoreboardRef = useRef([]);
   
 const roundsWonRef = useRef(roundsWon);
 useEffect(() => {
