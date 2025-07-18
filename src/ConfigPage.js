@@ -377,7 +377,7 @@ return (
       display: "inline-flex",
       alignItems: "center",
       gap: "10px",
-      height: "40px" // hauteur contrôlée pour stabilité verticale
+      height: "40px"
     }}
   >
     <div style={{
@@ -388,7 +388,8 @@ return (
       flexShrink: 0,
       display: "flex",
       alignItems: "center",
-      justifyContent: "center"
+      justifyContent: "center",
+      marginTop: "1px" // 🪄 le petit ajustement magique
     }}>
       <img
         src={p.photo || "/ppDefault.png"}
