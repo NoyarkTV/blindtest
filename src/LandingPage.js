@@ -279,43 +279,48 @@ return (
   )}
 
   {/* Avatar avec bouton de modification */}
-  <div style={{
-    width: "80px",
-    height: "80px",
-    borderRadius: "50%",
-    backgroundColor: "var(--color-bg-popup)",
-    border: "2px solid var(--color-secondary)",
-    overflow: "hidden",
-    position: "relative"
-  }}>
+<div style={{
+  width: "80px",
+  height: "80px",
+  borderRadius: "50%",
+  backgroundColor: "var(--color-bg-popup)",
+  border: "2px solid var(--color-secondary)",
+  overflow: "hidden",
+  position: "relative"
+}}>
+  <img
+    src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"}
+    alt="Photo de profil"
+    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+  />
+
+  {/* Bouton crayon en image par-dessus */}
+  <button
+    onClick={() => setShowAvatarModal(true)}
+    style={{
+      position: "absolute",
+      bottom: "-4px", // pour dépasser un peu vers l’extérieur
+      right: "-4px",
+      width: "28px",
+      height: "28px",
+      border: "none",
+      background: "none",
+      padding: 0,
+      zIndex: 5,
+      cursor: "pointer"
+    }}
+  >
     <img
-      src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"}
-      alt="Photo de profil"
-      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-    />
-    {/* Bouton rond orange avec crayon */}
-    <button
-      onClick={() => setShowAvatarModal(true)}
+      src="/icon_pen.png"
+      alt="Modifier avatar"
       style={{
-        position: "absolute",
-        bottom: "0",
-        right: "0",
-        width: "24px",
-        height: "24px",
-        borderRadius: "50%",
-        backgroundColor: "#ff7c2c",
-        border: "2px solid var(--color-bg-popup)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer"
+        width: "100%",
+        height: "100%",
+        objectFit: "contain"
       }}
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil-fill" viewBox="0 0 16 16">
-        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
-      </svg>
-    </button>
-  </div>
+    />
+  </button>
+</div>
 
   {/* Nom du joueur */}
   <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
