@@ -380,28 +380,29 @@ return (
       height: "40px"
     }}
   >
-    <div style={{
-      width: "28px",
-      height: "28px",
-      borderRadius: "50%",
-      overflow: "hidden",
-      flexShrink: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      marginTop: "1px" // 🪄 le petit ajustement magique
-    }}>
-      <img
-        src={p.photo || "/ppDefault.png"}
-        alt="Avatar"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block"
-        }}
-      />
-    </div>
+<div style={{
+  width: "28px",
+  height: "28px",
+  borderRadius: "50%",
+  overflow: "hidden",
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center"
+}}>
+  <img
+    src={p.photo || "/ppDefault.png"}
+    alt="Avatar"
+    style={{
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      objectPosition: "center center", // 💡 la clé !
+      display: "block"
+    }}
+  />
+</div>
+
     <span style={{
       fontSize: "0.95rem",
       lineHeight: "1"
