@@ -67,28 +67,54 @@ useEffect(() => {
     })
       .then(res => res.json())
       .then(data => {
+        let finalName;
+
         if (data.playerName) {
-          setPlayerName(data.playerName);
-          localStorage.setItem("playerName", data.playerName);
+          finalName = data.playerName;
         } else {
-          // Si pas de nom dans la réponse, utiliser un pseudo aléatoire
-          const fallbackName = generateRandomName();
-          setPlayerName(fallbackName);
-          localStorage.setItem("playerName", fallbackName);
+          finalName = generateRandomName();
         }
-        // Update player stats if available
+
+        // Nettoyage du pseudo : suppression des caractères spéciaux
+        const cleanName = finalName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+        const customAvatarPath = `/avatarCustom/pp_${cleanName}.png`;
+
+        // Vérification si l'image personnalisée existe
+        fetch(customAvatarPath)
+          .then((res) => {
+            if (res.ok) {
+              // Image personnalisée trouvée
+              setProfilePhoto(customAvatarPath);
+            } else {
+              // Image non trouvée, choisir une image par défaut au hasard
+              const randomIndex = Math.floor(Math.random() * 35) + 1;
+              const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
+              setProfilePhoto(defaultAvatarPath);
+            }
+          })
+          .catch(() => {
+            // En cas d’erreur, fallback aussi vers un avatar aléatoire
+            const randomIndex = Math.floor(Math.random() * 35) + 1;
+            const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
+            setProfilePhoto(defaultAvatarPath);
+          });
+
+        // Mise à jour du nom et des stats
+        setPlayerName(finalName);
+        localStorage.setItem("playerName", finalName);
         setPlayerStats(data.stats ? data.stats : null);
-        // Store Spotify profile photo URL if available (see issue 3)
-        if (data.photo) {
-          setProfilePhoto(data.photo);
-        }
       })
       .catch(() => {
-        // En cas d’erreur (token invalide), fallback sur un pseudo aléatoire
+        // Erreur de fetch profil → fallback complet
         const fallbackName = generateRandomName();
         setPlayerName(fallbackName);
         localStorage.setItem("playerName", fallbackName);
         setPlayerStats(null);
+
+        // Avatar par défaut aléatoire
+        const randomIndex = Math.floor(Math.random() * 35) + 1;
+        const defaultAvatarPath = `/avatarDefault/avatar${randomIndex}.png`;
+        setProfilePhoto(defaultAvatarPath);
       });
   }
 }, [spotifyToken]);
@@ -196,72 +222,102 @@ return (
       alignItems: "stretch",
       marginTop: "40px"
     }}>
-      {/* Profil joueur */}
-      <div className="popup" style={{
-        width: "240px",
-        alignItems: "center",
-        gap: "12px",
-        display: "flex",
-        flexDirection: "column",
-        position: "relative"
-      }}>
-        {spotifyToken && (
-          <div className="info-icon-container">
-            <div className="info-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ff7c2c" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-              </svg>
-              <div className="profile-tooltip">
-                <div>Temps moyen : {playerStats?.totalRoundsPlayed > 0 ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2) : "--"} sec</div>
-                <div>Rounds joués : {playerStats?.totalRoundsPlayed ?? "--"}</div>
-                <div>Rounds gagnés : {playerStats?.totalRoundsWon ?? "--"}</div>
-                <div>Réussite : {playerStats?.totalRoundsPlayed > 0 ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100) : "--"}%</div>
-                <div>Parties jouées : {playerStats?.gamesPlayed ?? "--"}</div>
-                <div>Meilleur temps : {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
-                <div>Score cumulé : {playerStats?.totalScore ?? "--"}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{
-          width: "80px",
-          height: "80px",
-          borderRadius: "50%",
-          backgroundColor: "var(--color-bg-popup)",
-          border: "2px solid var(--color-secondary)",
-          overflow: "hidden"
-        }}>
-          <img 
-            src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"} 
-            alt="Photo de profil" 
-            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-          />
+{/* Profil joueur */}
+<div className="popup" style={{
+  width: "240px",
+  alignItems: "center",
+  gap: "12px",
+  display: "flex",
+  flexDirection: "column",
+  position: "relative"
+}}>
+  {spotifyToken && (
+    <div className="info-icon-container">
+      <div className="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ff7c2c" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+        </svg>
+        <div className="profile-tooltip">
+          <div>Temps moyen : {playerStats?.totalRoundsPlayed > 0 ? (playerStats.cumulativeResponseTime / playerStats.totalRoundsPlayed).toFixed(2) : "--"} sec</div>
+          <div>Rounds joués : {playerStats?.totalRoundsPlayed ?? "--"}</div>
+          <div>Rounds gagnés : {playerStats?.totalRoundsWon ?? "--"}</div>
+          <div>Réussite : {playerStats?.totalRoundsPlayed > 0 ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100) : "--"}%</div>
+          <div>Parties jouées : {playerStats?.gamesPlayed ?? "--"}</div>
+          <div>Meilleur temps : {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
+          <div>Score cumulé : {playerStats?.totalScore ?? "--"}</div>
         </div>
-
-        <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
-
-        <button
-          className={`btn ${spotifyToken ? "btn-spotify" : "btn-confirm"}`}
-          onClick={handleSpotifyConnect}
-        >
-          {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
-        </button>
-
-        {spotifyToken && (
-          <button
-            className="btn btn-cancel"
-            onClick={() => {
-              localStorage.removeItem("spotify_token");
-              setSpotifyToken(null);
-            }}
-            style={{ padding: "5px 12px", fontSize: "0.85rem" }}
-          >
-            Se déconnecter
-          </button>
-        )}
       </div>
+    </div>
+  )}
+
+  {/* Avatar avec bouton de modification */}
+  <div style={{
+    width: "80px",
+    height: "80px",
+    borderRadius: "50%",
+    backgroundColor: "var(--color-bg-popup)",
+    border: "2px solid var(--color-secondary)",
+    overflow: "hidden",
+    position: "relative"
+  }}>
+    <img
+      src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"}
+      alt="Photo de profil"
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+    {/* Bouton rond orange avec crayon */}
+    <button
+      onClick={() => {
+        // → Ouvre un popup de modification (fonctionnalité à faire plus tard)
+        console.log("Ouverture du popup de modification");
+      }}
+      style={{
+        position: "absolute",
+        bottom: "0",
+        right: "0",
+        width: "24px",
+        height: "24px",
+        borderRadius: "50%",
+        backgroundColor: "#ff7c2c",
+        border: "2px solid var(--color-bg-popup)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer"
+      }}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+      </svg>
+    </button>
+  </div>
+
+  {/* Nom du joueur */}
+  <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
+
+  {/* Bouton de connexion Spotify */}
+  <button
+    className={`btn ${spotifyToken ? "btn-spotify" : "btn-confirm"}`}
+    onClick={handleSpotifyConnect}
+  >
+    {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+  </button>
+
+  {/* Bouton de déconnexion */}
+  {spotifyToken && (
+    <button
+      className="btn btn-cancel"
+      onClick={() => {
+        localStorage.removeItem("spotify_token");
+        setSpotifyToken(null);
+      }}
+      style={{ padding: "5px 12px", fontSize: "0.85rem" }}
+    >
+      Se déconnecter
+    </button>
+  )}
+</div>
 
       {/* Zone de jeu */}
         <div style={{
