@@ -474,11 +474,22 @@ useEffect(() => {
 useEffect(() => {
   socket.on("score-update", (updatedScores) => {
     console.log("📊 Scoreboard mis à jour :", updatedScores);
-    setScoreboard(updatedScores); // met à jour l'affichage
+
+    setScoreboard(prev => {
+      return updatedScores.map(p => {
+        const previous = prev.find(e => e.name === p.name);
+        return {
+          ...p,
+          photo: previous?.photo || "/ppDefault.png",
+          isMe: p.name === playerNameRef.current
+        };
+      });
+    });
   });
 
   return () => socket.off("score-update");
 }, []);
+
 
 
     useEffect(() => {

@@ -278,31 +278,37 @@ return (
     </div>
   )}
 
-  {/* Avatar avec bouton de modification */}
+{/* Avatar avec bouton de modification */}
 <div style={{
+  position: "relative",
   width: "80px",
-  height: "80px",
-  borderRadius: "50%",
-  backgroundColor: "var(--color-bg-popup)",
-  border: "2px solid var(--color-secondary)",
-  overflow: "hidden",
-  position: "relative"
+  height: "80px"
 }}>
-  <img
-    src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"}
-    alt="Photo de profil"
-    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-  />
+  {/* Image + bordure dans un wrapper rond */}
+  <div style={{
+    width: "100%",
+    height: "100%",
+    borderRadius: "50%",
+    backgroundColor: "var(--color-bg-popup)",
+    border: "2px solid var(--color-secondary)",
+    overflow: "hidden"
+  }}>
+    <img
+      src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"}
+      alt="Photo de profil"
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+  </div>
 
-  {/* Bouton crayon en image par-dessus */}
+  {/* Bouton crayon en dehors du cercle */}
   <button
     onClick={() => setShowAvatarModal(true)}
     style={{
       position: "absolute",
-      bottom: "-4px", // pour dépasser un peu vers l’extérieur
-      right: "-4px",
-      width: "28px",
-      height: "28px",
+      bottom: "-6px",
+      right: "-6px",
+      width: "22px",
+      height: "22px",
       border: "none",
       background: "none",
       padding: 0,
