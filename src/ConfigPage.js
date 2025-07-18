@@ -383,18 +383,20 @@ return (
       src={p.photo || "/ppDefault.png"}
       alt="Avatar"
       style={{
-        width: "30px",
-        aspectRatio: "1",
+        width: "28px",
+        height: "28px",
         borderRadius: "50%",
         objectFit: "cover",
-        display: "block"
+        display: "block",
+        flexShrink: 0
       }}
     />
-    <span style={{ fontSize: "0.95rem", lineHeight: "1" }}>{p.name}</span>
+    <span style={{
+      fontSize: "0.95rem",
+      lineHeight: "1.1"
+    }}>{p.name}</span>
   </div>
 ))}
-
-
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
