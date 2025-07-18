@@ -188,15 +188,13 @@ useEffect(() => {
       if (data.players) {
         console.log("📦 Brut players reçus :", data.players);
 
-        // Étape 1 : extraction propre des objets { name, photo }
-        const rawPlayersFull = data.players.map(obj => Object.values(obj)[0]);
+        const rawPlayersFull = data.players; // ✅ correction ici
         console.log("🔍 Players extraits (objects):", rawPlayersFull);
 
         const rawPlayers = rawPlayersFull.map(p => p.name);
         console.log("👤 Noms extraits :", rawPlayers);
         setPlayers(rawPlayers);
 
-        // Étape 2 : map { name → photo }
         const photoMap = {};
         rawPlayersFull.forEach(p => {
           if (p.name && p.photo) {
@@ -205,7 +203,6 @@ useEffect(() => {
         });
         console.log("🖼️ photoMap généré :", photoMap);
 
-        // Étape 3 : scoreboard initial avec score 0
         const localPlayer = localStorage.getItem("playerName");
         const initialScoreboard = rawPlayers.map(name => ({
           name,
@@ -216,7 +213,6 @@ useEffect(() => {
         console.log("📊 Scoreboard initial :", initialScoreboard);
         setScoreboard(initialScoreboard);
 
-        // Étape 4 : charger les scores réels et merger avec les photos
         fetch(`https://blindtest-69h7.onrender.com/scores/${id}`)
           .then(res => res.json())
           .then(scores => {
@@ -228,6 +224,7 @@ useEffect(() => {
                 photo: photoMap[p.name] || "/ppDefault.png",
                 isMe: p.name === localPlayer
               }));
+
               console.log("✅ Scoreboard final fusionné :", updatedScoreboard);
               setScoreboard(updatedScoreboard);
             }
