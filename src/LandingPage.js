@@ -60,37 +60,37 @@ const handleJoinGame = () => {
 };
 
 useEffect(() => {
-  fetch("https://blindtest-69h7.onrender.com/profile", {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("spotify_token") || ""}`
-    }
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.playerName) {
-        setPlayerName(data.playerName);
-        localStorage.setItem("playerName", data.playerName);
-      } else {
-        // fallback uniquement côté client
+  if (spotifyToken) {
+    fetch("https://blindtest-69h7.onrender.com/profile", {
+      headers: { Authorization: `Bearer ${spotifyToken}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.playerName) {
+          setPlayerName(data.playerName);
+          localStorage.setItem("playerName", data.playerName);
+        } else {
+          // Si pas de nom dans la réponse, utiliser un pseudo aléatoire
+          const fallbackName = generateRandomName();
+          setPlayerName(fallbackName);
+          localStorage.setItem("playerName", fallbackName);
+        }
+        // Update player stats if available
+        setPlayerStats(data.stats ? data.stats : null);
+        // Store Spotify profile photo URL if available (see issue 3)
+        if (data.photo) {
+          setProfilePhoto(data.photo);
+        }
+      })
+      .catch(() => {
+        // En cas d’erreur (token invalide), fallback sur un pseudo aléatoire
         const fallbackName = generateRandomName();
         setPlayerName(fallbackName);
         localStorage.setItem("playerName", fallbackName);
-      }
-
-      if (data.stats) {
-        setPlayerStats(data.stats);
-      } else {
         setPlayerStats(null);
-      }
-    })
-    .catch(() => {
-      // En cas d’erreur d’appel → fallback local
-      const fallbackName = generateRandomName();
-      setPlayerName(fallbackName);
-      localStorage.setItem("playerName", fallbackName);
-    });
-}, []);
-
+      });
+  }
+}, [spotifyToken]);
 
 useEffect(() => {
   fetch("https://blindtest-69h7.onrender.com/profile", {
@@ -230,13 +230,13 @@ return (
           borderRadius: "50%",
           backgroundColor: "var(--color-bg-popup)",
           border: "2px solid var(--color-secondary)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.5rem",
-          color: "var(--color-secondary)"
+          overflow: "hidden"
         }}>
-          👤
+          <img 
+            src={spotifyToken ? (profilePhoto || "/ppDefault.png") : "/ppDefault.png"} 
+            alt="Photo de profil" 
+            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+          />
         </div>
 
         <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>

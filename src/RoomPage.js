@@ -40,7 +40,7 @@ useEffect(() => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, player })
     }).then(() => {
-      fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
+      fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
         .then(res => res.json())
         .then(data => {
           setPlayers(data.players || []);

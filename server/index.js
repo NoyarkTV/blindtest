@@ -463,11 +463,13 @@ app.get("/profile", (req, res) => {
     })
     .then(data => {
       const displayName = data.display_name?.trim();
+      const photoUrl = data.images && data.images.length > 0 ? data.images[0].url : null;
       if (displayName) {
         res.send({
           playerName: displayName,
           spotifyUser: true,
-          stats: playerProfiles[displayName] || null
+          stats: playerProfiles[displayName] || null,
+          photo: photoUrl
         });
       } else {
         // Token valide mais pas de nom → client doit gérer le fallback
