@@ -74,19 +74,9 @@ body {
   border: 2px solid var(--color-primary);
 }
 
-.btn-spotify {
-  background-color: #1db954;
-  color: white;
-}
-
 .btn:hover {
   transform: scale(1.05);
 }
-
-.btn-spotify:hover {
-  background-color: #1ed760 !important;
-}
-
 
 .buzz-button {
   font-size: 2rem;
@@ -567,9 +557,35 @@ main {
   pointer-events: auto;
 }
 
-.spotify-icon {
-  height: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
+/* Bouton connecté */
+.btn-spotify {
+  background-color: #1db954;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
 }
 
+/* Hover du bouton connecté */
+.btn-spotify:hover {
+  background-color: #1ed760 !important;
+}
+
+/* Bouton non connecté (bordure blanche, transparent) */
+.btn-spotify-connect {
+  background-color: transparent;
+  color: white;
+  border: 2px solid white;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-weight: 500; /* <- empêche les sauts visuels */
+  white-space: nowrap;
+  gap: 8px;
+}
+
+/* Icône Spotify dans le bouton */
+.spotify-icon {
+  height: 18px;
+  width: 18px;
+  transform: translateY(50%);
+}
