@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
-import { spotifyFetch } from "./spotifyApi";
 
 let sdkInitialized = false;
 
-function SpotifyPlayer({ token, onReady, onError, onTokenRefreshed }) {
+function SpotifyPlayer({ token, onReady, onError }) {
   const playerRef = useRef(null);
 
   useEffect(() => {
@@ -19,15 +18,14 @@ function SpotifyPlayer({ token, onReady, onError, onTokenRefreshed }) {
 
       player.addListener("ready", ({ device_id }) => {
         console.log("✅ SDK prêt avec device_id :", device_id);
-        spotifyFetch(
-          "https://api.spotify.com/v1/me/player",
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ device_ids: [device_id], play: false })
+        fetch("https://api.spotify.com/v1/me/player", {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           },
-          onTokenRefreshed
-        )
+          body: JSON.stringify({ device_ids: [device_id], play: false })
+        })
           .then(() => {
             console.log("📡 Transfert vers Web Playback effectué");
             setTimeout(() => onReady(device_id), 1000);
@@ -60,7 +58,7 @@ function SpotifyPlayer({ token, onReady, onError, onTokenRefreshed }) {
     return () => {
       delete window.onSpotifyWebPlaybackSDKReady;
     };
-  }, [token, onReady, onError, onTokenRefreshed]);
+  }, [token, onReady, onError]);
 
   return null;
 }

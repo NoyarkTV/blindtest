@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { refreshToken } from "./spotifyApi";
 import './App.css';
 
 function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
@@ -101,18 +100,6 @@ useEffect(() => {
     fetch("https://blindtest-69h7.onrender.com/profile", {
       headers: { Authorization: `Bearer ${spotifyToken}` }
     })
-      .then(async res => {
-        if (res.status === 401) {
-          const newTok = await refreshToken();
-          if (newTok) {
-            setSpotifyToken(newTok);
-            return fetch("https://blindtest-69h7.onrender.com/profile", {
-              headers: { Authorization: `Bearer ${newTok}` }
-            });
-          }
-        }
-        return res;
-      })
       .then(res => res.json())
       .then(data => {
         let finalName = data.playerName || generateRandomName();
@@ -167,18 +154,6 @@ useEffect(() => {
       Authorization: `Bearer ${localStorage.getItem("spotify_token") || ""}`
     }
   })
-    .then(async res => {
-      if (res.status === 401) {
-        const newTok = await refreshToken();
-        if (newTok) {
-          setSpotifyToken(newTok);
-          return fetch("https://blindtest-69h7.onrender.com/profile", {
-            headers: { Authorization: `Bearer ${newTok}` }
-          });
-        }
-      }
-      return res;
-    })
     .then(res => res.json())
     .then(data => {
       if (data.playerName) {
@@ -357,60 +332,26 @@ return (
   <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
 
   {/* Bouton de connexion Spotify */}
-<button
-  className={`btn ${spotifyToken ? "btn-spotify" : "btn-cancel"}`}
-  onClick={handleSpotifyConnect}
-  style={
-    spotifyToken
-      ? {} // aucun style custom quand connecté, le CSS s’applique
-      : {
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "8px 18px",
-          borderRadius: "999px",
-          border: "2px solid white",
-          background: "transparent",
-          color: "white",
-          fontWeight: "bold",
-          whiteSpace: "nowrap"
-        }
-  }
->
-  {!spotifyToken && (
-    <img
-      src="/spotify.png"
-      alt="Spotify"
-      style={{
-        height: "18px",
-        width: "18px",
-        transform: "translateY(40%)"
-      }}
-    />
-  )}
-  {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
-</button>
+  <button
+    className={`btn ${spotifyToken ? "btn-spotify" : "btn-confirm"}`}
+    onClick={handleSpotifyConnect}
+  >
+    {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+  </button>
 
   {/* Bouton de déconnexion */}
-{spotifyToken && (
-  <button
-    className="btn btn"
-    onClick={() => {
-      localStorage.removeItem("spotify_token");
-      setSpotifyToken(null);
-    }}
-    style={{
-      padding: "5px 12px",
-      fontSize: "0.85rem",
-      background: "transparent",
-      color: "#ccc",
-      fontWeight: "normal",
-    }}
-  >
-    Se déconnecter
-  </button>
-)}
+  {spotifyToken && (
+    <button
+      className="btn btn-cancel"
+      onClick={() => {
+        localStorage.removeItem("spotify_token");
+        setSpotifyToken(null);
+      }}
+      style={{ padding: "5px 12px", fontSize: "0.85rem" }}
+    >
+      Se déconnecter
+    </button>
+  )}
 </div>
 
 {showAvatarModal && (
