@@ -336,15 +336,17 @@ return (
   className={`btn ${spotifyToken ? "btn-spotify" : "btn-cancel"}`}
   onClick={handleSpotifyConnect}
   style={{
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "8px",
-    padding: "8px 16px",
+    padding: "8px 18px",
     borderRadius: "999px",
     border: "2px solid white",
     background: "transparent",
     color: "white",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    whiteSpace: "nowrap"
   }}
 >
   {!spotifyToken && (
@@ -352,16 +354,14 @@ return (
       src="/spotify.png"
       alt="Spotify"
       style={{
-        height: "20px",
-        width: "20px",
-        objectFit: "contain"
+        height: "18px",
+        width: "18px",
+        transform: "translateY(40%)"
       }}
     />
   )}
-  {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+  Se connecter à Spotify
 </button>
-
-
 
   {/* Bouton de déconnexion */}
 {spotifyToken && (
