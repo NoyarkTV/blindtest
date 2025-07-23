@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { refreshToken } from "./spotifyApi";
 import './App.css';
 
 function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
@@ -100,6 +101,18 @@ useEffect(() => {
     fetch("https://blindtest-69h7.onrender.com/profile", {
       headers: { Authorization: `Bearer ${spotifyToken}` }
     })
+      .then(async res => {
+        if (res.status === 401) {
+          const newTok = await refreshToken();
+          if (newTok) {
+            setSpotifyToken(newTok);
+            return fetch("https://blindtest-69h7.onrender.com/profile", {
+              headers: { Authorization: `Bearer ${newTok}` }
+            });
+          }
+        }
+        return res;
+      })
       .then(res => res.json())
       .then(data => {
         let finalName = data.playerName || generateRandomName();
@@ -154,6 +167,18 @@ useEffect(() => {
       Authorization: `Bearer ${localStorage.getItem("spotify_token") || ""}`
     }
   })
+    .then(async res => {
+      if (res.status === 401) {
+        const newTok = await refreshToken();
+        if (newTok) {
+          setSpotifyToken(newTok);
+          return fetch("https://blindtest-69h7.onrender.com/profile", {
+            headers: { Authorization: `Bearer ${newTok}` }
+          });
+        }
+      }
+      return res;
+    })
     .then(res => res.json())
     .then(data => {
       if (data.playerName) {

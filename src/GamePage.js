@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
+import { spotifyFetch, refreshToken } from "./spotifyApi";
 
 function GamePage() {
   const { id } = useParams();
@@ -47,6 +48,12 @@ function GamePage() {
   const [roundsWon, setRoundsWon] = useState(0);
   const [readyPlayersInfo, setReadyPlayersInfo] = useState([]);
   const scoreboardRef = useRef([]);
+
+useEffect(() => {
+  refreshToken().then(newTok => {
+    if (newTok) setToken(newTok);
+  });
+}, []);
   
 const roundsWonRef = useRef(roundsWon);
 useEffect(() => {
@@ -100,14 +107,15 @@ const playCurrentTrack = async (devId) => {
 
   isVerifyingRef.current = true; // on démarre une nouvelle vérif
 
-  await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${devId}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
+  await spotifyFetch(
+    `https://api.spotify.com/v1/me/player/play?device_id=${devId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uris: [track.uri] })
     },
-    body: JSON.stringify({ uris: [track.uri] })
-  }).then(() => {
+    setToken
+  ).then(() => {
     console.log("▶️ Lecture demandée, vérification en cours...");
 
     const maxTries = 10;
@@ -120,9 +128,11 @@ const playCurrentTrack = async (devId) => {
       }
 
       tries++;
-      const res = await fetch("https://api.spotify.com/v1/me/player", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await spotifyFetch(
+        "https://api.spotify.com/v1/me/player",
+        {},
+        setToken
+      );
       const data = await res.json();
 
       const currentUri = data?.item?.uri;
@@ -260,11 +270,11 @@ const fetchAllTrackImages = async (uris) => {
   for (let i = 0; i < ids.length; i += 50) {
     const batch = ids.slice(i, i + 50);
     try {
-      const res = await fetch(`https://api.spotify.com/v1/tracks?ids=${batch.join(",")}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const res = await spotifyFetch(
+        `https://api.spotify.com/v1/tracks?ids=${batch.join(",")}`,
+        {},
+        setToken
+      );
 
       if (res.status === 429) {
         const retryAfter = res.headers.get("Retry-After");
@@ -508,10 +518,11 @@ useEffect(() => {
 const setVolume = (percent) => {
   if (!deviceId || percent < 0 || percent > 100) return;
 
-  fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${percent}&device_id=${deviceId}`, {
-    method: "PUT",
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(() => {
+  spotifyFetch(
+    `https://api.spotify.com/v1/me/player/volume?volume_percent=${percent}&device_id=${deviceId}`,
+    { method: "PUT" },
+    setToken
+  ).then(() => {
     console.log(`🔊 Volume réglé à ${percent}%`);
   }).catch(err => {
     console.error(`Erreur lors du réglage du volume à ${percent}% :`, err);
@@ -526,10 +537,11 @@ useEffect(() => {
     // 🎵 Relance douce musique pendant le popup
     console.log("🎵 Relance douce musique pendant le popup");
 
-    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(() => {
+    spotifyFetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+      { method: "PUT" },
+      setToken
+    ).then(() => {
       console.log("🎵 Musique relancée pour popup");
     }).catch(err => console.error("Erreur reprise lecture pendant popup :", err));
   } else {
@@ -791,17 +803,23 @@ setIsTimerRunning(true);
 
 
   const handlePause = () => {
-    return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(() => setIsPlaying(false)).catch(err => console.error("Erreur pause :", err));
+    return spotifyFetch(
+      `https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`,
+      { method: "PUT" },
+      setToken
+    )
+      .then(() => setIsPlaying(false))
+      .catch(err => console.error("Erreur pause :", err));
   };
 
   const handlePlay = () => {
-    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(() => setIsPlaying(true)).catch(err => console.error("Erreur reprise lecture :", err));
+    spotifyFetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+      { method: "PUT" },
+      setToken
+    )
+      .then(() => setIsPlaying(true))
+      .catch(err => console.error("Erreur reprise lecture :", err));
   };
 
 const handleNext = () => {
