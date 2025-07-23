@@ -424,6 +424,9 @@ useEffect(() => {
   return () => socket.off("game-over");
 }, []);
 
+useEffect(() => {
+  scoreboardRef.current = scoreboard;
+}, [scoreboard]);
 
 useEffect(() => {
   if (timeLeft === 0) {
