@@ -567,3 +567,9 @@ main {
   pointer-events: auto;
 }
 
+.spotify-icon {
+  height: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+

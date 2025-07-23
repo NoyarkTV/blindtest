@@ -348,18 +348,24 @@ return (
 
 
   {/* Bouton de déconnexion */}
-  {spotifyToken && (
-    <button
-      className="btn btn-cancel"
-      onClick={() => {
-        localStorage.removeItem("spotify_token");
-        setSpotifyToken(null);
-      }}
-      style={{ padding: "5px 12px", fontSize: "0.85rem", background: "transparent", color: "#ccc", font-weight: "normal",  }}
-    >
-      Se déconnecter
-    </button>
-  )}
+{spotifyToken && (
+  <button
+    className="btn btn-cancel"
+    onClick={() => {
+      localStorage.removeItem("spotify_token");
+      setSpotifyToken(null);
+    }}
+    style={{
+      padding: "5px 12px",
+      fontSize: "0.85rem",
+      background: "transparent",
+      color: "#ccc",
+      fontWeight: "normal",
+    }}
+  >
+    Se déconnecter
+  </button>
+)}
 </div>
 
 {showAvatarModal && (
