@@ -23,6 +23,11 @@ function GamePage() {
   const answerInputRef = useRef(null);
   const [composerAttempts, setComposerAttempts] = useState(0); // max 2 tentatives
   const roundEndedRef = useRef(false);
+  const timeLeftRef = useRef(timeLeft);
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+  
   const wrongAttemptsRef = useRef(0);
   const pausedTimeRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -548,7 +553,7 @@ useEffect(() => {
 }, []);
 
 const handleBuzz = () => {
-    pausedTimeRef.current = timeLeft;
+    pausedTimeRef.current = timeLeftRef.current;
     clearInterval(intervalRef.current);
     setIsTimerRunning(false);
     setIsBuzzed(true);
