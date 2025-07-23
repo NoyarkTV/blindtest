@@ -335,22 +335,38 @@ return (
 <button
   className={`btn ${spotifyToken ? "btn-spotify" : "btn-cancel"}`}
   onClick={handleSpotifyConnect}
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "8px 16px",
+    borderRadius: "999px",
+    border: "2px solid white",
+    background: "transparent",
+    color: "white",
+    fontWeight: "bold"
+  }}
 >
   {!spotifyToken && (
     <img
       src="/spotify.png"
-      alt="Spotify logo"
-      className="spotify-icon"
+      alt="Spotify"
+      style={{
+        height: "20px",
+        width: "20px",
+        objectFit: "contain"
+      }}
     />
   )}
   {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
 </button>
 
 
+
   {/* Bouton de déconnexion */}
 {spotifyToken && (
   <button
-    className="btn btn-cancel"
+    className="btn btn"
     onClick={() => {
       localStorage.removeItem("spotify_token");
       setSpotifyToken(null);
