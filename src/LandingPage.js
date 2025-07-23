@@ -332,12 +332,20 @@ return (
   <div style={{ fontSize: "1.1rem", fontWeight: "bold", textAlign: "center" }}>{playerName}</div>
 
   {/* Bouton de connexion Spotify */}
-  <button
-    className={`btn ${spotifyToken ? "btn-spotify" : "btn-confirm"}`}
-    onClick={handleSpotifyConnect}
-  >
-    {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
-  </button>
+<button
+  className={`btn ${spotifyToken ? "btn-spotify" : "btn-cancel"}`}
+  onClick={handleSpotifyConnect}
+>
+  {!spotifyToken && (
+    <img
+      src="/spotify.png"
+      alt="Spotify logo"
+      className="spotify-icon"
+    />
+  )}
+  {spotifyToken ? "Connecté à Spotify" : "Se connecter à Spotify"}
+</button>
+
 
   {/* Bouton de déconnexion */}
   {spotifyToken && (
@@ -347,7 +355,7 @@ return (
         localStorage.removeItem("spotify_token");
         setSpotifyToken(null);
       }}
-      style={{ padding: "5px 12px", fontSize: "0.85rem" }}
+      style={{ padding: "5px 12px", fontSize: "0.85rem", background: "transparent", color: "#ccc", font-weight: "normal",  }}
     >
       Se déconnecter
     </button>
