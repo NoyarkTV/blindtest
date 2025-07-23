@@ -298,6 +298,40 @@ useEffect(() => {
   });
 }, [playlist]);
 
+
+
+useEffect(() => {
+  if (!deviceId || playlist.length === 0) return;
+
+  if (currentRound > playlist.length) {
+    console.log("🏁 Fin de partie détectée côté client");
+
+    // ✅ Utiliser la ref pour garantir la bonne version du scoreboard
+    const sorted = [...scoreboardRef.current].sort((a, b) => b.score - a.score);
+    setFinalScores(sorted);
+
+    setShowPopup(false);
+    setShowEndPopup(true);
+    handlePause();
+    return;
+  }
+
+  wrongAttemptsRef.current = 0;
+  basePointsRef.current = 100;
+  setTimeLeft(params.time);
+  setShowIndiceMedia(false);
+  setShowIndiceAnnee(false);
+
+  setShowPopup(false);
+  handlePause().finally(() => {
+    setTimeout(() => playCurrentTrack(deviceId), 500);
+  });
+
+  roundEndedRef.current = false;
+
+  console.log("🔍 Contenu de scoreboard :", scoreboardRef.current);
+}, [currentRound]);
+
 useEffect(() => {
   setShowPopup(false);
   setIsBuzzed(false); // facultatif : réinitialiser le buzz
