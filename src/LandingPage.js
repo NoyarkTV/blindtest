@@ -349,19 +349,27 @@ return (
     whiteSpace: "nowrap"
   }}
 >
-  {!spotifyToken && (
-    <img
-      src="/spotify.png"
-      alt="Spotify"
-      style={{
-        height: "18px",
-        width: "18px",
-        transform: "translateY(40%)"
-      }}
-    />
+  {spotifyToken ? (
+    <>
+      <span style={{ fontSize: "1.2em" }}>✅</span>
+      Connecté à Spotify
+    </>
+  ) : (
+    <>
+      <img
+        src="/spotify.png"
+        alt="Spotify"
+        style={{
+          height: "22px",
+          width: "22px",
+          transform: "translateY(40%)"
+        }}
+      />
+      Se connecter à Spotify
+    </>
   )}
-  Se connecter à Spotify
 </button>
+
 
   {/* Bouton de déconnexion */}
 {spotifyToken && (
