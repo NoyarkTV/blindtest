@@ -404,18 +404,16 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    socket.on("pause-track", () => {
-        const onPause = () => {
-      handlePause();
-      if (isDiffuser) {
+    const onPause = () => {
+        handlePause();
+    if (isDiffuser) {
         pausedTimeRef.current = timeLeftRef.current;
         clearInterval(intervalRef.current);
         setIsTimerRunning(false);
       }
     };
     const onResume = () => {
-      handlePlay();
-      setBuzzedBy(null);
+        setBuzzedBy(null);
       if (isDiffuser && !roundEndedRef.current) {
         setIsTimerRunning(true);
       }
@@ -428,13 +426,13 @@ useEffect(() => {
     };
     socket.on("pause-track", onPause);
     socket.on("resume-track", onResume);
-    socket.on("player-buzz", onPlayerBuzz)
+    socket.on("player-buzz", onPlayerBuzz);
     return () => {
       socket.off("pause-track", onPause);
       socket.off("resume-track", onResume);
       socket.off("player-buzz", onPlayerBuzz);
     };
-  }, [handlePause, handlePlay, isDiffuser]);
+   }, [handlePause, handlePlay, isDiffuser]);
 
 useEffect(() => {
   socket.on("game-over", (scores) => {
@@ -824,8 +822,8 @@ else {
     setIsWrongAnswer(true);
     setTimeout(() => {
     setIsWrongAnswer(false);
-  setAnswer("");
-  setComposerGuess("");
+    setAnswer("");
+    setComposerGuess("");
   }, 600);
 
     handlePlay();
@@ -833,8 +831,6 @@ else {
   socket.emit("resume-track", { roomId: id });
 }
 };
-
-
 
   const handleReady = (id) => {
     setDeviceId(id);
@@ -992,7 +988,7 @@ return (
       </div>
 
       {/* BUZZER ou CHAMP RÉPONSE */}
-{!isDiffuser && (
+      {!isDiffuser && (
         <div style={{ marginBottom: 30 }}>
           {!isBuzzed ? (
             <button
@@ -1040,7 +1036,7 @@ return (
                   setIsBuzzed(false);
                   setAnswer("");
                   setComposerGuess("");
-                  if (isDiffuser) setIsTimerRunning(true);
+                    if (isDiffuser) setIsTimerRunning(true);
                     handlePlay();
                   socket.emit("resume-track", { roomId: id });
                 }}
@@ -1052,7 +1048,7 @@ return (
         )}
       </div>
       )}
-
+      
       {/* SCOREBOARD */}
 {Array.isArray(scoreboard) && scoreboard.every(p => typeof p === "object" && typeof p.name === "string") && (
   <div className="scoreboard-popup">
@@ -1377,6 +1373,6 @@ return (
 )}
 
     </div>
-);
-
+  );
+}
 export default GamePageDiffusion;
