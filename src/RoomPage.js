@@ -13,7 +13,7 @@ function RoomPage() {
 
   // 🔁 Rejoindre la room et écouter les événements
 useEffect(() => {
-  socket.emit("join-room", id);
+  socket.emit("join-room", { roomId: id, playerName });
 
   const onJoined = updatedPlayers => setPlayers(updatedPlayers);
   const onList = fullList => setPlayers(fullList);

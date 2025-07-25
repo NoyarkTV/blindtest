@@ -122,7 +122,7 @@ app.post("/create-game", (req, res) => {
   }
 
   // Stockage en mémoire (ou en DB plus tard)
-  games[id] = { id, admin, players, playersReady: [] };
+  games[id] = { id, admin, players, playersReady: [], currentBuzz: null };
 
   console.log("✅ Partie créée :", games[id]);
 
@@ -241,7 +241,8 @@ app.post("/start-game", (req, res) => {
     currentRound: 1,
     nbRounds: playlist.length,
     playersReady: [],
-    admin
+    admin,
+    currentBuzz: null
   };
 
   io.to(id).emit("game-started", {
@@ -556,9 +557,16 @@ server.listen(PORT, () => {
 io.on("connection", (socket) => {
   console.log("📡 Socket connecté :", socket.id);
 
-  socket.on("join-room", (roomId) => {
+  socket.on("join-room", (payload) => {
+    const roomId = typeof payload === "string" ? payload : payload?.roomId;
+    const playerName = payload?.playerName;
+    if (!roomId) {
+      console.warn("❌ join-room sans roomId reçu", payload);
+      return;
+    }
     socket.join(roomId);
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${roomId}`);
+    if (playerName) console.log(`   en tant que ${playerName}`);
     console.log("🌐 Rooms actuelles :", Array.from(socket.rooms));
   });
 socket.on("next-round", ({ roomId }) => {

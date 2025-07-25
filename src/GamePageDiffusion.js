@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
 
 function GamePageDiffusion() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const [playlist, setPlaylist] = useState([]);
   const [params, setParams] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +20,7 @@ function GamePageDiffusion() {
   const [isDiffuser, setIsDiffuser] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [isBuzzed, setIsBuzzed] = useState(false);
+  const [buzzedBy, setBuzzedBy] = useState(null);
   const [answer, setAnswer] = useState("");
   const [composer, setComposer] = useState("");
   const [composerGuess, setComposerGuess] = useState("");
@@ -176,7 +178,8 @@ const playCurrentTrack = async (devId) => {
         setParams(data.params || {});
         setIsAdmin(data.params?.admin === playerName);
         if (data.params?.modeDiffusion) {
-          setIsDiffuser(data.params.admin === playerName);
+          const diffParam = new URLSearchParams(search).get("diffuser");
+          setIsDiffuser(diffParam === "1");
         }
         setCurrentRound(data.currentRound || 1);
         console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", playerName);
@@ -187,7 +190,7 @@ const playCurrentTrack = async (devId) => {
         setLoading(false);
         setLoadingError(true);
       });
-  }, [id, navigate]);
+  }, [id, navigate, search]);
 
   useEffect(() => {
     if (!playerName || !id) return;
@@ -402,22 +405,36 @@ useEffect(() => {
 
   useEffect(() => {
     socket.on("pause-track", () => {
-        pausedTimeRef.current = timeLeftRef.current;
-      clearInterval(intervalRef.current);
-      setIsTimerRunning(false);
+        const onPause = () => {
       handlePause();
-    });
-    socket.on("resume-track", () => {
+      if (isDiffuser) {
+        pausedTimeRef.current = timeLeftRef.current;
+        clearInterval(intervalRef.current);
+        setIsTimerRunning(false);
+      }
+    };
+    const onResume = () => {
       handlePlay();
-      if (!roundEndedRef.current) {
+      setBuzzedBy(null);
+      if (isDiffuser && !roundEndedRef.current) {
         setIsTimerRunning(true);
       }
-    });
-    return () => {
-      socket.off("pause-track");
-      socket.off("resume-track");
     };
-  }, [handlePause, handlePlay]);
+    const onPlayerBuzz = ({ playerName }) => {
+      setBuzzedBy(playerName);
+      if (playerName !== playerNameRef.current) {
+        setIsBuzzed(false);
+      }
+    };
+    socket.on("pause-track", onPause);
+    socket.on("resume-track", onResume);
+    socket.on("player-buzz", onPlayerBuzz)
+    return () => {
+      socket.off("pause-track", onPause);
+      socket.off("resume-track", onResume);
+      socket.off("player-buzz", onPlayerBuzz);
+    };
+  }, [handlePause, handlePlay, isDiffuser]);
 
 useEffect(() => {
   socket.on("game-over", (scores) => {
@@ -807,13 +824,13 @@ else {
     setIsWrongAnswer(true);
     setTimeout(() => {
     setIsWrongAnswer(false);
-    setAnswer("");
-    setComposerGuess("");
+  setAnswer("");
+  setComposerGuess("");
   }, 600);
 
-handlePlay();
-setIsTimerRunning(true);
-socket.emit("resume-track", { roomId: id });
+    handlePlay();
+  if (isDiffuser) setIsTimerRunning(true);
+  socket.emit("resume-track", { roomId: id });
 }
 };
 
@@ -941,12 +958,14 @@ return (
     ROUND {currentRound} / {playlist.length}
   </div>
       {/* TIMER avec contour dégradé animé */}
-<div
-  className="timer"
-  style={{ "--progress": `${(timeLeft / timer) * 360}deg` }}
->
-  <span>{Math.ceil(timeLeft ?? 0)}</span>
-</div>
+  {isDiffuser && (
+    <div
+      className="timer"
+      style={{ "--progress": `${(timeLeft / timer) * 360}deg` }}
+    >
+      <span>{Math.ceil(timeLeft ?? 0)}</span>
+    </div>
+  )}
 
       {/* INDICES */}
       <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 40, flexWrap: "wrap" }}>
@@ -973,10 +992,17 @@ return (
       </div>
 
       {/* BUZZER ou CHAMP RÉPONSE */}
-      <div style={{ marginBottom: 30 }}>
-        {!isBuzzed ? (
-          <button className="buzz-button" onClick={handleBuzz}>BUZZ</button>
-        ) : (
+{!isDiffuser && (
+        <div style={{ marginBottom: 30 }}>
+          {!isBuzzed ? (
+            <button
+              className="buzz-button"
+              onClick={handleBuzz}
+              disabled={buzzedBy && buzzedBy !== playerName}
+            >
+              BUZZ
+            </button>
+          ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
             <input
               key={isWrongAnswer ? "wrong" : "normal"}
@@ -1014,8 +1040,8 @@ return (
                   setIsBuzzed(false);
                   setAnswer("");
                   setComposerGuess("");
-                  setIsTimerRunning(true);
-                  handlePlay();
+                  if (isDiffuser) setIsTimerRunning(true);
+                    handlePlay();
                   socket.emit("resume-track", { roomId: id });
                 }}
               >
@@ -1025,6 +1051,7 @@ return (
           </div>
         )}
       </div>
+      )}
 
       {/* SCOREBOARD */}
 {Array.isArray(scoreboard) && scoreboard.every(p => typeof p === "object" && typeof p.name === "string") && (
@@ -1350,6 +1377,6 @@ return (
 )}
 
     </div>
-  );
-}
+);
+
 export default GamePageDiffusion;

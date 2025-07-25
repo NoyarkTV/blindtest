@@ -59,7 +59,7 @@ useEffect(() => {
 }, [id, playerName]);
 
   useEffect(() => {
-  socket.emit("join-room", id);
+  socket.emit("join-room", { roomId: id, playerName });
 
   const onJoined = (updatedPlayers) => {
     console.log("🔁 Mise à jour reçue :", updatedPlayers);
@@ -70,7 +70,7 @@ useEffect(() => {
     shouldLeaveRef.current = false;
     console.log("🚀 Partie lancée !");
     if (data?.config?.modeDiffusion) {
-      navigate(`/game-diffusion/${id}`);
+      navigate(`/game-diffusion/${id}?diffuser=1`);
     } else if (data?.config?.modeEclair) {
       navigate(`/game-eclair/${id}`);
     } else {
@@ -249,7 +249,7 @@ const validerPartie = () => {
         .then(res => res.json())
         .then(() => {
           if (modeDiffusion) {
-            navigate(`/game-diffusion/${id}`);
+            navigate(`/game-diffusion/${id}?diffuser=1`);
           } else if (modeEclair) {
             navigate(`/game-eclair/${id}`);
           } else {
