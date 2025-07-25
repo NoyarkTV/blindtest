@@ -20,6 +20,8 @@ function ConfigPage() {
   const [copied, setCopied] = useState(false);
   const [sagaTracks, setSagaTracks] = useState([]);
   const [testMode, setTestMode] = useState(false);
+  const [modeEclair, setModeEclair] = useState(false);
+  const [modeDiffusion, setModeDiffusion] = useState(false);
   const shouldLeaveRef = useRef(true);
 
 
@@ -199,7 +201,9 @@ const validerPartie = () => {
     categories: selectedCategorie,
     difficulte: selectedDifficulte,
     pays: selectedPays,
-    testMode
+    testMode,
+    modeEclair,
+    modeDiffusion
   };
 
   const filters = {
@@ -300,55 +304,96 @@ return (
       <div style={{ flex: 1.2, minWidth: 0, maxWidth: "680px", display: "flex", flexDirection: "column", gap: "16px" }}>
         <div className="title2">Paramètres</div>
 
-        <div>
-          <div className="title3">Nombre de rounds</div>
-          <div style={{ display: "flex", alignItems: "center", gap: "180px" }}>
-            <input className="text-input" type="number" min="1" max={filteredCount} value={nbRounds} onChange={e => setNbRounds(+e.target.value)} style={{ maxWidth: 80 }} />
-            <label className="text-input" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}>
-              <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
-              Bonus compositeur
-            </label>
+         <div style={{ display: "flex", gap: "40px", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div className="title3">Nombre de rounds</div>
+            <input
+              className="text-input"
+              type="number"
+              min="1"
+              max={filteredCount}
+              value={nbRounds}
+              onChange={e => setNbRounds(+e.target.value)}
+              style={{ maxWidth: 80 }}
+            />
+            <div
+              style={{
+                fontSize: "0.9rem",
+                marginTop: "4px",
+                color: filteredCount === 0 ? "var(--color-red)" : "var(--color-text)"
+              }}
+            >
+              {filteredCount === 0
+                ? "Aucun morceau disponible avec ces filtres"
+                : `${filteredCount} morceaux disponibles`}
+            </div>
           </div>
-          <div style={{ fontSize: "0.9rem", marginTop: "4px", color: filteredCount === 0 ? "var(--color-red)" : "var(--color-text)" }}>
-            {filteredCount === 0 ? "Aucun morceau disponible avec ces filtres" : `${filteredCount} morceaux disponibles`}
+
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div className="title3" style={{ marginBottom: "5px" }}>Temps par manche</div>
+            <input
+              type="range"
+              min="5"
+              max="60"
+              step="5"
+              value={time}
+              disabled={modeEclair}
+              onChange={e => setTime(+e.target.value)}
+            />
+            <div>{time} secondes</div>
           </div>
         </div>
 
-        <div>
-          <div className="title3" style={{ marginBottom: "5px" }}>Temps par manche</div>
-          <input
-            type="range"
-            min="5"
-            max="60"
-            step="5"
-            value={time}
-            onChange={e => setTime(+e.target.value)}
-          />
-          <div>{time} secondes</div>
+        <div style={{ display: "flex", gap: "20px", marginTop: "10px", flexWrap: "wrap" }}>
+          <label
+            className="text-input"
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}
+          >
+            <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
+            Bonus compositeur
+          </label>
+          <label
+            className="text-input"
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}
+          >
+            <input type="checkbox" checked={modeEclair} onChange={e => setModeEclair(e.target.checked)} />
+            Mode éclair
+          </label>
+          <label
+            className="text-input"
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}
+          >
+            <input type="checkbox" checked={modeDiffusion} onChange={e => setModeDiffusion(e.target.checked)} />
+            Mode diffusion
+          </label>
         </div>
 
-<div>
-  <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
-  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-    <span style={{ color: "#ffffff" }}>De</span>
-    <input
-      type="number"
-      className="text-input"
-      value={anneeMin}
-      onChange={e => setAnneeMin(+e.target.value)}
-      style={{ maxWidth: 50 }}
-    />
-    <span style={{ color: "#ffffff" }}>à</span>
-    <input
-      type="number"
-      className="text-input"
-      value={anneeMax}
-      onChange={e => setAnneeMax(+e.target.value)}
-      style={{ maxWidth: 50 }}
-    />
-  </div>
-</div>
-        {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
+        <div style={{ display: "flex", gap: "40px", flexWrap: "wrap" }}>
+          <div style={{ flex: 1 }}>
+            {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
+          </div>
+          <div>
+            <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ color: "#ffffff" }}>De</span>
+              <input
+                type="number"
+                className="text-input"
+                value={anneeMin}
+                onChange={e => setAnneeMin(+e.target.value)}
+                style={{ maxWidth: 50 }}
+              />
+              <span style={{ color: "#ffffff" }}>à</span>
+              <input
+                type="number"
+                className="text-input"
+                value={anneeMax}
+                onChange={e => setAnneeMax(+e.target.value)}
+                style={{ maxWidth: 50 }}
+              />
+            </div>
+          </div>
+        </div>
         {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
         {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie, "categorie")}
         {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays, "pays")}
