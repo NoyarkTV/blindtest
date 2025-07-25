@@ -432,6 +432,23 @@ app.post("/join-game", (req, res) => {
   res.send({ success: true });
 });
 
+app.post("/leave-game", (req, res) => {
+  const { id, playerName } = req.body;
+  if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
+
+  const before = games[id].players.length;
+  games[id].players = games[id].players.filter(p => p.name !== playerName);
+  if (Array.isArray(games[id].playersReady)) {
+    games[id].playersReady = games[id].playersReady.filter(n => n !== playerName);
+  }
+
+  if (games[id].players.length !== before) {
+    io.to(id).emit("player-left", games[id].players);
+  }
+
+  res.send({ success: true });
+});
+
 app.get("/scores/:id", (req, res) => {
   const { id } = req.params;
   const game = games[id];

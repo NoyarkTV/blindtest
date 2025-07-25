@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import socket from "./socket";
@@ -20,7 +20,7 @@ function ConfigPage() {
   const [copied, setCopied] = useState(false);
   const [sagaTracks, setSagaTracks] = useState([]);
   const [testMode, setTestMode] = useState(false);
-
+  const shouldLeaveRef = useRef(true);
 
 
   const [media, setMedia] = useState(["Animé", "Film", "Série", "Dessin Animé", "Jeux vidéo"]);
@@ -39,39 +39,45 @@ function ConfigPage() {
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem("profilePhoto") || "");
 
 useEffect(() => {
-  socket.emit("join-room", id);
-
-  socket.on("player-joined", (updatedPlayers) => {
-    console.log("🔁 Mise à jour reçue :", updatedPlayers);
-    setPlayers(updatedPlayers);
-  });
-
-  socket.on("game-started", () => {
-    console.log("🚀 Partie lancée !");
-    navigate(`/game/${id}`);
-  });
-
-  return () => {
-    socket.off("player-joined");
-    socket.off("game-started");
+  const handleLeave = () => {
+    if (!shouldLeaveRef.current) return;
+    fetch("https://blindtest-69h7.onrender.com/leave-game", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, playerName }),
+      keepalive: true
+    });
   };
-}, [id, navigate]);
+
+  window.addEventListener("beforeunload", handleLeave);
+  return () => {
+    window.removeEventListener("beforeunload", handleLeave);
+    handleLeave();
+  };
+}, [id, playerName]);
 
   useEffect(() => {
   socket.emit("join-room", id);
 
-  socket.on("player-joined", (updatedPlayers) => {
+  const onJoined = (updatedPlayers) => {
     console.log("🔁 Mise à jour reçue :", updatedPlayers);
     setPlayers(updatedPlayers);
-  });
-  socket.on("game-started", () => {
+  };
+  const onLeft = (updatedPlayers) => setPlayers(updatedPlayers);
+  const onGameStarted = () => {
+    shouldLeaveRef.current = false;
     console.log("🚀 Partie lancée !");
     navigate(`/game/${id}`);
-  });
+  };
+
+  socket.on("player-joined", onJoined);
+  socket.on("player-left", onLeft);
+  socket.on("game-started", onGameStarted);
 
   return () => {
-  socket.off("player-joined");
-  socket.off("game-started");
+    socket.off("player-joined", onJoined);
+    socket.off("player-left", onLeft);
+    socket.off("game-started", onGameStarted);
 };
 }, [id]);
 

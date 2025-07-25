@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import socket from "./socket";
 
@@ -9,29 +9,31 @@ function RoomPage() {
   const [players, setPlayers] = useState([]);
   const playerName = localStorage.getItem("playerName") || "Joueur";
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem("profilePhoto") || "");
+  const shouldLeaveRef = useRef(true);
 
   // 🔁 Rejoindre la room et écouter les événements
 useEffect(() => {
   socket.emit("join-room", id);
 
-  socket.on("player-joined", updatedPlayers => {
-    setPlayers(updatedPlayers);
-  });
-
-  socket.on("player-list", fullList => {
-    setPlayers(fullList);
-  });
-
-  socket.on("game-started", () => {
+  const onJoined = updatedPlayers => setPlayers(updatedPlayers);
+  const onList = fullList => setPlayers(fullList);
+  const onLeft = updatedPlayers => setPlayers(updatedPlayers);
+  const onGameStarted = () => {
     navigate(`/game/${id}`);
-  });
+  };
+
+    socket.on("player-joined", onJoined);
+    socket.on("player-list", onList);
+    socket.on("player-left", onLeft);
+    socket.on("game-started", onGameStarted);
 
   return () => {
-    socket.off("player-joined");
-    socket.off("player-list");
-    socket.off("game-started");
+    socket.off("player-joined", onJoined);
+    socket.off("player-list", onList);
+    socket.off("player-left", onLeft);
+    socket.off("game-started", onGameStarted);
   };
-}, [id]);
+}, [id, navigate]);
 
   // 👤 Ajout du joueur à la partie
 useEffect(() => {
@@ -57,6 +59,24 @@ useEffect(() => {
   });
 }, [id, playerName]);
 
+  // 🚪 Signaler au serveur lorsqu'on quitte la page
+useEffect(() => {
+  const handleLeave = () => {
+    if (!shouldLeaveRef.current) return;
+    fetch("https://blindtest-69h7.onrender.com/leave-game", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, playerName }),
+      keepalive: true
+    });
+  };
+
+  window.addEventListener("beforeunload", handleLeave);
+  return () => {
+    window.removeEventListener("beforeunload", handleLeave);
+    handleLeave();
+  };
+}, [id, playerName]);
 
   if (!game) return <div style={{ color: "white", textAlign: "center" }}>Chargement...</div>;
 
