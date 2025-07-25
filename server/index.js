@@ -622,12 +622,24 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
         };
       })
     });
+
+     // Si tous les joueurs sont prêts et que c'était le dernier round
+    if (
+      game.playersReady.length === game.players.length &&
+      game.currentRound >= game.playlist.length
+    ) {
+      console.log(`🏁 Tous les joueurs prêts pour le dernier round de ${roomId}`);
+      io.to(roomId).emit("game-over", game.scores || []);
     }
-  });
+  }
+});
 
   // Lorsqu'un joueur buzz, pause pour tous
   socket.on("player-buzz", ({ roomId, playerName }) => {
     console.log(`🔔 Buzz de ${playerName} dans la room ${roomId}`);
+    // Envoie l'information du buzzer à tous pour désactiver leurs boutons
+    io.to(roomId).emit("player-buzz", { playerName });
+    // Puis met la musique en pause pour tout le monde
     io.to(roomId).emit("pause-track");
   });
 

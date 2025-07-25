@@ -415,6 +415,7 @@ useEffect(() => {
     const onResume = () => {
         setBuzzedBy(null);
       if (isDiffuser && !roundEndedRef.current) {
+        handlePlay();
         setIsTimerRunning(true);
       }
     };
@@ -906,7 +907,9 @@ const handleNext = () => {
 
 return (
   <div className="app">
-    <SpotifyPlayer token={token} onReady={handleReady} />
+    {isDiffuser && (
+      <SpotifyPlayer token={token} onReady={handleReady} />
+    )}
 
 {/* HEADER GLOBAL */}
 <header style={{
@@ -1048,7 +1051,7 @@ return (
         )}
       </div>
       )}
-      
+
       {/* SCOREBOARD */}
 {Array.isArray(scoreboard) && scoreboard.every(p => typeof p === "object" && typeof p.name === "string") && (
   <div className="scoreboard-popup">
