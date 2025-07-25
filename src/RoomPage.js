@@ -18,8 +18,12 @@ useEffect(() => {
   const onJoined = updatedPlayers => setPlayers(updatedPlayers);
   const onList = fullList => setPlayers(fullList);
   const onLeft = updatedPlayers => setPlayers(updatedPlayers);
-  const onGameStarted = () => {
-    navigate(`/game/${id}`);
+  const onGameStarted = (data) => {
+    if (data?.config?.modeEclair) {
+      navigate(`/game-eclair/${id}`);
+    } else {
+      navigate(`/game/${id}`);
+    }
   };
 
     socket.on("player-joined", onJoined);

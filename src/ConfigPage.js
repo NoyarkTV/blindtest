@@ -66,10 +66,14 @@ useEffect(() => {
     setPlayers(updatedPlayers);
   };
   const onLeft = (updatedPlayers) => setPlayers(updatedPlayers);
-  const onGameStarted = () => {
+  const onGameStarted = (data) => {
     shouldLeaveRef.current = false;
     console.log("🚀 Partie lancée !");
-    navigate(`/game/${id}`);
+    if (data?.config?.modeEclair) {
+      navigate(`/game-eclair/${id}`);
+    } else {
+      navigate(`/game/${id}`);
+    }
   };
 
   socket.on("player-joined", onJoined);
@@ -194,7 +198,7 @@ const validerPartie = () => {
   const params = {
     bonusCompositeur,
     nbRounds,
-    time,
+    time: modeEclair ? 0.5 : time,
     anneeMin,
     anneeMax,
     media: selectedMedia,
@@ -241,7 +245,10 @@ const validerPartie = () => {
         })
       })
         .then(res => res.json())
-        .then(() => navigate(`/game/${id}`))
+        .then(() => {
+          if (modeEclair) navigate(`/game-eclair/${id}`);
+          else navigate(`/game/${id}`);
+        })
         .catch(err => console.error("❌ Erreur lancement partie :", err));
     })
     .catch(err => {

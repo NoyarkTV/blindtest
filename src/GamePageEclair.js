@@ -433,44 +433,9 @@ useEffect(() => {
 useEffect(() => {
   if (timeLeft === 0) {
     setIsTimerRunning(false);
-    roundEndedRef.current = true;
-    setRoundsWon(prev => prev + 1);
-
-    const currentTrack = playlist[currentRound - 1];
-
-    if (!currentTrack) {
-      console.warn("⛔ Aucun morceau trouvé pour le round :", currentRound);
-      return;
-    }
-
-    setPopupInfo({
-      title: "⏱ Temps écoulé",
-      points: "+0 point",
-      theme: currentTrack.theme || "",
-      titre: currentTrack.oeuvre || currentTrack.titre || "",
-      annee: currentTrack.annee || "",
-      compositeur: currentTrack.compositeur || "",
-      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-    });
     handlePause();
-    setShowPopup(true);
-    socket.emit("player-ready", {
-      roomId: id,
-      playerName,
-      previousScore: score,
-      responseTime: "-"
-    });
   }
 }, [timeLeft]);
-
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === "Space" && !isBuzzed) handleBuzz();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isBuzzed]);
 
 useEffect(() => {
   socket.on("score-update", (updatedScores) => {
@@ -502,10 +467,10 @@ useEffect(() => {
 }, [params]);
 
 useEffect(() => {
-  if (isBuzzed && answerInputRef.current) {
+  if (answerInputRef.current) {
     answerInputRef.current.focus();
   }
-}, [isBuzzed]);
+}, [currentRound]);
 
 const setVolume = (percent) => {
   if (!deviceId || percent < 0 || percent > 100) return;
@@ -552,14 +517,6 @@ useEffect(() => {
   return () => socket.off("players-ready-update");
 }, []);
 
-const handleBuzz = () => {
-    pausedTimeRef.current = timeLeftRef.current;
-    clearInterval(intervalRef.current);
-    setIsTimerRunning(false);
-    setIsBuzzed(true);
-    handlePause().catch(err => console.error("Erreur pause :", err));
-};
-
 const normalize = str =>
   str
     .normalize("NFD")
@@ -588,9 +545,7 @@ const levenshtein = (a, b) => {
 };
 
 const handleValidate = () => {
-  setIsBuzzed(false);
   const currentTrack = playlist[currentRound - 1];
-  const timer = params.time ?? 30;
   const bonusCompositeur = params.bonusCompositeur ?? false;
 
   const normalizedAnswer = normalize(answer);
@@ -599,165 +554,69 @@ const handleValidate = () => {
     valid === normalizedAnswer || levenshtein(valid, normalizedAnswer) <= 2
   );
 
-  // 🎼 Bonus compositeur
-  let bonus = 0;
-  let bonusText = "";
-  let isComposerMatch = false;
+ let composerMatch = false;
 
   if (bonusCompositeur && currentTrack.compositeur) {
     const guessList = composerGuess.toLowerCase().split(",").map(s => s.trim());
-    const realComposers = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
-
-    isComposerMatch = guessList.some(g => {
+    const real = currentTrack.compositeur.toLowerCase().split(",").map(s => s.trim());
+    composerMatch = guessList.some(g => {
       const gNorm = normalize(g);
-      return realComposers.some(r => {
-        const rNorm = normalize(r);
-        return levenshtein(gNorm, rNorm) <= 2;
-      });
+      return real.some(r => levenshtein(gNorm, normalize(r)) <= 2);
     });
-
-    if (isComposerMatch) {
-      bonus = 20;
-      bonusText = " (+20 bonus compositeur)";
-    }
   }
 
-  // 🟢 Cas 1 : Titre correct (comme avant)
-  if (isCorrect) {
-    const rawTimeLeft = pausedTimeRef.current;
-    const responseTime = (params.time ?? 30) - rawTimeLeft;
-    responseTimesRef.current.push(responseTime.toFixed(1));
-    let multiplier = 1;
+  let points = 0;
+  if (isCorrect && composerMatch) points = 100;
+  else if (isCorrect) points = 75;
+  else if (composerMatch) points = 25;
 
-    if (showIndiceMedia && showIndiceAnnee) {
-      multiplier = 0.6;
-    } else if (showIndiceMedia || showIndiceAnnee) {
-      multiplier = 0.8;
-    }
+  const updatedScore = score + points;
+  setScore(updatedScore);
+  setScoreboard(prev =>
+    prev.map(p =>
+      p.name === playerName ? { ...p, score: updatedScore } : p
+    )
+  );
 
-    const base = ((rawTimeLeft / timer) * 100 * multiplier) - (wrongAttemptsRef.current * 20);
-    const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
+  fetch("https://blindtest-69h7.onrender.com/submit-score", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, player: playerName, score: updatedScore })
+  }).catch(err => console.error("❌ Erreur lors de l'envoi du score :", err));
 
-    const updatedScore = score + totalPoints;
-    setScore(updatedScore);
-    setScoreboard(prev =>
-      prev.map(p =>
-        p.name === playerName
-          ? { ...p, score: updatedScore }
-          : p
-      )
-    );
+  setPopupInfo({
+    title: isCorrect ? "Bonne r\u00e9ponse" : composerMatch ? "Compositeur correct" : "Mauvaise r\u00e9ponse",
+    points: `+${points} points`,
+    theme: currentTrack.theme || "",
+    titre: currentTrack.oeuvre || currentTrack.titre || "",
+    annee: currentTrack.annee || "",
+    compositeur: currentTrack.compositeur || "",
+    image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+  });
 
-    fetch("https://blindtest-69h7.onrender.com/submit-score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: id,
-        player: playerName,
-        score: updatedScore
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log("✅ Score soumis au serveur :", data);
-      })
-      .catch(err => {
-        console.error("❌ Erreur lors de l'envoi du score :", err);
-      });
+  roundEndedRef.current = true;
+  setShowPopup(true);
+  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-" });
+  setAnswer("");
+  setComposerGuess("");
+};
 
-    setTimeLeft(null);
-    setShowPopup(true);
-    socket.emit("player-ready", {
-      roomId: id,
-      playerName,
-      previousScore: score, // score AVANT ajout
-      responseTime: responseTime.toFixed(1)
-    });
-    setPopupInfo({
-      title: "Bonne réponse",
-      points: `+${totalPoints} points${bonusText}`,
-      responseTime: `${responseTime.toFixed(1)} sec`,
-      theme: currentTrack.theme || "",
-      titre: currentTrack.oeuvre || currentTrack.titre || "",
-      annee: currentTrack.annee || "",
-      compositeur: currentTrack.compositeur || "",
-      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-    });
-    roundEndedRef.current = true;
-    setRoundsWon(prev => prev + 1);
-    setAnswer("");
-    setComposerGuess("");
-  }
-
-  // 🟢 Cas 2 : Compositeur seul correct
-  else if (isComposerMatch) {
-    const updatedScore = score + bonus;
-    setScore(updatedScore);
-    setScoreboard(prev =>
-      prev.map(p =>
-        p.name === playerName
-          ? { ...p, score: updatedScore }
-          : p
-      )
-    );
-
-    fetch("https://blindtest-69h7.onrender.com/submit-score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: id,
-        player: playerName,
-        score: updatedScore
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log("✅ Score soumis au serveur (bonus compositeur seul) :", data);
-      })
-      .catch(err => {
-        console.error("❌ Erreur lors de l'envoi du score (bonus compo seul) :", err);
-      });
-
-    setTimeLeft(null);
-    setShowPopup(true);
-    socket.emit("player-ready", {
-      roomId: id,
-      playerName,
-      previousScore: score,
-      responseTime: "-"
-    });
-
-    setPopupInfo({
-      title: "Bonne réponse compositeur",
-      points: `+${bonus} points (compositeur seul)`,
-      responseTime: "-",
-      theme: currentTrack.theme || "",
-      titre: currentTrack.oeuvre || currentTrack.titre || "",
-      annee: currentTrack.annee || "",
-      compositeur: currentTrack.compositeur || "",
-      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-    });
-    roundEndedRef.current = true;
-    setAnswer("");
-    setComposerGuess("");
-  }
-
-// 🔴 Cas 3 : Mauvaise réponse
-else {
-    wrongAttemptsRef.current = (wrongAttemptsRef.current || 0) + 1;
-    console.log("❌ Mauvaise réponse - tentatives :", wrongAttemptsRef.current);
-    basePointsRef.current = Math.max(0, basePointsRef.current - 20);
-
-    setIsWrongAnswer(true);
-    setTimeout(() => {
-    setIsWrongAnswer(false);
-    setAnswer("");
-    setComposerGuess("");
-  }, 600);
-
-handlePlay();
-setIsTimerRunning(true);
-}
+const handleAbandon = () => {
+  const currentTrack = playlist[currentRound - 1];
+  setPopupInfo({
+    title: "Abandon",
+    points: "+0 point",
+    theme: currentTrack.theme || "",
+    titre: currentTrack.oeuvre || currentTrack.titre || "",
+    annee: currentTrack.annee || "",
+    compositeur: currentTrack.compositeur || "",
+    image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+  });
+  roundEndedRef.current = true;
+  setShowPopup(true);
+  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-" });
+  setAnswer("");
+  setComposerGuess("");
 };
 
 
@@ -777,8 +636,8 @@ setIsTimerRunning(true);
   wrongAttemptsRef.current = 0;
   basePointsRef.current = 100;
 
-  // Reset buzz éventuel
-  setIsBuzzed(false);
+  // Les champs de réponse doivent rester affichés
+  setIsBuzzed(true);
   setAnswer("");
   setComposerGuess("");
 
@@ -909,57 +768,47 @@ return (
 })}
       </div>
 
-      {/* BUZZER ou CHAMP RÉPONSE */}
+      {/* CHAMPS RÉPONSE */}
       <div style={{ marginBottom: 30 }}>
-        {!isBuzzed ? (
-          <button className="buzz-button" onClick={handleBuzz}>BUZZ</button>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <input
+            key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
+            type="text"
+            placeholder="Votre réponse"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleValidate()}
+            ref={answerInputRef}
+            className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
+            style={{ width: 300 }}
+          />
+          {bonusCompositeur && (
             <input
               key={isWrongAnswer ? "wrong" : "normal"}
               type="text"
-              placeholder="Votre réponse"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleValidate()}
-              ref={answerInputRef}
+              placeholder="Compositeur (facultatif)"
+              value={composerGuess}
+              onChange={(e) => setComposerGuess(e.target.value)}
               className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
               style={{ width: 300 }}
             />
-            {bonusCompositeur && (
-              <input
-                key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
-                type="text"
-                placeholder="Compositeur (facultatif)"
-                value={composerGuess}
-                onChange={(e) => setComposerGuess(e.target.value)}
-                className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
-                style={{ width: 300 }}
-              />
             )}
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                className="btn btn-confirm"
-                onClick={handleValidate}
-                disabled={!answer && (!bonusCompositeur || !composerGuess)}
-              >
-                Valider
-              </button>
-              <button
-                className="btn btn-cancel"
-                onClick={() => {
-                  setIsBuzzed(false);
-                  setAnswer("");
-                  setComposerGuess("");
-                  setIsTimerRunning(true);
-                  handlePlay();
-                }}
-              >
-                Annuler
-              </button>
-            </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              className="btn btn-confirm"
+              onClick={handleValidate}
+              disabled={!answer && (!bonusCompositeur || !composerGuess)}
+            >
+              Valider
+            </button>
+            <button
+              className="btn btn-cancel"
+              onClick={handleAbandon}
+            >
+              Abandonner
+            </button>
           </div>
-        )}
+          </div>
       </div>
 
       {/* SCOREBOARD */}
@@ -1288,4 +1137,4 @@ return (
     </div>
   );
 }
-export default GamePage;
+export default GamePageEclair;
