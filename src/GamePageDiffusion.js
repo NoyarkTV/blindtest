@@ -402,10 +402,16 @@ useEffect(() => {
 
   useEffect(() => {
     socket.on("pause-track", () => {
+        pausedTimeRef.current = timeLeftRef.current;
+      clearInterval(intervalRef.current);
+      setIsTimerRunning(false);
       handlePause();
     });
     socket.on("resume-track", () => {
       handlePlay();
+      if (!roundEndedRef.current) {
+        setIsTimerRunning(true);
+      }
     });
     return () => {
       socket.off("pause-track");
@@ -735,6 +741,7 @@ const handleValidate = () => {
     setRoundsWon(prev => prev + 1);
     setAnswer("");
     setComposerGuess("");
+    socket.emit("resume-track", { roomId: id });
   }
 
   // 🟢 Cas 2 : Compositeur seul correct
@@ -788,6 +795,7 @@ const handleValidate = () => {
     roundEndedRef.current = true;
     setAnswer("");
     setComposerGuess("");
+    socket.emit("resume-track", { roomId: id });
   }
 
 // 🔴 Cas 3 : Mauvaise réponse
@@ -805,6 +813,7 @@ else {
 
 handlePlay();
 setIsTimerRunning(true);
+socket.emit("resume-track", { roomId: id });
 }
 };
 
@@ -1007,6 +1016,7 @@ return (
                   setComposerGuess("");
                   setIsTimerRunning(true);
                   handlePlay();
+                  socket.emit("resume-track", { roomId: id });
                 }}
               >
                 Annuler

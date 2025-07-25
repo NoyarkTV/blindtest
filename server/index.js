@@ -614,8 +614,20 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
         };
       })
     });
-  }
-});
+    }
+  });
+
+  // Lorsqu'un joueur buzz, pause pour tous
+  socket.on("player-buzz", ({ roomId, playerName }) => {
+    console.log(`🔔 Buzz de ${playerName} dans la room ${roomId}`);
+    io.to(roomId).emit("pause-track");
+  });
+
+  // Reprise de la musique
+  socket.on("resume-track", ({ roomId }) => {
+    console.log(`▶️ Reprise demandée pour la room ${roomId}`);
+    io.to(roomId).emit("resume-track");
+  });
 });
 
 
