@@ -313,7 +313,25 @@ useEffect(() => {
   });
 }, [playlist]);
 
+const handlePause = () => {
+  if (!isDiffuser) return Promise.resolve();
+  return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(() => setIsPlaying(false))
+    .catch(err => console.error("Erreur pause:", err));
+};
 
+const handlePlay = () => {
+  if (!isDiffuser) return;
+  fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(() => setIsPlaying(true))
+    .catch(err => console.error("Erreur reprise lecture :", err));
+};
 
 useEffect(() => {
   if (!deviceId || playlist.length === 0) return;
@@ -821,23 +839,6 @@ setIsTimerRunning(true);
     });
   }
   };
-
-
-  const handlePause = () => {
-  if (!isDiffuser) return Promise.resolve();
-  return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-    method: "PUT",
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(() => setIsPlaying(false)).catch(err => console.error("Erreur pause:", err));
-};
-
-  const handlePlay = () => {
-  if (!isDiffuser) return;
-  fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-    method: "PUT",
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(() => setIsPlaying(true)).catch(err => console.error("Erreur reprise lecture :", err));
-};
 
 const handleNext = () => {
   
