@@ -336,7 +336,7 @@ return (
       className="text-input"
       value={anneeMin}
       onChange={e => setAnneeMin(+e.target.value)}
-      style={{ maxWidth: 80 }}
+      style={{ maxWidth: 50 }}
     />
     <span style={{ color: "#ffffff" }}>à</span>
     <input
@@ -344,14 +344,13 @@ return (
       className="text-input"
       value={anneeMax}
       onChange={e => setAnneeMax(+e.target.value)}
-      style={{ maxWidth: 80 }}
+      style={{ maxWidth: 50 }}
     />
   </div>
 </div>
-
+        {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
         {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
         {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie, "categorie")}
-        {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
         {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays, "pays")}
       </div>
 
