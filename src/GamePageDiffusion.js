@@ -8,6 +8,8 @@ function GamePageDiffusion() {
   const navigate = useNavigate();
   const [playlist, setPlaylist] = useState([]);
   const [params, setParams] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingError, setLoadingError] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
   const [deviceId, setDeviceId] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("spotify_token"));
@@ -164,6 +166,8 @@ const playCurrentTrack = async (devId) => {
     const playerName = localStorage.getItem("playerName");
     setPlayerName(playerName);
 
+    setLoading(true);
+    setLoadingError(false);
     fetch(`https://blindtest-69h7.onrender.com/game-info/${id}`)
       .then(res => res.json())
       .then(data => {
@@ -176,10 +180,12 @@ const playCurrentTrack = async (devId) => {
         }
         setCurrentRound(data.currentRound || 1);
         console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", playerName);
+        setLoading(false);
       })
       .catch(err => {
         console.error("Erreur de récupération des infos de la partie :", err);
-        navigate("/");
+        setLoading(false);
+        setLoadingError(true);
       });
   }, [id, navigate]);
 
@@ -842,8 +848,28 @@ const handleNext = () => {
   
 };
 
-  if (!params || playlist.length === 0 ) {
-    return <div>Chargement en cours...</div>;
+  if (loading) {
+    return (
+      <div className="app" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        Chargement en cours...
+      </div>
+    );
+  }
+
+  if (loadingError) {
+    return (
+      <div className="app" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        Erreur de chargement
+      </div>
+    );
+  }
+
+  if (!params || playlist.length === 0) {
+    return (
+      <div className="app" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        Chargement en cours...
+      </div>
+    );
   }
 
   const timer = params.time ?? 30;
