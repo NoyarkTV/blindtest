@@ -19,7 +19,9 @@ useEffect(() => {
   const onList = fullList => setPlayers(fullList);
   const onLeft = updatedPlayers => setPlayers(updatedPlayers);
   const onGameStarted = (data) => {
-    if (data?.config?.modeEclair) {
+    if (data?.config?.modeDiffusion) {
+      navigate(`/game-diffusion/${id}`);
+    } else if (data?.config?.modeEclair) {
       navigate(`/game-eclair/${id}`);
     } else {
       navigate(`/game/${id}`);

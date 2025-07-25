@@ -69,7 +69,9 @@ useEffect(() => {
   const onGameStarted = (data) => {
     shouldLeaveRef.current = false;
     console.log("🚀 Partie lancée !");
-    if (data?.config?.modeEclair) {
+    if (data?.config?.modeDiffusion) {
+      navigate(`/game-diffusion/${id}`);
+    } else if (data?.config?.modeEclair) {
       navigate(`/game-eclair/${id}`);
     } else {
       navigate(`/game/${id}`);
@@ -246,8 +248,13 @@ const validerPartie = () => {
       })
         .then(res => res.json())
         .then(() => {
-          if (modeEclair) navigate(`/game-eclair/${id}`);
-          else navigate(`/game/${id}`);
+          if (modeDiffusion) {
+            navigate(`/game-diffusion/${id}`);
+          } else if (modeEclair) {
+            navigate(`/game-eclair/${id}`);
+          } else {
+            navigate(`/game/${id}`);
+          }
         })
         .catch(err => console.error("❌ Erreur lancement partie :", err));
     })
@@ -271,18 +278,13 @@ const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
     </div>
     <div className={`checkbox-group ${cssClass}`} style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
       {list.map((item) => (
-        <label
+        <div
           key={item}
           className={`checkbox-tag ${selected.includes(item) ? "selected-orange" : ""}`}
-          style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          onClick={() => toggleSelection(item, selected, setter)}
         >
-          <input
-            type="checkbox"
-            checked={selected.includes(item)}
-            onChange={() => toggleSelection(item, selected, setter)}
-          />
           {item}
-        </label>
+        </div>
       ))}
     </div>
   </div>
@@ -352,30 +354,27 @@ return (
         </div>
 
         <div style={{ display: "flex", gap: "20px", marginTop: "10px", flexWrap: "wrap" }}>
-          <label
-            className="text-input"
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}
+          <div
+            className={`checkbox-tag ${bonusCompositeur ? "selected-orange" : ""}`}
+            onClick={() => setBonusCompositeur(!bonusCompositeur)}
           >
-            <input type="checkbox" checked={bonusCompositeur} onChange={e => setBonusCompositeur(e.target.checked)} />
             Bonus compositeur
-          </label>
-          <label
-            className="text-input"
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}
+          </div>
+          <div
+            className={`checkbox-tag ${modeEclair ? "selected-orange" : ""}`}
+            onClick={() => setModeEclair(!modeEclair)}
           >
-            <input type="checkbox" checked={modeEclair} onChange={e => setModeEclair(e.target.checked)} />
             Mode éclair
-          </label>
-          <label
-            className="text-input"
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", width: "fit-content", background: "transparent" }}
+          </div>
+          <div
+            className={`checkbox-tag ${modeDiffusion ? "selected-orange" : ""}`}
+            onClick={() => setModeDiffusion(!modeDiffusion)}
           >
-            <input type="checkbox" checked={modeDiffusion} onChange={e => setModeDiffusion(e.target.checked)} />
             Mode diffusion
-          </label>
+          </div>
         </div>
 
-        <div style={{ display: "flex", gap: "40px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "40px", flexWrap: "wrap", alignItems: "flex-start" }}>
           <div style={{ flex: 1 }}>
             {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
           </div>
