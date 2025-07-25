@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
 
-function GamePage() {
+function GamePageEclair() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [playlist, setPlaylist] = useState([]);
@@ -15,7 +15,7 @@ function GamePage() {
   const [playerName, setPlayerName] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
-  const [isBuzzed, setIsBuzzed] = useState(false);
+  const [isBuzzed, setIsBuzzed] = useState(true);
   const [answer, setAnswer] = useState("");
   const [composer, setComposer] = useState("");
   const [composerGuess, setComposerGuess] = useState("");
@@ -339,7 +339,7 @@ useEffect(() => {
 
 useEffect(() => {
   setShowPopup(false);
-  setIsBuzzed(false); // facultatif : réinitialiser le buzz
+  setIsBuzzed(true); // mode éclair : champs de réponse toujours visibles
 }, [currentRound]);
 
 useEffect(() => {
@@ -360,7 +360,7 @@ useEffect(() => {
   if (deviceId && playlist.length > 0 && !isPlaying && !isBuzzed) {
     playCurrentTrack(deviceId);
   }
-}, [deviceId, playlist]);
+}, [deviceId, playlist, isPlaying]);
 
   useEffect(() => {
     socket.on("round-updated", ({ newRound }) => {
