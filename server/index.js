@@ -648,6 +648,20 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
     console.log(`▶️ Reprise demandée pour la room ${roomId}`);
     io.to(roomId).emit("resume-track");
   });
+  
+  // Temps restant envoyé par le diffuseur après un buzz
+  socket.on("buzz-time", ({ roomId, timeLeft }) => {
+    if (!roomId) return;
+    console.log(`⏲️ Temps restant reçu du diffuseur pour ${roomId} : ${timeLeft}`);
+    io.to(roomId).emit("buzz-time", { timeLeft });
+  });
+
+  // Fin automatique du round (timer à 0)
+  socket.on("timer-ended", ({ roomId }) => {
+    if (!roomId) return;
+    console.log(`⏱️ Timer écoulé pour room ${roomId}`);
+    io.to(roomId).emit("round-ended");
+  });
 });
 
 

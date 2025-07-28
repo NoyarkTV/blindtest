@@ -410,6 +410,7 @@ useEffect(() => {
         pausedTimeRef.current = timeLeftRef.current;
         clearInterval(intervalRef.current);
         setIsTimerRunning(false);
+        socket.emit("buzz-time", { roomId: id, timeLeft: pausedTimeRef.current });
       }
     };
     const onResume = () => {
@@ -501,6 +502,10 @@ useEffect(() => {
     roundEndedRef.current = true;
     setRoundsWon(prev => prev + 1);
 
+    if (isDiffuser) {
+      socket.emit("timer-ended", { roomId: id });
+    }
+
     const currentTrack = playlist[currentRound - 1];
 
     if (!currentTrack) {
@@ -556,6 +561,40 @@ useEffect(() => {
   return () => socket.off("score-update");
 }, []);
 
+// Mise à jour du temps de buzz et fin automatique du round
+useEffect(() => {
+  const onBuzzTime = ({ timeLeft }) => {
+    pausedTimeRef.current = timeLeft;
+    setTimeLeft(timeLeft);
+  };
+
+  const onRoundEnded = () => {
+    if (roundEndedRef.current) return;
+    const currentTrack = playlistRef.current[currentRound - 1];
+    if (!currentTrack) return;
+    setIsTimerRunning(false);
+    roundEndedRef.current = true;
+    setRoundsWon(prev => prev + 1);
+    setPopupInfo({
+      title: "⏱ Temps écoulé",
+      points: "+0 point",
+      theme: currentTrack.theme || "",
+      titre: currentTrack.oeuvre || currentTrack.titre || "",
+      annee: currentTrack.annee || "",
+      compositeur: currentTrack.compositeur || "",
+      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+    });
+    setShowPopup(true);
+    socket.emit("player-ready", { roomId: id, playerName: playerNameRef.current, previousScore: scoreRef.current, responseTime: "-" });
+  };
+
+  socket.on("buzz-time", onBuzzTime);
+  socket.on("round-ended", onRoundEnded);
+  return () => {
+    socket.off("buzz-time", onBuzzTime);
+    socket.off("round-ended", onRoundEnded);
+  };
+}, []);
 
 
     useEffect(() => {
@@ -694,6 +733,7 @@ const handleValidate = () => {
 
   // 🟢 Cas 1 : Titre correct (comme avant)
   if (isCorrect) {
+
     const rawTimeLeft = pausedTimeRef.current;
     const responseTime = (params.time ?? 30) - rawTimeLeft;
     responseTimesRef.current.push(responseTime.toFixed(1));
@@ -762,6 +802,7 @@ const handleValidate = () => {
 
   // 🟢 Cas 2 : Compositeur seul correct
   else if (isComposerMatch) {
+    
     const updatedScore = score + bonus;
     setScore(updatedScore);
     setScoreboard(prev =>
