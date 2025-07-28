@@ -497,7 +497,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (timeLeft === 0) {
+  if (timeLeft <= 0) {
     setIsTimerRunning(false);
     roundEndedRef.current = true;
     setRoundsWon(prev => prev + 1);
@@ -947,6 +947,7 @@ else {
 
   // Pause d'abord pour forcer une vraie relecture propre
   if (isDiffuser) {
+    setShowPopup(false);
     handlePause().finally(() => {
       setTimeout(() => {
         playCurrentTrack(deviceId);
