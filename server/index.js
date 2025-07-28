@@ -623,6 +623,10 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
       })
     });
 
+    if (game.playersReady.length === game.players.length) {
+      io.to(roomId).emit("all-ready");
+    }
+    
      // Si tous les joueurs sont prêts et que c'était le dernier round
     if (
       game.playersReady.length === game.players.length &&

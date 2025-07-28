@@ -70,7 +70,7 @@ useEffect(() => {
     shouldLeaveRef.current = false;
     console.log("🚀 Partie lancée !");
     if (data?.config?.modeDiffusion) {
-      navigate(`/game-diffusion/${id}?diffuser=1`);
+      navigate(`/diffuseur/${id}`);
     } else if (data?.config?.modeEclair) {
       navigate(`/game-eclair/${id}`);
     } else {
@@ -249,7 +249,7 @@ const validerPartie = () => {
         .then(res => res.json())
         .then(() => {
           if (modeDiffusion) {
-            navigate(`/game-diffusion/${id}?diffuser=1`);
+            navigate(`/diffuseur/${id}`);
           } else if (modeEclair) {
             navigate(`/game-eclair/${id}`);
           } else {
