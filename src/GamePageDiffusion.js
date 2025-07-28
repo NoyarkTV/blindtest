@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
 
 function GamePageDiffusion() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { search } = useLocation();
   const [playlist, setPlaylist] = useState([]);
   const [params, setParams] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,7 @@ function GamePageDiffusion() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerName, setPlayerName] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isDiffuser, setIsDiffuser] = useState(false);
+  const isDiffuser = false;
   const [timeLeft, setTimeLeft] = useState(null);
   const [isBuzzed, setIsBuzzed] = useState(false);
   const [buzzedBy, setBuzzedBy] = useState(null);
@@ -177,10 +176,6 @@ const playCurrentTrack = async (devId) => {
         setPlaylist(data.playlist || []);
         setParams(data.params || {});
         setIsAdmin(data.params?.admin === playerName);
-        if (data.params?.modeDiffusion) {
-          const diffParam = new URLSearchParams(search).get("diffuser");
-          setIsDiffuser(diffParam === "1");
-        }
         setCurrentRound(data.currentRound || 1);
         console.log("🧠 Admin attendu :", data.params?.admin, "| Toi :", playerName);
         setLoading(false);
@@ -190,7 +185,7 @@ const playCurrentTrack = async (devId) => {
         setLoading(false);
         setLoadingError(true);
       });
-  }, [id, navigate, search]);
+  }, [id, navigate]);
 
   useEffect(() => {
     if (!playerName || !id) return;
@@ -410,7 +405,6 @@ useEffect(() => {
         pausedTimeRef.current = timeLeftRef.current;
         clearInterval(intervalRef.current);
         setIsTimerRunning(false);
-        socket.emit("buzz-time", { roomId: id, timeLeft: pausedTimeRef.current });
       }
     };
     const onResume = () => {
@@ -497,14 +491,10 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (timeLeft <= 0) {
+  if (timeLeft === 0) {
     setIsTimerRunning(false);
     roundEndedRef.current = true;
     setRoundsWon(prev => prev + 1);
-
-    if (isDiffuser) {
-      socket.emit("timer-ended", { roomId: id });
-    }
 
     const currentTrack = playlist[currentRound - 1];
 
@@ -513,37 +503,23 @@ useEffect(() => {
       return;
     }
 
-    if (isDiffuser) {
-      setPopupInfo({
-        title: "La bonne réponse était",
-        points: null,
-        theme: currentTrack.theme || "",
-        titre: currentTrack.oeuvre || currentTrack.titre || "",
-        annee: currentTrack.annee || "",
-        compositeur: currentTrack.compositeur || "",
-        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-      });
-    } else {
-      setPopupInfo({
-        title: "⏱ Temps écoulé",
-        points: "+0 point",
-        theme: currentTrack.theme || "",
-        titre: currentTrack.oeuvre || currentTrack.titre || "",
-        annee: currentTrack.annee || "",
-        compositeur: currentTrack.compositeur || "",
-        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-      });
-    }
+    setPopupInfo({
+      title: "⏱ Temps écoulé",
+      points: "+0 point",
+      theme: currentTrack.theme || "",
+      titre: currentTrack.oeuvre || currentTrack.titre || "",
+      annee: currentTrack.annee || "",
+      compositeur: currentTrack.compositeur || "",
+      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+    });
     handlePause();
     setShowPopup(true);
-    if (!isDiffuser) {
-      socket.emit("player-ready", {
-        roomId: id,
-        playerName,
-        previousScore: score,
-        responseTime: "-"
-      });
-    }
+    socket.emit("player-ready", {
+      roomId: id,
+      playerName,
+      previousScore: score,
+      responseTime: "-"
+    });
   }
 }, [timeLeft]);
 
@@ -575,55 +551,6 @@ useEffect(() => {
   return () => socket.off("score-update");
 }, []);
 
-// Mise à jour du temps de buzz et fin automatique du round
-useEffect(() => {
-  const onBuzzTime = ({ timeLeft }) => {
-    pausedTimeRef.current = timeLeft;
-    setTimeLeft(timeLeft);
-  };
-
-  const onRoundEnded = () => {
-    if (roundEndedRef.current) return;
-    const currentTrack = playlistRef.current[currentRound - 1];
-    if (!currentTrack) return;
-    setIsTimerRunning(false);
-    roundEndedRef.current = true;
-    setRoundsWon(prev => prev + 1);
-
-    if (isDiffuser) {
-      setPopupInfo({
-        title: "La bonne réponse était",
-        points: null,
-        theme: currentTrack.theme || "",
-        titre: currentTrack.oeuvre || currentTrack.titre || "",
-        annee: currentTrack.annee || "",
-        compositeur: currentTrack.compositeur || "",
-        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-      });
-    } else {
-      setPopupInfo({
-        title: "⏱ Temps écoulé",
-        points: "+0 point",
-        theme: currentTrack.theme || "",
-        titre: currentTrack.oeuvre || currentTrack.titre || "",
-        annee: currentTrack.annee || "",
-        compositeur: currentTrack.compositeur || "",
-        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-      });
-    }
-    setShowPopup(true);
-    if (!isDiffuser) {
-      socket.emit("player-ready", { roomId: id, playerName: playerNameRef.current, previousScore: scoreRef.current, responseTime: "-" });
-    }
-    };
-
-  socket.on("buzz-time", onBuzzTime);
-  socket.on("round-ended", onRoundEnded);
-  return () => {
-    socket.off("buzz-time", onBuzzTime);
-    socket.off("round-ended", onRoundEnded);
-  };
-}, []);
 
 
     useEffect(() => {
@@ -684,28 +611,6 @@ useEffect(() => {
   });
   return () => socket.off("players-ready-update");
 }, []);
-
-// Affiche le popup côté diffuseur si tous les joueurs sont prêts
-useEffect(() => {
-  if (!isDiffuser) return;
-  if (roundEndedRef.current) return;
-  if (players.length > 0 && playersReady === players.length && timeLeft > 0) {
-    const currentTrack = playlist[currentRound - 1];
-    if (!currentTrack) return;
-    setIsTimerRunning(false);
-    roundEndedRef.current = true;
-    setPopupInfo({
-      title: "La bonne réponse était",
-      points: null,
-      theme: currentTrack.theme || "",
-      titre: currentTrack.oeuvre || currentTrack.titre || "",
-      annee: currentTrack.annee || "",
-      compositeur: currentTrack.compositeur || "",
-      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-    });
-    setShowPopup(true);
-  }
-}, [playersReady, players, isDiffuser, timeLeft]);
 
 const handleBuzz = () => {
     pausedTimeRef.current = timeLeftRef.current;
@@ -784,7 +689,6 @@ const handleValidate = () => {
 
   // 🟢 Cas 1 : Titre correct (comme avant)
   if (isCorrect) {
-
     const rawTimeLeft = pausedTimeRef.current;
     const responseTime = (params.time ?? 30) - rawTimeLeft;
     responseTimesRef.current.push(responseTime.toFixed(1));
@@ -853,7 +757,6 @@ const handleValidate = () => {
 
   // 🟢 Cas 2 : Compositeur seul correct
   else if (isComposerMatch) {
-    
     const updatedScore = score + bonus;
     setScore(updatedScore);
     setScoreboard(prev =>
@@ -947,7 +850,6 @@ else {
 
   // Pause d'abord pour forcer une vraie relecture propre
   if (isDiffuser) {
-    setShowPopup(false);
     handlePause().finally(() => {
       setTimeout(() => {
         playCurrentTrack(deviceId);
@@ -1060,7 +962,6 @@ return (
   )}
 
       {/* INDICES */}
-       {!isDiffuser && (
       <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 40, flexWrap: "wrap" }}>
 {["media", "annee"].map((type, i) => {
   const visible = type === "media" ? showIndiceMedia : showIndiceAnnee;
@@ -1083,7 +984,6 @@ return (
   );
 })}
       </div>
-      )}
 
       {/* BUZZER ou CHAMP RÉPONSE */}
       {!isDiffuser && (
@@ -1210,11 +1110,9 @@ return (
     <div className="popup-rep">
       <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
 
-      {popupInfo.points && (
       <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
         {popupInfo.points}
       </h1>
-      )}
 
       {popupInfo.responseTime && (
         <p style={{ fontSize: 16, color: "#ccc", marginBottom: 6 }}>
@@ -1343,21 +1241,19 @@ return (
       </div>
 
       {/* ✅ Bouton ou attente admin */}
-{!isDiffuser && (
-        isAdmin ? (
-          <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
-            Round suivant ({playersReady} / {players.length})
-          </button>
-        ) : (
-          <div className="btn btn-cancel" style={{
-            pointerEvents: "none",
-            background: "transparent",
-            color: "#aaa",
-            cursor: "default"
-          }}>
-            En attente de l’admin ({playersReady} / {players.length})
-          </div>
-        )
+{isAdmin ? (
+        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
+          Round suivant ({playersReady} / {players.length})
+        </button>
+      ) : (
+        <div className="btn btn-cancel" style={{
+          pointerEvents: "none",
+          background: "transparent",
+          color: "#aaa",
+          cursor: "default"
+        }}>
+          En attente de l’admin ({playersReady} / {players.length})
+        </div>
       )}
     </div>
   </div>
