@@ -513,23 +513,37 @@ useEffect(() => {
       return;
     }
 
-    setPopupInfo({
-      title: "⏱ Temps écoulé",
-      points: "+0 point",
-      theme: currentTrack.theme || "",
-      titre: currentTrack.oeuvre || currentTrack.titre || "",
-      annee: currentTrack.annee || "",
-      compositeur: currentTrack.compositeur || "",
-      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-    });
+    if (isDiffuser) {
+      setPopupInfo({
+        title: "La bonne réponse était",
+        points: null,
+        theme: currentTrack.theme || "",
+        titre: currentTrack.oeuvre || currentTrack.titre || "",
+        annee: currentTrack.annee || "",
+        compositeur: currentTrack.compositeur || "",
+        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+      });
+    } else {
+      setPopupInfo({
+        title: "⏱ Temps écoulé",
+        points: "+0 point",
+        theme: currentTrack.theme || "",
+        titre: currentTrack.oeuvre || currentTrack.titre || "",
+        annee: currentTrack.annee || "",
+        compositeur: currentTrack.compositeur || "",
+        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+      });
+    }
     handlePause();
     setShowPopup(true);
-    socket.emit("player-ready", {
-      roomId: id,
-      playerName,
-      previousScore: score,
-      responseTime: "-"
-    });
+    if (!isDiffuser) {
+      socket.emit("player-ready", {
+        roomId: id,
+        playerName,
+        previousScore: score,
+        responseTime: "-"
+      });
+    }
   }
 }, [timeLeft]);
 
@@ -575,18 +589,33 @@ useEffect(() => {
     setIsTimerRunning(false);
     roundEndedRef.current = true;
     setRoundsWon(prev => prev + 1);
-    setPopupInfo({
-      title: "⏱ Temps écoulé",
-      points: "+0 point",
-      theme: currentTrack.theme || "",
-      titre: currentTrack.oeuvre || currentTrack.titre || "",
-      annee: currentTrack.annee || "",
-      compositeur: currentTrack.compositeur || "",
-      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
-    });
+
+    if (isDiffuser) {
+      setPopupInfo({
+        title: "La bonne réponse était",
+        points: null,
+        theme: currentTrack.theme || "",
+        titre: currentTrack.oeuvre || currentTrack.titre || "",
+        annee: currentTrack.annee || "",
+        compositeur: currentTrack.compositeur || "",
+        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+      });
+    } else {
+      setPopupInfo({
+        title: "⏱ Temps écoulé",
+        points: "+0 point",
+        theme: currentTrack.theme || "",
+        titre: currentTrack.oeuvre || currentTrack.titre || "",
+        annee: currentTrack.annee || "",
+        compositeur: currentTrack.compositeur || "",
+        image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+      });
+    }
     setShowPopup(true);
-    socket.emit("player-ready", { roomId: id, playerName: playerNameRef.current, previousScore: scoreRef.current, responseTime: "-" });
-  };
+    if (!isDiffuser) {
+      socket.emit("player-ready", { roomId: id, playerName: playerNameRef.current, previousScore: scoreRef.current, responseTime: "-" });
+    }
+    };
 
   socket.on("buzz-time", onBuzzTime);
   socket.on("round-ended", onRoundEnded);
@@ -655,6 +684,28 @@ useEffect(() => {
   });
   return () => socket.off("players-ready-update");
 }, []);
+
+// Affiche le popup côté diffuseur si tous les joueurs sont prêts
+useEffect(() => {
+  if (!isDiffuser) return;
+  if (roundEndedRef.current) return;
+  if (players.length > 0 && playersReady === players.length && timeLeft > 0) {
+    const currentTrack = playlist[currentRound - 1];
+    if (!currentTrack) return;
+    setIsTimerRunning(false);
+    roundEndedRef.current = true;
+    setPopupInfo({
+      title: "La bonne réponse était",
+      points: null,
+      theme: currentTrack.theme || "",
+      titre: currentTrack.oeuvre || currentTrack.titre || "",
+      annee: currentTrack.annee || "",
+      compositeur: currentTrack.compositeur || "",
+      image: preloadedImages[currentTrack.id || currentTrack.titre] || currentTrack.image || null
+    });
+    setShowPopup(true);
+  }
+}, [playersReady, players, isDiffuser, timeLeft]);
 
 const handleBuzz = () => {
     pausedTimeRef.current = timeLeftRef.current;
@@ -1008,6 +1059,7 @@ return (
   )}
 
       {/* INDICES */}
+       {!isDiffuser && (
       <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 40, flexWrap: "wrap" }}>
 {["media", "annee"].map((type, i) => {
   const visible = type === "media" ? showIndiceMedia : showIndiceAnnee;
@@ -1030,6 +1082,7 @@ return (
   );
 })}
       </div>
+      )}
 
       {/* BUZZER ou CHAMP RÉPONSE */}
       {!isDiffuser && (
@@ -1156,9 +1209,11 @@ return (
     <div className="popup-rep">
       <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
 
+      {popupInfo.points && (
       <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
         {popupInfo.points}
       </h1>
+      )}
 
       {popupInfo.responseTime && (
         <p style={{ fontSize: 16, color: "#ccc", marginBottom: 6 }}>
@@ -1287,19 +1342,21 @@ return (
       </div>
 
       {/* ✅ Bouton ou attente admin */}
-{isAdmin ? (
-        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
-          Round suivant ({playersReady} / {players.length})
-        </button>
-      ) : (
-        <div className="btn btn-cancel" style={{
-          pointerEvents: "none",
-          background: "transparent",
-          color: "#aaa",
-          cursor: "default"
-        }}>
-          En attente de l’admin ({playersReady} / {players.length})
-        </div>
+{!isDiffuser && (
+        isAdmin ? (
+          <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
+            Round suivant ({playersReady} / {players.length})
+          </button>
+        ) : (
+          <div className="btn btn-cancel" style={{
+            pointerEvents: "none",
+            background: "transparent",
+            color: "#aaa",
+            cursor: "default"
+          }}>
+            En attente de l’admin ({playersReady} / {players.length})
+          </div>
+        )
       )}
     </div>
   </div>
