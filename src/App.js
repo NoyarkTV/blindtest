@@ -7,12 +7,14 @@ import GamePageDiffusion from "./GamePageDiffusion";
 import GamePageDiffuseur from "./GamePageDiffuseur";
 import ConfigPage from "./ConfigPage";
 import RoomPage from "./RoomPage";
+import StatsPage from "./StatsPage";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/stats" element={<StatsPage />} />
         <Route path="/config/:id" element={<ConfigPage />} />
         <Route path="/game/:id" element={<GamePage />} />
         <Route path="/game-eclair/:id" element={<GamePageEclair />} />
