@@ -37,6 +37,28 @@ jobs:
       - name: Apply fixes
         run: node scripts/apply-high-priority-fixes.js
 
+      - name: Stabilize Spotify callbacks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/SpotifyPlayer.js')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace(
+              'function SpotifyPlayer({ token, onReady, onError }) {\n  const playerRef = useRef(null);\n\n  useEffect(() => {',
+              'function SpotifyPlayer({ token, onReady, onError }) {\n  const playerRef = useRef(null);\n  const onReadyRef = useRef(onReady);\n  const onErrorRef = useRef(onError);\n\n  useEffect(() => {\n    onReadyRef.current = onReady;\n    onErrorRef.current = onError;\n  }, [onReady, onError]);\n\n  useEffect(() => {'
+          )
+          text = text.replace(
+              '      if (typeof onError === "function") onError(error);',
+              '      if (typeof onErrorRef.current === "function") onErrorRef.current(error);'
+          )
+          text = text.replace(
+              '              if (!cancelled && typeof onReady === "function") onReady(device_id);',
+              '              if (!cancelled && typeof onReadyRef.current === "function") onReadyRef.current(device_id);'
+          )
+          text = text.replace('  }, [token, onReady, onError]);', '  }, [token]);')
+          p.write_text(text, encoding='utf-8')
+          PY
+
       - name: Install frontend dependencies
         run: npm ci
 
@@ -57,7 +79,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+NoyarkTV@users.noreply.github.com"
-          git rm .github/workflows/apply-high-priority-fixes.yml scripts/apply-high-priority-fixes.js
+          git rm -f .github/workflows/apply-high-priority-fixes.yml scripts/apply-high-priority-fixes.js
           git add -A
           git commit -m "fix: high priority gameplay reliability"
           git push origin main
