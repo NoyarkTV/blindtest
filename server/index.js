@@ -52,6 +52,36 @@ const redirect_uri = process.env.REDIRECT_URI;
 const games = {};
 const alreadyPlayedUris = new Set();
 
+function buildScoreboard(game) {
+  if (!game) return [];
+  const scoreMap = new Map(
+    (Array.isArray(game.scores) ? game.scores : []).map(entry => [entry.name, entry])
+  );
+
+  return (Array.isArray(game.players) ? game.players : []).map(player => {
+    const stored = scoreMap.get(player.name);
+    return {
+      name: player.name,
+      score: Number(stored?.score) || 0,
+      photo: player.photo || stored?.photo || ""
+    };
+  });
+}
+
+function syncGameScores(game) {
+  if (!game) return [];
+  game.scores = buildScoreboard(game);
+  return game.scores;
+}
+
+function getRoundPlayers(game) {
+  const players = Array.isArray(game?.players) ? game.players : [];
+  if (game?.config?.modeDiffusion) {
+    return players.filter(player => player.name !== game.admin);
+  }
+  return players;
+}
+
 const fs = require("fs");
 const path = require("path");
 
@@ -122,7 +152,7 @@ app.post("/create-game", (req, res) => {
   }
 
   // Stockage en mémoire (ou en DB plus tard)
-  games[id] = { id, admin, players, playersReady: [], currentBuzz: null };
+  games[id] = { id, admin, players, playersReady: [], currentBuzz: null, scores: players.map(player => ({ name: player.name, score: 0, photo: player.photo || "" })), roundResults: {} };
 
   console.log("✅ Partie créée :", games[id]);
 
@@ -242,8 +272,10 @@ app.post("/start-game", (req, res) => {
     nbRounds: playlist.length,
     playersReady: [],
     admin,
-    currentBuzz: null
+    currentBuzz: null,
+    roundResults: {}
   };
+  syncGameScores(games[id]);
 
   io.to(id).emit("game-started", {
     playlist: playlist.map((track, i) => ({ index: i + 1, ...track })),
@@ -389,62 +421,72 @@ app.get("/game/:id", (req, res) => {
 
   res.json({
     players: game.players || [],
-    scores: game.scores || []
+    scores: syncGameScores(game)
   });
 });
 
 
 app.post("/submit-score", (req, res) => {
   const { id, player, score } = req.body;
-  if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
+  const game = games[id];
+  if (!game) return res.status(404).send({ error: "Partie introuvable" });
 
-  // Initialise les scores si absents
-  if (!Array.isArray(games[id].scores)) games[id].scores = [];
+  if (!Array.isArray(game.scores)) game.scores = [];
 
-  const existing = games[id].scores.find(s => s.name === player);
-
-  if (!existing || existing.score !== score) {
-    if (existing) {
-      existing.score = score;
-    } else {
-      games[id].scores.push({ name: player, score });
-    }
-
-    // Ne fais le emit que si le tableau est valide
-    if (Array.isArray(games[id].scores)) {
-      io.to(id).emit("score-update", games[id].scores);
-    } else {
-      console.warn(`⚠️ games[${id}].scores n'est pas un tableau :`, games[id].scores);
-    }
+  const playerInfo = (game.players || []).find(p => p.name === player);
+  let existing = game.scores.find(s => s.name === player);
+  if (!existing) {
+    existing = { name: player, score: 0, photo: playerInfo?.photo || "" };
+    game.scores.push(existing);
   }
 
-  res.send({ success: true });
+  existing.score = Number(score) || 0;
+  if (playerInfo?.photo) existing.photo = playerInfo.photo;
+
+  const fullScores = syncGameScores(game);
+  io.to(id).emit("score-update", fullScores);
+
+  if (Array.isArray(game.playersReady) && game.playersReady.includes(player)) {
+    emitReadyState(id);
+  }
+
+  res.send({ success: true, scores: fullScores });
 });
 
 app.post("/join-game", (req, res) => {
   const { id, player } = req.body;
-  if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
+  const game = games[id];
+  if (!game) return res.status(404).send({ error: "Partie introuvable" });
 
-  if (!games[id].players.find(p => p.name === player.name)) {
-    games[id].players.push(player);
-    io.to(id).emit("player-joined", games[id].players); // 🔥 broadcast live
+  const existingPlayer = game.players.find(p => p.name === player.name);
+  if (!existingPlayer) {
+    game.players.push(player);
+    io.to(id).emit("player-joined", game.players);
+  } else if (player.photo) {
+    existingPlayer.photo = player.photo;
   }
 
+  const fullScores = syncGameScores(game);
+  io.to(id).emit("score-update", fullScores);
   res.send({ success: true });
 });
 
 app.post("/leave-game", (req, res) => {
   const { id, playerName } = req.body;
-  if (!games[id]) return res.status(404).send({ error: "Partie introuvable" });
+  const game = games[id];
+  if (!game) return res.status(404).send({ error: "Partie introuvable" });
 
-  const before = games[id].players.length;
-  games[id].players = games[id].players.filter(p => p.name !== playerName);
-  if (Array.isArray(games[id].playersReady)) {
-    games[id].playersReady = games[id].playersReady.filter(n => n !== playerName);
+  const before = game.players.length;
+  game.players = game.players.filter(p => p.name !== playerName);
+  if (Array.isArray(game.playersReady)) {
+    game.playersReady = game.playersReady.filter(n => n !== playerName);
   }
+  if (game.roundResults) delete game.roundResults[playerName];
 
-  if (games[id].players.length !== before) {
-    io.to(id).emit("player-left", games[id].players);
+  if (game.players.length !== before) {
+    io.to(id).emit("player-left", game.players);
+    io.to(id).emit("score-update", syncGameScores(game));
+    emitReadyState(id);
   }
 
   res.send({ success: true });
@@ -458,11 +500,7 @@ app.get("/scores/:id", (req, res) => {
     return res.status(404).send({ error: "Partie introuvable" });
   }
 
-  if (!Array.isArray(game.scores)) {
-    return res.status(400).send({ error: "Scores invalides ou manquants" });
-  }
-
-  res.send(game.scores);
+  res.send(syncGameScores(game));
 });
 
 app.get("/profile", (req, res) => {
@@ -550,6 +588,35 @@ const io = new Server(server, {
   cors: { origin: "*" } // autoriser tous les domaines (à restreindre plus tard)
 });
 
+function emitReadyState(roomId) {
+  const game = games[roomId];
+  if (!game) return;
+
+  const activePlayers = getRoundPlayers(game);
+  const activeNames = new Set(activePlayers.map(player => player.name));
+  game.playersReady = (Array.isArray(game.playersReady) ? game.playersReady : []).filter(name => activeNames.has(name));
+
+  const scoreMap = new Map(syncGameScores(game).map(entry => [entry.name, entry]));
+  const roundResults = game.roundResults || {};
+  const readyDetails = game.playersReady.map(name => {
+    const result = roundResults[name] || {};
+    const currentScore = Number(scoreMap.get(name)?.score) || 0;
+    const previousScore = Number(result.previousScore) || 0;
+    return {
+      name,
+      previousScore,
+      pointsGained: Math.max(0, currentScore - previousScore),
+      responseTime: result.responseTime ?? null
+    };
+  });
+
+  io.to(roomId).emit("players-ready-update", {
+    ready: game.playersReady.length,
+    total: activePlayers.length,
+    players: readyDetails
+  });
+}
+
 server.listen(PORT, () => {
   console.log(`🚀 Serveur en ligne avec Socket.IO sur le port ${PORT}`);
 });
@@ -578,16 +645,26 @@ socket.on("next-round", ({ roomId }) => {
     return;
   }
 
+  const activePlayers = getRoundPlayers(game);
+  const readyCount = Array.isArray(game.playersReady) ? game.playersReady.length : 0;
+  if (readyCount < activePlayers.length) {
+    console.warn(`⏳ Round non terminé : ${readyCount}/${activePlayers.length} joueurs prêts`);
+    emitReadyState(roomId);
+    return;
+  }
+
   console.log(`➡️ Round actuel : ${game.currentRound} / ${game.playlist?.length}`);
 
   if (game.currentRound < game.playlist.length) {
     game.currentRound++;
     game.playersReady = [];
+    game.roundResults = {};
     console.log(`🆙 Nouveau round : ${game.currentRound}`);
     io.to(roomId).emit("round-updated", { newRound: game.currentRound });
+    emitReadyState(roomId);
   } else {
     console.log("🏁 Fin de la partie");
-    io.to(roomId).emit("game-over", games[roomId]?.scores || []);
+    io.to(roomId).emit("game-over", syncGameScores(game));
   }
 });
 socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) => {
@@ -597,44 +674,28 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
     return;
   }
 
-  // Si ce joueur n’était pas encore marqué prêt pour ce round
+  const activePlayers = getRoundPlayers(game);
+  if (!activePlayers.some(player => player.name === playerName)) {
+    return;
+  }
+
+  if (!Array.isArray(game.playersReady)) game.playersReady = [];
+  if (!game.roundResults) game.roundResults = {};
+
+  game.roundResults[playerName] = {
+    previousScore: Number(previousScore) || 0,
+    responseTime: responseTime ?? null
+  };
+
   if (!game.playersReady.includes(playerName)) {
     game.playersReady.push(playerName);
-    console.log(`✅ Player ready: ${playerName} (${game.playersReady.length} / ${game.players.length})`);
+    console.log(`✅ Player ready: ${playerName} (${game.playersReady.length} / ${activePlayers.length})`);
+  }
 
-    // Enregistre le score précédent et le temps de réponse dans l’objet du joueur
-    const playerObj = game.players.find(p => p.name === playerName);
-    if (playerObj) {
-      playerObj.previousScore = previousScore;
-      playerObj.responseTime = responseTime ?? null;
-    }
+  emitReadyState(roomId);
 
-    // Informe tous les clients du nouveau joueur prêt, en incluant les détails
-    io.to(roomId).emit("players-ready-update", {
-      ready: game.playersReady.length,
-      total: game.players.length,
-      players: game.playersReady.map(name => {
-        const p = game.players.find(pl => pl.name === name) || {};
-        return {
-          name: name,
-          previousScore: p.previousScore ?? 0,
-          responseTime: p.responseTime ?? null
-        };
-      })
-    });
-
-    if (game.playersReady.length === game.players.length) {
-      io.to(roomId).emit("all-ready");
-    }
-    
-     // Si tous les joueurs sont prêts et que c'était le dernier round
-    if (
-      game.playersReady.length === game.players.length &&
-      game.currentRound >= game.playlist.length
-    ) {
-      console.log(`🏁 Tous les joueurs prêts pour le dernier round de ${roomId}`);
-      io.to(roomId).emit("game-over", game.scores || []);
-    }
+  if (game.playersReady.length === activePlayers.length) {
+    io.to(roomId).emit("all-ready");
   }
 });
 
@@ -645,6 +706,13 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
     io.to(roomId).emit("player-buzz", { playerName });
     // Puis met la musique en pause pour tout le monde
     io.to(roomId).emit("pause-track");
+  });
+
+  socket.on("apply-time-penalty", ({ roomId, timeLeft }) => {
+    if (!roomId) return;
+    const safeTimeLeft = Math.max(0, Number(timeLeft) || 0);
+    console.log(`⏬ Pénalité de temps appliquée dans ${roomId} : ${safeTimeLeft}s restantes`);
+    io.to(roomId).emit("buzz-time", { timeLeft: safeTimeLeft });
   });
 
   // Reprise de la musique

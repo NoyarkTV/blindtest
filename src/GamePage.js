@@ -394,7 +394,7 @@ useEffect(() => {
       const previous = scoreboardRef.current.find(e => e.name === p.name);
       return {
         ...p,
-        photo: previous?.photo || "/ppDefault.png",
+        photo: p.photo || previous?.photo || "/ppDefault.png",
         isMe: p.name === playerNameRef.current
       };
     });
@@ -481,7 +481,7 @@ useEffect(() => {
         const previous = prev.find(e => e.name === p.name);
         return {
           ...p,
-          photo: previous?.photo || "/ppDefault.png",
+          photo: p.photo || previous?.photo || "/ppDefault.png",
           isMe: p.name === playerNameRef.current
         };
       });
@@ -635,7 +635,7 @@ const handleValidate = () => {
       multiplier = 0.8;
     }
 
-    const base = ((rawTimeLeft / timer) * 100 * multiplier) - (wrongAttemptsRef.current * 20);
+    const base = (rawTimeLeft / timer) * 100 * multiplier;
     const totalPoints = Math.max(0, Math.ceil(base)) + bonus;
 
     const updatedScore = score + totalPoints;
@@ -745,18 +745,31 @@ const handleValidate = () => {
 // 🔴 Cas 3 : Mauvaise réponse
 else {
     wrongAttemptsRef.current = (wrongAttemptsRef.current || 0) + 1;
-    console.log("❌ Mauvaise réponse - tentatives :", wrongAttemptsRef.current);
-    basePointsRef.current = Math.max(0, basePointsRef.current - 20);
+    const penaltySeconds = timer * 0.2;
+    const currentRemaining = Number.isFinite(pausedTimeRef.current)
+      ? pausedTimeRef.current
+      : (timeLeftRef.current ?? timer);
+    const penalizedTime = Math.max(0, currentRemaining - penaltySeconds);
+
+    pausedTimeRef.current = penalizedTime;
+    setTimeLeft(penalizedTime);
+    console.log(`❌ Mauvaise réponse - pénalité ${penaltySeconds.toFixed(1)}s, reste ${penalizedTime.toFixed(1)}s`);
 
     setIsWrongAnswer(true);
     setTimeout(() => {
-    setIsWrongAnswer(false);
-    setAnswer("");
-    setComposerGuess("");
-  }, 600);
+      setIsWrongAnswer(false);
+      setAnswer("");
+      setComposerGuess("");
+    }, 600);
 
-handlePlay();
-setIsTimerRunning(true);
+    if (penalizedTime <= 0) {
+      setIsBuzzed(false);
+      setIsTimerRunning(false);
+      return;
+    }
+
+    handlePlay();
+    setIsTimerRunning(true);
 }
 };
 
@@ -1083,7 +1096,7 @@ return (
         {scoreboard.map(player => {
   const detail = readyPlayersInfo.find(p => p.name === player.name);
   const currentScore = player.score;
-  const delta = detail ? currentScore - detail.previousScore : null;
+  const delta = detail ? (Number.isFinite(detail.pointsGained) ? detail.pointsGained : currentScore - (detail.previousScore ?? currentScore)) : null;
   const isMe = player.name === playerName;
 
   return (
@@ -1157,7 +1170,7 @@ return (
 
       {/* ✅ Bouton ou attente admin */}
 {isAdmin ? (
-        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
+        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current || playersReady < players.length}>
           Round suivant ({playersReady} / {players.length})
         </button>
       ) : (

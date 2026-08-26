@@ -13,7 +13,7 @@ function ConfigPage() {
   const [nbRounds, setNbRounds] = useState(10);
   const [bonusCompositeur, setBonusCompositeur] = useState(false);
   const [anneeMin, setAnneeMin] = useState(1925);
-  const [anneeMax, setAnneeMax] = useState(2025);
+  const [anneeMax, setAnneeMax] = useState(new Date().getFullYear());
   const [allTracks, setAllTracks] = useState([]);
   const [filteredCount, setFilteredCount] = useState(0);
   const [players, setPlayers] = useState([]);
@@ -103,6 +103,13 @@ useEffect(() => {
     .then(res => res.json())
     .then(data => {
       setAllTracks(data);
+      const years = data
+        .map(track => Number(track.annee))
+        .filter(year => Number.isFinite(year) && year > 0);
+      if (years.length > 0) {
+        setAnneeMin(Math.min(...years));
+        setAnneeMax(Math.max(...years));
+      }
       console.log("🎵 Morceaux reçus :", data);
     })
     .catch(err => {

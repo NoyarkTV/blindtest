@@ -455,7 +455,7 @@ useEffect(() => {
       const previous = scoreboardRef.current.find(e => e.name === p.name);
       return {
         ...p,
-        photo: previous?.photo || "/ppDefault.png",
+        photo: p.photo || previous?.photo || "/ppDefault.png",
         isMe: p.name === playerNameRef.current
       };
     });
@@ -560,7 +560,7 @@ useEffect(() => {
         const previous = prev.find(e => e.name === p.name);
         return {
           ...p,
-          photo: previous?.photo || "/ppDefault.png",
+          photo: p.photo || previous?.photo || "/ppDefault.png",
           isMe: p.name === playerNameRef.current
         };
       });
@@ -1288,7 +1288,7 @@ return (
         {scoreboard.map(player => {
   const detail = readyPlayersInfo.find(p => p.name === player.name);
   const currentScore = player.score;
-  const delta = detail ? currentScore - detail.previousScore : null;
+  const delta = detail ? (Number.isFinite(detail.pointsGained) ? detail.pointsGained : currentScore - (detail.previousScore ?? currentScore)) : null;
   const isMe = player.name === playerName;
 
   return (

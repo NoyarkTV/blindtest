@@ -19,6 +19,7 @@ useEffect(() => {
   const onList = fullList => setPlayers(fullList);
   const onLeft = updatedPlayers => setPlayers(updatedPlayers);
   const onGameStarted = (data) => {
+    shouldLeaveRef.current = false;
     if (data?.config?.modeDiffusion) {
       navigate(`/game-diffusion/${id}`);
     } else if (data?.config?.modeEclair) {
