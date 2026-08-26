@@ -20,8 +20,58 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
+      - name: Repair ambiguous integration selectors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/apply-stats-feature.js')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace(
+              's = replaceOnce(s, composerEmit, composerEmitNew, "normal composer stats emit");',
+              's = replaceFirst(s, composerEmit, composerEmitNew, "normal composer stats emit");'
+          )
+          old = '''    s = replaceOnce(
+                s,
+                '  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-" });',
+                '  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-", pointsGained: points, correctTitle: isCorrect, correctComposer: composerMatch, wrongAttempts: 0, mediaHint: showIndiceMedia, yearHint: showIndiceAnnee });',
+                "eclair validation stats emit"
+              );'''
+          new = old.replace('s = replaceOnce(', 's = replaceFirst(', 1)
+          if old not in s:
+              raise SystemExit('Sélecteur éclair attendu introuvable')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Apply integration patch
         run: node scripts/apply-stats-feature.js
+
+      - name: Ensure end summary loads on game over
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for filename in ['src/GamePage.js', 'src/GamePageEclair.js']:
+              p = Path(filename)
+              s = p.read_text(encoding='utf-8')
+              start = s.find('    const enriched = scores.map')
+              if start < 0:
+                  raise SystemExit(f'Bloc game-over introuvable dans {filename}')
+              marker = '    setShowEndPopup(true);'
+              pos = s.find(marker, start)
+              if pos < 0:
+                  raise SystemExit(f'Ouverture fin de partie introuvable dans {filename}')
+              insert_at = pos + len(marker)
+              nearby = s[insert_at:insert_at + 450]
+              if '/game-summary/' not in nearby:
+                  addition = '''
+
+    fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
+      .then(res => res.ok ? res.json() : { insights: [] })
+      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
+      .catch(() => setEndInsights([]));'''
+                  s = s[:insert_at] + addition + s[insert_at:]
+              p.write_text(s, encoding='utf-8')
+          PY
 
       - name: Fix null formatting edge case
         run: |
