@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import sys
 
 
@@ -20,10 +21,73 @@ def pre():
     p.write_text(s, encoding="utf-8")
 
 
+def replace_ready_emit_in_section(source, start_marker, end_marker, replacement, label):
+    start = source.find(start_marker)
+    if start < 0:
+        raise SystemExit(f"Début introuvable: {label}")
+    end = source.find(end_marker, start)
+    if end < 0:
+        raise SystemExit(f"Fin introuvable: {label}")
+    section = source[start:end]
+    pattern = re.compile(r'    socket\.emit\("player-ready", \{[\s\S]*?\n    \}\);')
+    matches = list(pattern.finditer(section))
+    if len(matches) != 1:
+        raise SystemExit(f"Événement player-ready ambigu dans {label}: {len(matches)} occurrence(s)")
+    section = pattern.sub(replacement, section, count=1)
+    return source[:start] + section + source[end:]
+
+
+def fix_normal_ready_metadata(source):
+    timeout_emit = '''    socket.emit("player-ready", {
+      roomId: id,
+      playerName,
+      previousScore: score,
+      responseTime: "-",
+      pointsGained: 0,
+      correctTitle: false,
+      correctComposer: false,
+      wrongAttempts: wrongAttemptsRef.current,
+      mediaHint: showIndiceMedia,
+      yearHint: showIndiceAnnee
+    });'''
+    source = replace_ready_emit_in_section(
+        source,
+        "useEffect(() => {\n  if (timeLeft === 0)",
+        "\n\n\n  useEffect(() => {\n    const handleKeyDown",
+        timeout_emit,
+        "timeout normal"
+    )
+
+    composer_emit = '''    socket.emit("player-ready", {
+      roomId: id,
+      playerName,
+      previousScore: score,
+      responseTime: "-",
+      pointsGained: bonus,
+      correctTitle: false,
+      correctComposer: true,
+      wrongAttempts: wrongAttemptsRef.current,
+      mediaHint: showIndiceMedia,
+      yearHint: showIndiceAnnee
+    });'''
+    source = replace_ready_emit_in_section(
+        source,
+        "  // 🟢 Cas 2 : Compositeur seul correct\n  else if (isComposerMatch) {",
+        "\n\n// 🔴 Cas 3",
+        composer_emit,
+        "compositeur seul normal"
+    )
+    return source
+
+
 def post():
     for filename in ["src/GamePage.js", "src/GamePageEclair.js"]:
         p = Path(filename)
         s = p.read_text(encoding="utf-8")
+
+        if filename == "src/GamePage.js":
+            s = fix_normal_ready_metadata(s)
+
         start = s.find("    const enriched = scores.map")
         if start < 0:
             raise SystemExit(f"Bloc game-over introuvable dans {filename}")
