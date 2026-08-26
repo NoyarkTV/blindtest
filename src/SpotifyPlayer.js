@@ -1,15 +1,27 @@
 import { useEffect, useRef } from "react";
 
-let sdkInitialized = false;
-
 function SpotifyPlayer({ token, onReady, onError }) {
   const playerRef = useRef(null);
+  const onReadyRef = useRef(onReady);
+  const onErrorRef = useRef(onError);
 
   useEffect(() => {
-    if (!token || sdkInitialized) return;
+    onReadyRef.current = onReady;
+    onErrorRef.current = onError;
+  }, [onReady, onError]);
 
-    // ✅ DÉFINIR D'ABORD la fonction globale
-    window.onSpotifyWebPlaybackSDKReady = () => {
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+
+    const reportError = (error) => {
+      if (typeof onErrorRef.current === "function") onErrorRef.current(error);
+      else console.error("❌ Spotify Player :", error);
+    };
+
+    const initializePlayer = () => {
+      if (cancelled || !window.Spotify || playerRef.current) return;
+
       const player = new window.Spotify.Player({
         name: "Blindtest Player",
         getOAuthToken: cb => cb(token),
@@ -17,6 +29,7 @@ function SpotifyPlayer({ token, onReady, onError }) {
       });
 
       player.addListener("ready", ({ device_id }) => {
+        if (cancelled) return;
         console.log("✅ SDK prêt avec device_id :", device_id);
         fetch("https://api.spotify.com/v1/me/player", {
           method: "PUT",
@@ -28,37 +41,46 @@ function SpotifyPlayer({ token, onReady, onError }) {
         })
           .then(() => {
             console.log("📡 Transfert vers Web Playback effectué");
-            setTimeout(() => onReady(device_id), 1000);
+            setTimeout(() => {
+              if (!cancelled && typeof onReadyRef.current === "function") onReadyRef.current(device_id);
+            }, 1000);
           })
-          .catch(err => {
-            console.error("❌ Erreur transfert lecteur :", err);
-            onError(err);
-          });
+          .catch(reportError);
       });
 
-      player.addListener("initialization_error", ({ message }) => onError(message));
-      player.addListener("authentication_error", ({ message }) => onError(message));
-      player.addListener("account_error", ({ message }) => onError(message));
-      player.addListener("playback_error", ({ message }) => onError(message));
+      player.addListener("initialization_error", ({ message }) => reportError(message));
+      player.addListener("authentication_error", ({ message }) => reportError(message));
+      player.addListener("account_error", ({ message }) => reportError(message));
+      player.addListener("playback_error", ({ message }) => reportError(message));
 
       player.connect();
       playerRef.current = player;
-      sdkInitialized = true;
     };
 
-    // ✅ CHARGER le SDK seulement une fois
-    if (!document.getElementById("spotify-sdk")) {
-      const script = document.createElement("script");
-      script.id = "spotify-sdk";
-      script.src = "https://sdk.scdn.co/spotify-player.js";
-      script.async = true;
-      document.body.appendChild(script);
+    if (window.Spotify) {
+      initializePlayer();
+    } else {
+      window.onSpotifyWebPlaybackSDKReady = initializePlayer;
+      if (!document.getElementById("spotify-sdk")) {
+        const script = document.createElement("script");
+        script.id = "spotify-sdk";
+        script.src = "https://sdk.scdn.co/spotify-player.js";
+        script.async = true;
+        document.body.appendChild(script);
+      }
     }
 
     return () => {
-      delete window.onSpotifyWebPlaybackSDKReady;
+      cancelled = true;
+      if (window.onSpotifyWebPlaybackSDKReady === initializePlayer) {
+        delete window.onSpotifyWebPlaybackSDKReady;
+      }
+      if (playerRef.current) {
+        playerRef.current.disconnect();
+        playerRef.current = null;
+      }
     };
-  }, [token, onReady, onError]);
+  }, [token]);
 
   return null;
 }

@@ -48,6 +48,7 @@ function GamePage() {
   const [averageTime, setAverageTime] = useState(null);
   const isVerifyingRef = useRef(false);
   const [playersReady, setPlayersReady] = useState(0);
+  const [playersTotal, setPlayersTotal] = useState(0);
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
   const [roundsWon, setRoundsWon] = useState(0);
   const [readyPlayersInfo, setReadyPlayersInfo] = useState([]);
@@ -200,6 +201,7 @@ useEffect(() => {
         const rawPlayers = rawPlayersFull.map(p => p.name);
         console.log("👤 Noms extraits :", rawPlayers);
         setPlayers(rawPlayers);
+        setPlayersTotal(data.activePlayerCount ?? rawPlayers.length);
 
         const photoMap = {};
         rawPlayersFull.forEach(p => {
@@ -233,6 +235,27 @@ useEffect(() => {
 
               console.log("✅ Scoreboard final fusionné :", updatedScoreboard);
               setScoreboard(updatedScoreboard);
+
+              const ownScore = scores.find(p => p.name === localPlayer);
+              if (ownScore) setScore(Number(ownScore.score) || 0);
+
+              const readyNames = Array.isArray(data.playersReady) ? data.playersReady : [];
+              setPlayersReady(readyNames.length);
+              setPlayersTotal(data.activePlayerCount ?? rawPlayers.length);
+              if (readyNames.includes(localPlayer)) {
+                roundEndedRef.current = true;
+                setIsTimerRunning(false);
+                const detail = data.roundResults?.[localPlayer];
+                const previousScore = Number(detail?.previousScore) || 0;
+                const gained = Math.max(0, (Number(ownScore?.score) || 0) - previousScore);
+                setPopupInfo({
+                  title: "Réponse déjà enregistrée",
+                  points: `+${gained} point${gained > 1 ? "s" : ""}`,
+                  responseTime: detail?.responseTime && detail.responseTime !== "-" ? `${detail.responseTime} sec` : null,
+                  theme: "", titre: "", annee: "", compositeur: "", image: null
+                });
+                setShowPopup(true);
+              }
             }
           })
           .catch(err => console.warn("⚠️ Pas de scores initiaux :", err));
@@ -414,7 +437,8 @@ useEffect(() => {
         roundsPlayed: playlistRef.current.length,
         roundsWon: roundsWonRef.current,
         bestResponseTime,
-        totalScore: scoreRef.current
+        totalScore: scoreRef.current,
+        responseCount: responseTimesRef.current.length
       })
     })
       .then(res => res.json())
@@ -542,6 +566,7 @@ useEffect(() => {
 useEffect(() => {
   socket.on("players-ready-update", ({ ready, total, players }) => {
     setPlayersReady(ready);
+    setPlayersTotal(total);
     console.log(`✅ Players ready: ${ready}/${total}`, players);
     // Met à jour la liste des joueurs prêts avec détails (si fournie par le serveur)
     if (players) {
@@ -552,6 +577,7 @@ useEffect(() => {
 }, []);
 
 const handleBuzz = () => {
+    if (roundEndedRef.current) return;
     pausedTimeRef.current = timeLeftRef.current;
     clearInterval(intervalRef.current);
     setIsTimerRunning(false);
@@ -587,6 +613,7 @@ const levenshtein = (a, b) => {
 };
 
 const handleValidate = () => {
+  if (roundEndedRef.current) return;
   setIsBuzzed(false);
   const currentTrack = playlist[currentRound - 1];
   const timer = params.time ?? 30;
@@ -1169,8 +1196,8 @@ return (
 
       {/* ✅ Bouton ou attente admin */}
 {isAdmin ? (
-        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current || playersReady < players.length}>
-          Round suivant ({playersReady} / {players.length})
+        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current || playersReady < (playersTotal || players.length)}>
+          Round suivant ({playersReady} / {playersTotal || players.length})
         </button>
       ) : (
         <div className="btn btn-cancel" style={{
@@ -1179,7 +1206,7 @@ return (
           color: "#aaa",
           cursor: "default"
         }}>
-          En attente de l’admin ({playersReady} / {players.length})
+          En attente de l’admin ({playersReady} / {playersTotal || players.length})
         </div>
       )}
     </div>

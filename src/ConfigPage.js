@@ -204,6 +204,11 @@ useEffect(() => {
 }, [time]);
 
 const validerPartie = () => {
+  if (filteredCount === 0 || nbRounds < 1 || nbRounds > filteredCount) {
+    alert(`Impossible de lancer ${nbRounds} round(s) : ${filteredCount} morceau(x) disponible(s) avec ces filtres.`);
+    return;
+  }
+
   const params = {
     bonusCompositeur,
     nbRounds,
@@ -234,7 +239,11 @@ const validerPartie = () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ filters, nbRounds })
   })
-    .then(res => res.json())
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Impossible de générer la playlist");
+      return data;
+    })
     .then(data => {
       const playlist = data.playlist;
       if (!playlist || playlist.length === 0) {
@@ -329,7 +338,7 @@ return (
               min="1"
               max={filteredCount}
               value={nbRounds}
-              onChange={e => setNbRounds(+e.target.value)}
+              onChange={e => setNbRounds(Math.max(1, Math.min(+e.target.value || 1, Math.max(filteredCount, 1))))}
               style={{ maxWidth: 80 }}
             />
             <div
@@ -486,7 +495,7 @@ return (
 
         <div style={{ display: "flex", gap: 10 }}>
           <button className="btn btn-cancel" style={{ flex: 1 }} onClick={() => navigate("/")}>Annuler</button>
-          <button className="btn btn-confirm" style={{ flex: 1 }} onClick={validerPartie}>Lancer la partie</button>
+          <button className="btn btn-confirm" style={{ flex: 1 }} onClick={validerPartie} disabled={filteredCount === 0 || nbRounds < 1 || nbRounds > filteredCount}>Lancer la partie</button>
         </div>
       </div>
     </div>

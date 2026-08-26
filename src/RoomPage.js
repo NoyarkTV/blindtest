@@ -56,15 +56,26 @@ useEffect(() => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, player })
-  }).then(() => {
-    fetch(`https://blindtest-69h7.onrender.com/game/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setPlayers(data.players || []);
-        setGame(data);
-      });
+  }).then(async res => {
+    if (res.status === 409) {
+      alert("Cette partie a déjà commencé.");
+      navigate("/");
+      return null;
+    }
+    if (!res.ok) throw new Error("Impossible de rejoindre la partie");
+    return fetch(`https://blindtest-69h7.onrender.com/game/${id}`);
+  }).then(res => {
+    if (!res) return null;
+    return res.json();
+  }).then(data => {
+    if (!data) return;
+    setPlayers(data.players || []);
+    setGame(data);
+  }).catch(err => {
+    console.error("Erreur pour rejoindre la partie :", err);
+    navigate("/");
   });
-}, [id, playerName]);
+}, [id, playerName, navigate]);
 
   // 🚪 Signaler au serveur lorsqu'on quitte la page
 useEffect(() => {

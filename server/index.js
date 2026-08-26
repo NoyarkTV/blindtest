@@ -51,6 +51,7 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 const games = {};
 const alreadyPlayedUris = new Set();
+const disconnectTimers = new Map();
 
 function buildScoreboard(game) {
   if (!game) return [];
@@ -75,7 +76,7 @@ function syncGameScores(game) {
 }
 
 function getRoundPlayers(game) {
-  const players = Array.isArray(game?.players) ? game.players : [];
+  const players = (Array.isArray(game?.players) ? game.players : []).filter(player => player.connected !== false);
   if (game?.config?.modeDiffusion) {
     return players.filter(player => player.name !== game.admin);
   }
@@ -152,7 +153,7 @@ app.post("/create-game", (req, res) => {
   }
 
   // Stockage en mémoire (ou en DB plus tard)
-  games[id] = { id, admin, players, playersReady: [], currentBuzz: null, scores: players.map(player => ({ name: player.name, score: 0, photo: player.photo || "" })), roundResults: {} };
+  games[id] = { id, admin, players: players.map(player => ({ ...player, connected: true })), playersReady: [], currentBuzz: null, scores: players.map(player => ({ name: player.name, score: 0, photo: player.photo || "" })), roundResults: {}, started: false };
 
   console.log("✅ Partie créée :", games[id]);
 
@@ -244,7 +245,7 @@ app.post("/set-filters", (req, res) => {
     const matchDifficulte = difficulte.includes(track.difficulte);
     const matchPays = pays.includes(track.pays);
     const matchAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
-    const matchCategorie = categories.some(cat =>
+    const matchCategorie = categories.length === 0 || categories.some(cat =>
       (track.categorie || "").split(",").map(c => c.trim()).includes(cat)
     );
 
@@ -273,7 +274,8 @@ app.post("/start-game", (req, res) => {
     playersReady: [],
     admin,
     currentBuzz: null,
-    roundResults: {}
+    roundResults: {},
+    started: true
   };
   syncGameScores(games[id]);
 
@@ -347,11 +349,17 @@ app.post("/generate-playlist", (req, res) => {
     const matchDifficulte = difficulte.includes(track.difficulte);
     const matchPays = pays.includes(track.pays);
     const matchAnnee = track.annee >= anneeMin && track.annee <= anneeMax;
-    const matchCategorie = categories.some(cat =>
+    const matchCategorie = categories.length === 0 || categories.some(cat =>
       (track.categorie || "").split(",").map(c => c.trim()).includes(cat)
     );
     return matchMedia && matchDifficulte && matchPays && matchAnnee && matchCategorie;
   });
+
+  if (tracks.length < nbRounds) {
+    return res.status(400).send({
+      error: `Seulement ${tracks.length} morceau(x) disponible(s) avec ces filtres pour ${nbRounds} round(s).`
+    });
+  }
 
   // 2. Exclusion des déjà jouées
   let notPlayed = tracks.filter(t => !alreadyPlayedUris.has(t.uri));
@@ -397,7 +405,7 @@ app.post("/generate-playlist", (req, res) => {
 
   // 6. Complétion si nécessaire
   if (enrichedTracks.length < nbRounds) {
-    const remaining = fisherYatesShuffle(allTracks).filter(t =>
+    const remaining = fisherYatesShuffle(tracks).filter(t =>
       !enrichedTracks.some(et => et.uri === t.uri) &&
       t.uri?.startsWith("spotify:track:")
     );
@@ -405,6 +413,12 @@ app.post("/generate-playlist", (req, res) => {
       enrichedTracks.push({ ...remaining[i], image: remaining[i].image || null });
       alreadyPlayedUris.add(remaining[i].uri);
     }
+  }
+
+  if (enrichedTracks.length < nbRounds) {
+    return res.status(400).send({
+      error: `Impossible de générer ${nbRounds} round(s) sans sortir des filtres sélectionnés.`
+    });
   }
 
   console.log(`✅ Playlist générée (${enrichedTracks.length}/${nbRounds})`);
@@ -419,12 +433,19 @@ app.get("/game/:id", (req, res) => {
     return res.status(404).json({ error: "Partie introuvable" });
   }
 
+  const activePlayers = getRoundPlayers(game);
+  const activeNames = new Set(activePlayers.map(player => player.name));
+  const activeReady = (Array.isArray(game.playersReady) ? game.playersReady : []).filter(name => activeNames.has(name));
+
   res.json({
     players: game.players || [],
-    scores: syncGameScores(game)
+    scores: syncGameScores(game),
+    playersReady: activeReady,
+    roundResults: game.roundResults || {},
+    activePlayerCount: activePlayers.length,
+    started: Boolean(game.started)
   });
 });
-
 
 app.post("/submit-score", (req, res) => {
   const { id, player, score } = req.body;
@@ -457,18 +478,26 @@ app.post("/join-game", (req, res) => {
   const { id, player } = req.body;
   const game = games[id];
   if (!game) return res.status(404).send({ error: "Partie introuvable" });
+  if (!player?.name) return res.status(400).send({ error: "Joueur invalide" });
 
   const existingPlayer = game.players.find(p => p.name === player.name);
+
+  if (game.started && !existingPlayer) {
+    return res.status(409).send({ error: "La partie a déjà commencé" });
+  }
+
   if (!existingPlayer) {
-    game.players.push(player);
+    game.players.push({ ...player, connected: true });
     io.to(id).emit("player-joined", game.players);
-  } else if (player.photo) {
-    existingPlayer.photo = player.photo;
+  } else {
+    existingPlayer.connected = true;
+    if (player.photo) existingPlayer.photo = player.photo;
   }
 
   const fullScores = syncGameScores(game);
   io.to(id).emit("score-update", fullScores);
-  res.send({ success: true });
+  emitReadyState(id);
+  res.send({ success: true, rejoined: Boolean(existingPlayer) });
 });
 
 app.post("/leave-game", (req, res) => {
@@ -546,7 +575,8 @@ app.post("/update-profile-stats", (req, res) => {
     roundsPlayed,
     roundsWon,
     bestResponseTime,
-    totalScore
+    totalScore,
+    responseCount
   } = req.body;
 
   // Ex de structure simple en mémoire (à remplacer par DB plus tard)
@@ -556,6 +586,7 @@ app.post("/update-profile-stats", (req, res) => {
       totalRoundsPlayed: 0,
       totalRoundsWon: 0,
       cumulativeResponseTime: 0,
+      timedResponses: 0,
       bestResponseTime: null,
       totalScore: 0
     };
@@ -564,13 +595,21 @@ app.post("/update-profile-stats", (req, res) => {
   const profile = playerProfiles[playerName];
 
   profile.gamesPlayed += 1;
-  profile.totalRoundsPlayed += roundsPlayed;
-  profile.totalRoundsWon += roundsWon;
-  profile.cumulativeResponseTime += averageResponseTime * roundsPlayed;
-  profile.totalScore += totalScore;
+  profile.totalRoundsPlayed += Number(roundsPlayed) || 0;
+  profile.totalRoundsWon += Number(roundsWon) || 0;
+  profile.totalScore += Number(totalScore) || 0;
 
-  if (profile.bestResponseTime === null || bestResponseTime < profile.bestResponseTime) {
-    profile.bestResponseTime = bestResponseTime;
+  if (!Number.isFinite(profile.timedResponses)) profile.timedResponses = 0;
+  const safeResponseCount = Math.max(0, Number(responseCount) || 0);
+  const safeAverage = Number(averageResponseTime);
+  if (safeResponseCount > 0 && Number.isFinite(safeAverage)) {
+    profile.cumulativeResponseTime += safeAverage * safeResponseCount;
+    profile.timedResponses += safeResponseCount;
+  }
+
+  const safeBest = Number(bestResponseTime);
+  if (Number.isFinite(safeBest) && safeBest >= 0 && (profile.bestResponseTime === null || safeBest < profile.bestResponseTime)) {
+    profile.bestResponseTime = safeBest;
   }
   saveProfilesToFile();
 
@@ -594,11 +633,11 @@ function emitReadyState(roomId) {
 
   const activePlayers = getRoundPlayers(game);
   const activeNames = new Set(activePlayers.map(player => player.name));
-  game.playersReady = (Array.isArray(game.playersReady) ? game.playersReady : []).filter(name => activeNames.has(name));
+  const activeReadyNames = (Array.isArray(game.playersReady) ? game.playersReady : []).filter(name => activeNames.has(name));
 
   const scoreMap = new Map(syncGameScores(game).map(entry => [entry.name, entry]));
   const roundResults = game.roundResults || {};
-  const readyDetails = game.playersReady.map(name => {
+  const readyDetails = activeReadyNames.map(name => {
     const result = roundResults[name] || {};
     const currentScore = Number(scoreMap.get(name)?.score) || 0;
     const previousScore = Number(result.previousScore) || 0;
@@ -611,7 +650,7 @@ function emitReadyState(roomId) {
   });
 
   io.to(roomId).emit("players-ready-update", {
-    ready: game.playersReady.length,
+    ready: activeReadyNames.length,
     total: activePlayers.length,
     players: readyDetails
   });
@@ -632,6 +671,24 @@ io.on("connection", (socket) => {
       return;
     }
     socket.join(roomId);
+    socket.data.roomId = roomId;
+    socket.data.playerName = playerName || null;
+
+    if (playerName && games[roomId]) {
+      const key = `${roomId}::${playerName}`;
+      const pending = disconnectTimers.get(key);
+      if (pending) {
+        clearTimeout(pending);
+        disconnectTimers.delete(key);
+      }
+
+      const player = games[roomId].players?.find(p => p.name === playerName);
+      if (player) {
+        player.connected = true;
+        emitReadyState(roomId);
+      }
+    }
+
     console.log(`🧩 Socket ${socket.id} a rejoint la room ${roomId}`);
     if (playerName) console.log(`   en tant que ${playerName}`);
     console.log("🌐 Rooms actuelles :", Array.from(socket.rooms));
@@ -646,7 +703,8 @@ socket.on("next-round", ({ roomId }) => {
   }
 
   const activePlayers = getRoundPlayers(game);
-  const readyCount = Array.isArray(game.playersReady) ? game.playersReady.length : 0;
+  const activeNames = new Set(activePlayers.map(player => player.name));
+  const readyCount = (Array.isArray(game.playersReady) ? game.playersReady : []).filter(name => activeNames.has(name)).length;
   if (readyCount < activePlayers.length) {
     console.warn(`⏳ Round non terminé : ${readyCount}/${activePlayers.length} joueurs prêts`);
     emitReadyState(roomId);
@@ -694,7 +752,9 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
 
   emitReadyState(roomId);
 
-  if (game.playersReady.length === activePlayers.length) {
+  const activeNames = new Set(activePlayers.map(player => player.name));
+  const activeReadyCount = game.playersReady.filter(name => activeNames.has(name)).length;
+  if (activeReadyCount === activePlayers.length) {
     io.to(roomId).emit("all-ready");
   }
 });
@@ -733,6 +793,30 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
     if (!roomId) return;
     console.log(`⏱️ Timer écoulé pour room ${roomId}`);
     io.to(roomId).emit("round-ended");
+  });
+
+  socket.on("disconnect", () => {
+    const roomId = socket.data.roomId;
+    const playerName = socket.data.playerName;
+    if (!roomId || !playerName || !games[roomId]) return;
+
+    const key = `${roomId}::${playerName}`;
+    const previous = disconnectTimers.get(key);
+    if (previous) clearTimeout(previous);
+
+    const timer = setTimeout(() => {
+      const game = games[roomId];
+      if (!game) return;
+      const player = game.players?.find(p => p.name === playerName);
+      if (!player) return;
+
+      player.connected = false;
+      disconnectTimers.delete(key);
+      console.log(`👋 ${playerName} considéré déconnecté de ${roomId}`);
+      emitReadyState(roomId);
+    }, 10000);
+
+    disconnectTimers.set(key, timer);
   });
 });
 
