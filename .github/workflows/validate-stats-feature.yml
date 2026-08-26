@@ -1,0 +1,75 @@
+name: Validate persistent stats feature
+
+on:
+  push:
+    branches:
+      - feature/persistent-stats
+    paths:
+      - .github/workflows/validate-stats-feature.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Apply integration patch
+        run: node scripts/apply-stats-feature.js
+
+      - name: Fix null formatting edge case
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/StatsPage.js')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace(
+              'const formatTime = value => Number.isFinite(Number(value)) ? `${formatNumber(value, 1)} s` : "—";',
+              'const formatTime = value => (value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value))) ? `${formatNumber(value, 1)} s` : "—";'
+          )
+          s = s.replace(
+              '  const aNum = Number(a);\n  const bNum = Number(b);\n  const comparable = Number.isFinite(aNum) && Number.isFinite(bNum);',
+              '  const aNum = Number(a);\n  const bNum = Number(b);\n  const comparable = a !== null && a !== undefined && b !== null && b !== undefined && Number.isFinite(aNum) && Number.isFinite(bNum);'
+          )
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Test answer matching
+        env:
+          CI: true
+        run: npm test -- --watchAll=false
+
+      - name: Build frontend
+        env:
+          CI: false
+        run: npm run build
+
+      - name: Install persistent stats dependency
+        working-directory: server
+        run: npm install pg --save
+
+      - name: Validate server files
+        working-directory: server
+        run: |
+          node --check index.js
+          node --check statsStore.js
+          node --check gameSummary.js
+          node -e "const s=require('./statsStore'); s.getGlobalStats().then(r=>{console.log('stats storage:', r.storage); process.exit(0)}).catch(e=>{console.error(e); process.exit(1)})"
+
+      - name: Commit validated feature
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/validate-stats-feature.yml scripts/apply-stats-feature.js
+          git add -A
+          git commit -m "feat: persistent player statistics and smarter answers"
+          git push origin feature/persistent-stats
