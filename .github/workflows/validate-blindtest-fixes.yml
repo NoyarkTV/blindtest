@@ -1,0 +1,43 @@
+name: Validate blindtest fixes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/validate-blindtest-fixes.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Check server syntax
+        working-directory: server
+        run: node --check index.js
+
+      - name: Remove temporary validation workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/validate-blindtest-fixes.yml
+          git commit -m "chore: remove temporary validation workflow"
+          git push origin main
