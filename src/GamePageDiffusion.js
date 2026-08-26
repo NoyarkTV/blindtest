@@ -494,7 +494,6 @@ useEffect(() => {
   if (timeLeft === 0) {
     setIsTimerRunning(false);
     roundEndedRef.current = true;
-    setRoundsWon(prev => prev + 1);
 
     const currentTrack = playlist[currentRound - 1];
 

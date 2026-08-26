@@ -495,7 +495,6 @@ useEffect(() => {
   if (timeLeft <= 0) {
     setIsTimerRunning(false);
     roundEndedRef.current = true;
-    setRoundsWon(prev => prev + 1);
 
     if (isDiffuser) {
       socket.emit("timer-ended", { roomId: id });
@@ -583,7 +582,6 @@ useEffect(() => {
     if (!currentTrack) return;
     setIsTimerRunning(false);
     roundEndedRef.current = true;
-    setRoundsWon(prev => prev + 1);
 
     if (isDiffuser) {
       setPopupInfo({
