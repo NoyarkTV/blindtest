@@ -20,75 +20,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Repair ambiguous integration selectors
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('scripts/apply-stats-feature.js')
-          s = p.read_text(encoding='utf-8')
-          s = s.replace(
-              's = replaceOnce(s, composerEmit, composerEmitNew, "normal composer stats emit");',
-              's = replaceFirst(s, composerEmit, composerEmitNew, "normal composer stats emit");'
-          )
-          old = '''    s = replaceOnce(
-                s,
-                '  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-" });',
-                '  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-", pointsGained: points, correctTitle: isCorrect, correctComposer: composerMatch, wrongAttempts: 0, mediaHint: showIndiceMedia, yearHint: showIndiceAnnee });',
-                "eclair validation stats emit"
-              );'''
-          new = old.replace('s = replaceOnce(', 's = replaceFirst(', 1)
-          if old not in s:
-              raise SystemExit('Sélecteur éclair attendu introuvable')
-          s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
-          PY
+      - name: Prepare patch selectors
+        run: python scripts/repair-stats-runner.py pre
 
       - name: Apply integration patch
         run: node scripts/apply-stats-feature.js
 
-      - name: Ensure end summary loads on game over
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          for filename in ['src/GamePage.js', 'src/GamePageEclair.js']:
-              p = Path(filename)
-              s = p.read_text(encoding='utf-8')
-              start = s.find('    const enriched = scores.map')
-              if start < 0:
-                  raise SystemExit(f'Bloc game-over introuvable dans {filename}')
-              marker = '    setShowEndPopup(true);'
-              pos = s.find(marker, start)
-              if pos < 0:
-                  raise SystemExit(f'Ouverture fin de partie introuvable dans {filename}')
-              insert_at = pos + len(marker)
-              nearby = s[insert_at:insert_at + 450]
-              if '/game-summary/' not in nearby:
-                  addition = '''
-
-    fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
-      .then(res => res.ok ? res.json() : { insights: [] })
-      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
-      .catch(() => setEndInsights([]));'''
-                  s = s[:insert_at] + addition + s[insert_at:]
-              p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Fix null formatting edge case
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('src/StatsPage.js')
-          s = p.read_text(encoding='utf-8')
-          s = s.replace(
-              'const formatTime = value => Number.isFinite(Number(value)) ? `${formatNumber(value, 1)} s` : "—";',
-              'const formatTime = value => (value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value))) ? `${formatNumber(value, 1)} s` : "—";'
-          )
-          s = s.replace(
-              '  const aNum = Number(a);\n  const bNum = Number(b);\n  const comparable = Number.isFinite(aNum) && Number.isFinite(bNum);',
-              '  const aNum = Number(a);\n  const bNum = Number(b);\n  const comparable = a !== null && a !== undefined && b !== null && b !== undefined && Number.isFinite(aNum) && Number.isFinite(bNum);'
-          )
-          p.write_text(s, encoding='utf-8')
-          PY
+      - name: Finalize generated code
+        run: python scripts/repair-stats-runner.py post
 
       - name: Install frontend dependencies
         run: npm ci
@@ -113,13 +52,13 @@ jobs:
           node --check index.js
           node --check statsStore.js
           node --check gameSummary.js
-          node -e "const s=require('./statsStore'); s.getGlobalStats().then(r=>{console.log('stats storage:', r.storage); process.exit(0)}).catch(e=>{console.error(e); process.exit(1)})"
+          node -e "const s=require('./statsStore'); s.getGlobalStats().then(r=>{console.log(r.storage); process.exit(0)}).catch(e=>{console.error(e); process.exit(1)})"
 
       - name: Commit validated feature
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f .github/workflows/validate-stats-feature.yml scripts/apply-stats-feature.js
+          git rm -f .github/workflows/validate-stats-feature.yml scripts/apply-stats-feature.js scripts/repair-stats-runner.py
           git add -A
           git commit -m "feat: persistent player statistics and smarter answers"
           git push origin feature/persistent-stats
