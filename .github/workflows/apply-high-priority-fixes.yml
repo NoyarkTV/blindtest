@@ -1,0 +1,49 @@
+name: Apply high priority blindtest fixes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-high-priority-fixes.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Apply fixes
+        run: node scripts/apply-high-priority-fixes.js
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        env:
+          CI: false
+        run: npm run build
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Check server syntax
+        working-directory: server
+        run: node --check index.js
+
+      - name: Commit fixes and cleanup temporary files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/apply-high-priority-fixes.yml scripts/apply-high-priority-fixes.js
+          git add -A
+          git commit -m "fix: high priority gameplay reliability"
+          git push origin main
