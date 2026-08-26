@@ -20,6 +20,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
+      - name: Repair helper typo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/apply-high-priority-fixes.js')
+          lines = p.read_text(encoding='utf-8').splitlines()
+          repaired = False
+          for i, line in enumerate(lines):
+              if 'legacy-chain-removed' in line and 's = s.replace' in line and not line.rstrip().endswith("');"):
+                  lines[i] = line + "');"
+                  repaired = True
+          p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          if not repaired:
+              print('Helper already repaired or target line not found')
+          PY
+
       - name: Apply fixes
         run: node scripts/apply-high-priority-fixes.js
 
