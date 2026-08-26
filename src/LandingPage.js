@@ -8,7 +8,6 @@ function LandingPage({ isSpotifyConnected, onConnectSpotify }) {
   const [playerName, setPlayerName] = useState(localStorage.getItem("playerName") || "");
   const [joinCode, setJoinCode] = useState("");
   const [spotifyToken, setSpotifyToken] = useState(null);
-  const [playerStats, setPlayerStats] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem("profilePhoto") || "");
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
@@ -105,7 +104,6 @@ useEffect(() => {
         let finalName = data.playerName || generateRandomName();
         setPlayerName(finalName);
         localStorage.setItem("playerName", finalName);
-        setPlayerStats(data.stats || null);
 
         // Ne pas écraser la photo si elle existe déjà en local
         const alreadySet = localStorage.getItem("profilePhoto");
@@ -138,7 +136,6 @@ useEffect(() => {
         const fallbackName = generateRandomName();
         setPlayerName(fallbackName);
         localStorage.setItem("playerName", fallbackName);
-        setPlayerStats(null);
 
         const fallback = `/avatarDefault/avatar${Math.floor(Math.random() * 35) + 1}.png`;
         setProfilePhoto(fallback);
@@ -161,9 +158,7 @@ useEffect(() => {
         localStorage.setItem("playerName", data.playerName);
       }
       if (data.stats) {
-        setPlayerStats(data.stats);
       } else {
-        setPlayerStats(null);
       }
   })
 }, []);
@@ -258,24 +253,12 @@ return (
   flexDirection: "column",
   position: "relative"
 }}>
-  {spotifyToken && (
-    <div className="info-icon-container">
-      <div className="info-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ff7c2c" viewBox="0 0 16 16">
-          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-        </svg>
-        <div className="profile-tooltip">
-          <div>Temps moyen : {(playerStats?.timedResponses ?? playerStats?.totalRoundsPlayed ?? 0) > 0 ? (playerStats.cumulativeResponseTime / (playerStats.timedResponses ?? playerStats.totalRoundsPlayed)).toFixed(2) : "--"} sec</div>
-          <div>Rounds joués : {playerStats?.totalRoundsPlayed ?? "--"}</div>
-          <div>Rounds gagnés : {playerStats?.totalRoundsWon ?? "--"}</div>
-          <div>Réussite : {playerStats?.totalRoundsPlayed > 0 ? Math.round((playerStats.totalRoundsWon / playerStats.totalRoundsPlayed) * 100) : "--"}%</div>
-          <div>Parties jouées : {playerStats?.gamesPlayed ?? "--"}</div>
-          <div>Meilleur temps : {playerStats?.bestResponseTime?.toFixed(2) ?? "--"} sec</div>
-          <div>Score cumulé : {playerStats?.totalScore ?? "--"}</div>
-        </div>
-      </div>
-    </div>
+  {playerName && (
+    <button className="stats-shortcut" onClick={() => navigate("/stats")} title="Mes statistiques" aria-label="Mes statistiques">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M0 0h1v15h15v1H0V0zm3 12V7h2v5H3zm4 0V3h2v9H7zm4 0V5h2v7h-2z" />
+      </svg>
+    </button>
   )}
 
 {/* Avatar avec bouton de modification */}

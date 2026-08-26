@@ -14,7 +14,7 @@ const formatNumber = (value, digits = 0) => {
 };
 
 const formatPercent = value => `${formatNumber(value, 0)} %`;
-const formatTime = value => Number.isFinite(Number(value)) ? `${formatNumber(value, 1)} s` : "—";
+const formatTime = value => (value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value))) ? `${formatNumber(value, 1)} s` : "—";
 
 function MetricCard({ label, value, subtitle }) {
   return (
@@ -63,7 +63,7 @@ function TrackList({ title, items, mode = "accuracy", emptyText = "Pas encore as
 function CompareMetric({ label, a, b, formatter = formatNumber, lowerIsBetter = false }) {
   const aNum = Number(a);
   const bNum = Number(b);
-  const comparable = Number.isFinite(aNum) && Number.isFinite(bNum);
+  const comparable = a !== null && a !== undefined && b !== null && b !== undefined && Number.isFinite(aNum) && Number.isFinite(bNum);
   const aWins = comparable && aNum !== bNum && (lowerIsBetter ? aNum < bNum : aNum > bNum);
   const bWins = comparable && aNum !== bNum && (lowerIsBetter ? bNum < aNum : bNum > aNum);
 

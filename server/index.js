@@ -52,6 +52,8 @@ const redirect_uri = process.env.REDIRECT_URI;
 const games = {};
 const alreadyPlayedUris = new Set();
 const disconnectTimers = new Map();
+const { recordRound, recordGame, getPlayerStats, searchPlayers, comparePlayers, getGlobalStats } = require("./statsStore");
+const { buildGameSummary } = require("./gameSummary");
 
 function buildScoreboard(game) {
   if (!game) return [];
@@ -153,7 +155,7 @@ app.post("/create-game", (req, res) => {
   }
 
   // Stockage en mémoire (ou en DB plus tard)
-  games[id] = { id, admin, players: players.map(player => ({ ...player, connected: true })), playersReady: [], currentBuzz: null, scores: players.map(player => ({ name: player.name, score: 0, photo: player.photo || "" })), roundResults: {}, started: false };
+  games[id] = { id, admin, players: players.map(player => ({ ...player, connected: true })), playersReady: [], currentBuzz: null, scores: players.map(player => ({ name: player.name, score: 0, photo: player.photo || "" })), roundResults: {}, statsHistory: [], statsFinalized: false, started: false };
 
   console.log("✅ Partie créée :", games[id]);
 
@@ -275,6 +277,9 @@ app.post("/start-game", (req, res) => {
     admin,
     currentBuzz: null,
     roundResults: {},
+    statsHistory: [],
+    statsFinalized: false,
+    finished: false,
     started: true
   };
   syncGameScores(games[id]);
@@ -532,6 +537,50 @@ app.get("/scores/:id", (req, res) => {
   res.send(syncGameScores(game));
 });
 
+app.get("/game-summary/:id", (req, res) => {
+  const game = games[req.params.id];
+  if (!game) return res.status(404).send({ error: "Partie introuvable" });
+  res.send(buildGameSummary(game));
+});
+
+app.get("/stats/player/:playerName", async (req, res) => {
+  try {
+    res.send(await getPlayerStats(req.params.playerName));
+  } catch (err) {
+    console.error("❌ Stats joueur :", err);
+    res.status(500).send({ error: "Impossible de charger les statistiques" });
+  }
+});
+
+app.get("/stats/players", async (req, res) => {
+  try {
+    res.send({ players: await searchPlayers(req.query.q || "") });
+  } catch (err) {
+    console.error("❌ Recherche joueurs :", err);
+    res.status(500).send({ error: "Impossible de rechercher les joueurs" });
+  }
+});
+
+app.get("/stats/compare", async (req, res) => {
+  const { playerA, playerB } = req.query;
+  if (!playerA || !playerB) return res.status(400).send({ error: "Deux joueurs sont requis" });
+  try {
+    res.send(await comparePlayers(playerA, playerB));
+  } catch (err) {
+    console.error("❌ Comparaison joueurs :", err);
+    res.status(500).send({ error: "Impossible de comparer les joueurs" });
+  }
+});
+
+app.get("/stats/global", async (req, res) => {
+  try {
+    res.send(await getGlobalStats());
+  } catch (err) {
+    console.error("❌ Stats globales :", err);
+    res.status(500).send({ error: "Impossible de charger les statistiques globales" });
+  }
+});
+
 app.get("/profile", (req, res) => {
   const token = req.headers["authorization"]?.replace("Bearer ", "");
 
@@ -722,10 +771,35 @@ socket.on("next-round", ({ roomId }) => {
     emitReadyState(roomId);
   } else {
     console.log("🏁 Fin de la partie");
-    io.to(roomId).emit("game-over", syncGameScores(game));
+    const finalScoreboard = syncGameScores(game);
+
+    if (!game.finished) {
+      game.finished = true;
+      if (!game.config?.modeDiffusion && !game.statsFinalized) {
+        game.statsFinalized = true;
+        const ranked = [...finalScoreboard].sort((a, b) => Number(b.score) - Number(a.score));
+        recordGame({
+          gameId: roomId,
+          mode: game.config?.modeEclair ? "eclair" : "normal",
+          roundsTotal: game.playlist?.length || 0,
+          players: ranked.map((player, index) => ({
+            name: player.name,
+            score: Number(player.score) || 0,
+            rank: index + 1,
+            winner: index === 0,
+            photo: player.photo || ""
+          }))
+        }).catch(err => {
+          game.statsFinalized = false;
+          console.error("❌ Enregistrement fin de partie :", err);
+        });
+      }
+    }
+
+    io.to(roomId).emit("game-over", finalScoreboard);
   }
 });
-socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) => {
+socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime, pointsGained, correctTitle, correctComposer, wrongAttempts, mediaHint, yearHint }) => {
   const game = games[roomId];
   if (!game) {
     console.warn("❌ Partie non trouvée pour player-ready :", roomId);
@@ -742,8 +816,43 @@ socket.on("player-ready", ({ roomId, playerName, previousScore, responseTime }) 
 
   game.roundResults[playerName] = {
     previousScore: Number(previousScore) || 0,
-    responseTime: responseTime ?? null
+    responseTime: responseTime ?? null,
+    pointsGained: Number(pointsGained) || 0,
+    correctTitle: Boolean(correctTitle),
+    correctComposer: Boolean(correctComposer)
   };
+
+  if (!game.config?.modeDiffusion) {
+    if (!Array.isArray(game.statsHistory)) game.statsHistory = [];
+    const track = game.playlist?.[(game.currentRound || 1) - 1] || {};
+    const statRow = {
+      gameId: roomId,
+      roundNumber: game.currentRound || 1,
+      playerName,
+      trackUri: track.uri || "",
+      trackTitle: track.oeuvre || track.titre || track.theme || "Morceau inconnu",
+      media: track.media || "",
+      category: track.categorie || "",
+      year: Number(track.annee) || 0,
+      mode: game.config?.modeEclair ? "eclair" : "normal",
+      correctTitle: Boolean(correctTitle),
+      correctComposer: Boolean(correctComposer),
+      responseTime: responseTime === "-" ? null : responseTime,
+      points: Number(pointsGained) || 0,
+      wrongAttempts: Number(wrongAttempts) || 0,
+      mediaHint: Boolean(mediaHint),
+      yearHint: Boolean(yearHint),
+      timerSeconds: Number(game.config?.time) || null
+    };
+
+    const existingStat = game.statsHistory.findIndex(row =>
+      row.roundNumber === statRow.roundNumber && row.playerName === statRow.playerName
+    );
+    if (existingStat >= 0) game.statsHistory[existingStat] = statRow;
+    else game.statsHistory.push(statRow);
+
+    recordRound(statRow).catch(err => console.error("❌ Enregistrement de manche :", err));
+  }
 
   if (!game.playersReady.includes(playerName)) {
     game.playersReady.push(playerName);

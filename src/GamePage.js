@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
+import { isAcceptedTitle } from "./answerUtils";
 
 function GamePage() {
   const { id } = useParams();
@@ -42,6 +43,7 @@ function GamePage() {
   const [scoreboard, setScoreboard] = useState([]);
   const [finalScores, setFinalScores] = useState([]);
   const [showEndPopup, setShowEndPopup] = useState(false);
+  const [endInsights, setEndInsights] = useState([]);
   const [preloadedImages, setPreloadedImages] = useState({});
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
@@ -340,6 +342,11 @@ useEffect(() => {
 
     setShowPopup(false);
     setShowEndPopup(true);
+
+    fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
+      .then(res => res.ok ? res.json() : { insights: [] })
+      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
+      .catch(() => setEndInsights([]));
     handlePause();
     return;
   }
@@ -428,6 +435,11 @@ useEffect(() => {
     setShowPopup(false);
     setShowEndPopup(true);
 
+    fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
+      .then(res => res.ok ? res.json() : { insights: [] })
+      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
+      .catch(() => setEndInsights([]));
+
     fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -481,7 +493,13 @@ useEffect(() => {
       roomId: id,
       playerName,
       previousScore: score,
-      responseTime: "-"
+      responseTime: "-",
+      pointsGained: 0,
+      correctTitle: false,
+      correctComposer: false,
+      wrongAttempts: wrongAttemptsRef.current,
+      mediaHint: showIndiceMedia,
+      yearHint: showIndiceAnnee
     });
   }
 }, [timeLeft]);
@@ -619,11 +637,12 @@ const handleValidate = () => {
   const timer = params.time ?? 30;
   const bonusCompositeur = params.bonusCompositeur ?? false;
 
-  const normalizedAnswer = normalize(answer);
-  const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
-  const isCorrect = validAnswers.some(valid =>
-    valid === normalizedAnswer || levenshtein(valid, normalizedAnswer) <= 2
-  );
+  const acceptedTitles = [
+    ...(currentTrack.answers || []),
+    currentTrack.oeuvre,
+    currentTrack.titre
+  ].filter(Boolean);
+  const isCorrect = isAcceptedTitle(answer, acceptedTitles);
 
   // 🎼 Bonus compositeur
   let bonus = 0;
@@ -697,7 +716,13 @@ const handleValidate = () => {
       roomId: id,
       playerName,
       previousScore: score, // score AVANT ajout
-      responseTime: responseTime.toFixed(1)
+      responseTime: responseTime.toFixed(1),
+      pointsGained: totalPoints,
+      correctTitle: true,
+      correctComposer: isComposerMatch,
+      wrongAttempts: wrongAttemptsRef.current,
+      mediaHint: showIndiceMedia,
+      yearHint: showIndiceAnnee
     });
     setPopupInfo({
       title: "Bonne réponse",
@@ -750,7 +775,13 @@ const handleValidate = () => {
       roomId: id,
       playerName,
       previousScore: score,
-      responseTime: "-"
+      responseTime: "-",
+      pointsGained: bonus,
+      correctTitle: false,
+      correctComposer: true,
+      wrongAttempts: wrongAttemptsRef.current,
+      mediaHint: showIndiceMedia,
+      yearHint: showIndiceAnnee
     });
 
     setPopupInfo({
@@ -1306,9 +1337,16 @@ return (
         })}
       </div>
 
-      <p style={{ marginTop: 12, fontSize: 16, color: "#ccc" }}>
-        Votre temps de réponse moyen est de {averageTime} sec
-      </p>
+      {endInsights.length > 0 && (
+        <div className="end-game-insights">
+          {endInsights.map((insight, index) => (
+            <div className="end-game-insight" key={`${insight.type || "insight"}-${index}`}>
+              <span className="end-game-insight-dot" />
+              <p>{insight.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <button
         onClick={() => {

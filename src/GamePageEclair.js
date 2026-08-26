@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
+import { isAcceptedTitle } from "./answerUtils";
 
 function GamePageEclair() {
   const { id } = useParams();
@@ -42,6 +43,7 @@ function GamePageEclair() {
   const [scoreboard, setScoreboard] = useState([]);
   const [finalScores, setFinalScores] = useState([]);
   const [showEndPopup, setShowEndPopup] = useState(false);
+  const [endInsights, setEndInsights] = useState([]);
   const [preloadedImages, setPreloadedImages] = useState({});
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
@@ -340,6 +342,11 @@ useEffect(() => {
 
     setShowPopup(false);
     setShowEndPopup(true);
+
+    fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
+      .then(res => res.ok ? res.json() : { insights: [] })
+      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
+      .catch(() => setEndInsights([]));
     handlePause();
     return;
   }
@@ -427,6 +434,11 @@ useEffect(() => {
 
     setShowPopup(false);
     setShowEndPopup(true);
+
+    fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
+      .then(res => res.ok ? res.json() : { insights: [] })
+      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
+      .catch(() => setEndInsights([]));
 
     fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
       method: "POST",
@@ -574,11 +586,12 @@ const handleValidate = () => {
   const currentTrack = playlist[currentRound - 1];
   const bonusCompositeur = params.bonusCompositeur ?? false;
 
-  const normalizedAnswer = normalize(answer);
-  const validAnswers = (currentTrack.answers || []).map(a => normalize(a));
-  const isCorrect = validAnswers.some(valid =>
-    valid === normalizedAnswer || levenshtein(valid, normalizedAnswer) <= 2
-  );
+  const acceptedTitles = [
+    ...(currentTrack.answers || []),
+    currentTrack.oeuvre,
+    currentTrack.titre
+  ].filter(Boolean);
+  const isCorrect = isAcceptedTitle(answer, acceptedTitles);
 
  let composerMatch = false;
 
@@ -623,7 +636,7 @@ const handleValidate = () => {
   roundEndedRef.current = true;
   if (isCorrect) setRoundsWon(prev => prev + 1);
   setShowPopup(true);
-  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-" });
+  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-", pointsGained: points, correctTitle: isCorrect, correctComposer: composerMatch, wrongAttempts: 0, mediaHint: showIndiceMedia, yearHint: showIndiceAnnee });
   setAnswer("");
   setComposerGuess("");
 };
@@ -641,7 +654,7 @@ const handleAbandon = () => {
   });
   roundEndedRef.current = true;
   setShowPopup(true);
-  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-" });
+  socket.emit("player-ready", { roomId: id, playerName, previousScore: score, responseTime: "-", pointsGained: 0, correctTitle: false, correctComposer: false, wrongAttempts: 0, mediaHint: showIndiceMedia, yearHint: showIndiceAnnee });
   setAnswer("");
   setComposerGuess("");
 };
@@ -1143,9 +1156,16 @@ return (
         })}
       </div>
 
-      <p style={{ marginTop: 12, fontSize: 16, color: "#ccc" }}>
-        Votre temps de réponse moyen est de {averageTime} sec
-      </p>
+      {endInsights.length > 0 && (
+        <div className="end-game-insights">
+          {endInsights.map((insight, index) => (
+            <div className="end-game-insight" key={`${insight.type || "insight"}-${index}`}>
+              <span className="end-game-insight-dot" />
+              <p>{insight.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <button
         onClick={() => {
