@@ -1046,7 +1046,7 @@ return (
 
       {/* ✅ Bouton ou attente admin */}
 {isAdmin ? (
-        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current || playersReady < (playersTotal || players.length)}>
+        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
           Round suivant ({playersReady} / {playersTotal || players.length})
         </button>
       ) : (

@@ -510,6 +510,14 @@ app.post("/leave-game", (req, res) => {
   const game = games[id];
   if (!game) return res.status(404).send({ error: "Partie introuvable" });
 
+  // Une requête leave-game peut arriver pendant la transition Config/Room -> Jeu.
+  // Une partie démarrée gère déjà les vraies déconnexions via Socket.IO + délai de grâce :
+  // on ne supprime donc jamais un joueur de game.players ici après le lancement.
+  if (game.started) {
+    console.log(`🛡️ leave-game ignoré pour ${playerName} : partie ${id} déjà démarrée`);
+    return res.send({ success: true, retained: true });
+  }
+
   const before = game.players.length;
   game.players = game.players.filter(p => p.name !== playerName);
   if (Array.isArray(game.playersReady)) {
@@ -755,9 +763,8 @@ socket.on("next-round", ({ roomId }) => {
   const activeNames = new Set(activePlayers.map(player => player.name));
   const readyCount = (Array.isArray(game.playersReady) ? game.playersReady : []).filter(name => activeNames.has(name)).length;
   if (readyCount < activePlayers.length) {
-    console.warn(`⏳ Round non terminé : ${readyCount}/${activePlayers.length} joueurs prêts`);
-    emitReadyState(roomId);
-    return;
+    // L'interface n'expose cette action qu'à l'admin : il peut volontairement forcer la manche suivante.
+    console.warn(`⚡ Passage forcé au round suivant : ${readyCount}/${activePlayers.length} joueurs prêts`);
   }
 
   console.log(`➡️ Round actuel : ${game.currentRound} / ${game.playlist?.length}`);

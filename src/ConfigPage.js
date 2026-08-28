@@ -264,6 +264,8 @@ const validerPartie = () => {
       })
         .then(res => res.json())
         .then(() => {
+          // Important : la navigation Config -> Jeu ne doit jamais être interprétée comme un départ de la room.
+          shouldLeaveRef.current = false;
           if (modeDiffusion) {
             navigate(`/diffuseur/${id}`);
           } else if (modeEclair) {
