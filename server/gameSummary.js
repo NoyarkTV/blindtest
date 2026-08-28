@@ -43,14 +43,14 @@ function buildGameSummary(game) {
     if (!rounds.has(row.roundNumber)) rounds.set(row.roundNumber, []);
     rounds.get(row.roundNumber).push(row);
   });
-  rounds.forEach(rows => {
-    const correct = rows.filter(row => row.correctTitle);
+  rounds.forEach(rowsForRound => {
+    const correct = rowsForRound.filter(row => row.correctTitle);
     if (correct.length === 1) soloFinds[correct[0].playerName] = (soloFinds[correct[0].playerName] || 0) + 1;
   });
 
   const metrics = playerNames.map(name => {
-    const rows = history.filter(row => row.playerName === name);
-    const correctRows = rows.filter(row => row.correctTitle);
+    const rowsForPlayer = history.filter(row => row.playerName === name);
+    const correctRows = rowsForPlayer.filter(row => row.correctTitle);
     const timedRows = correctRows.filter(row => Number.isFinite(Number(row.responseTime)));
     const bestRow = [...timedRows].sort((a, b) => Number(a.responseTime) - Number(b.responseTime))[0];
     const score = Number(scores.find(player => player.name === name)?.score) || 0;
@@ -63,15 +63,15 @@ function buildGameSummary(game) {
       name,
       score,
       correct: correctRows.length,
-      attempts: rows.length,
+      attempts: rowsForPlayer.length,
       averageTime: average(timedRows.map(row => row.responseTime)),
       bestTime: bestRow ? Number(bestRow.responseTime) : null,
       bestTrack: bestRow?.trackTitle || null,
-      streak: longestCorrectStreak(rows),
+      streak: longestCorrectStreak(rowsForPlayer),
       soloFinds: soloFinds[name] || 0,
       lastSecond,
       noHintCorrect,
-      hintsUsed: rows.reduce((sum, row) => sum + Number(Boolean(row.mediaHint)) + Number(Boolean(row.yearHint)), 0)
+      hintsUsed: rowsForPlayer.reduce((sum, row) => sum + Number(Boolean(row.mediaHint)) + Number(Boolean(row.yearHint)), 0)
     };
   });
 
@@ -80,89 +80,151 @@ function buildGameSummary(game) {
     : [...metrics].sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   const runnerUp = ranked[1];
-  const mandatory = [];
+  const targetCount = Math.min(3, metrics.length);
   const candidates = [];
+
+  const addCandidate = (playerName, type, text, priority = 1) => {
+    if (!playerName || !text) return;
+    candidates.push({ playerName, type, text, priority });
+  };
 
   if (winner && runnerUp) {
     const winnerTime = winner.averageTime;
     const runnerTime = runnerUp.averageTime;
     if (winner.correct > runnerUp.correct) {
       const difference = winner.correct - runnerUp.correct;
-      mandatory.push({
-        type: "winner-reason",
-        text: `${winner.name} a surtout gagné en trouvant ${difference} titre${difference > 1 ? "s" : ""} de plus que ${runnerUp.name}.`
-      });
+      addCandidate(
+        winner.name,
+        "winner-reason",
+        `${winner.name} a surtout gagné en trouvant ${difference} titre${difference > 1 ? "s" : ""} de plus que ${runnerUp.name}.`,
+        0
+      );
     } else if (winner.correct === runnerUp.correct && Number.isFinite(winnerTime) && Number.isFinite(runnerTime) && winnerTime < runnerTime) {
-      mandatory.push({
-        type: "winner-reason",
-        text: `${winner.name} et ${runnerUp.name} ont trouvé autant de titres, mais ${winner.name} a été plus rapide (${winnerTime.toFixed(1)} s contre ${runnerTime.toFixed(1)} s).`
-      });
+      addCandidate(
+        winner.name,
+        "winner-reason",
+        `${winner.name} et ${runnerUp.name} ont trouvé autant de titres, mais ${winner.name} a été plus rapide (${winnerTime.toFixed(1)} s contre ${runnerTime.toFixed(1)} s).`,
+        0
+      );
     } else if (winner.correct < runnerUp.correct && Number.isFinite(winnerTime) && Number.isFinite(runnerTime)) {
-      mandatory.push({
-        type: "winner-reason",
-        text: `${winner.name} a trouvé moins de titres que ${runnerUp.name}, mais sa rapidité et ses points par réponse lui donnent la victoire.`
-      });
+      addCandidate(
+        winner.name,
+        "winner-reason",
+        `${winner.name} a trouvé moins de titres que ${runnerUp.name}, mais sa rapidité et ses points par réponse lui donnent la victoire.`,
+        0
+      );
     } else {
-      mandatory.push({ type: "winner-reason", text: `${winner.name} termine en tête avec ${winner.score} points.` });
+      addCandidate(winner.name, "winner-reason", `${winner.name} termine en tête avec ${winner.score} points.`, 0);
     }
   } else if (winner) {
-    mandatory.push({
-      type: "solo-summary",
-      text: `${winner.name} a trouvé ${winner.correct} titre${winner.correct > 1 ? "s" : ""} sur ${game.playlist?.length || winner.attempts}.`
-    });
+    addCandidate(
+      winner.name,
+      "solo-summary",
+      `${winner.name} a trouvé ${winner.correct} titre${winner.correct > 1 ? "s" : ""} sur ${game.playlist?.length || winner.attempts}.`,
+      0
+    );
   }
 
-  const fastest = [...metrics]
-    .filter(metric => metric.correct >= 2 && Number.isFinite(metric.averageTime))
-    .sort((a, b) => a.averageTime - b.averageTime)[0];
-  if (fastest) {
-    candidates.push({ type: "fastest", text: `${fastest.name} a été le plus rapide : ${fastest.averageTime.toFixed(1)} s en moyenne sur ses bonnes réponses.` });
-  }
+  metrics.forEach(metric => {
+    if (metric.correct >= 2 && Number.isFinite(metric.averageTime)) {
+      addCandidate(
+        metric.name,
+        "average-speed",
+        `${metric.name} a répondu en ${metric.averageTime.toFixed(1)} s de moyenne sur ses ${metric.correct} bonnes réponses.`
+      );
+    }
 
-  const soloLeader = [...metrics].sort((a, b) => b.soloFinds - a.soloFinds)[0];
-  if (soloLeader?.soloFinds > 0) {
-    candidates.push({
-      type: "solo-finds",
-      text: `${soloLeader.name} a été le seul à reconnaître ${soloLeader.soloFinds} morceau${soloLeader.soloFinds > 1 ? "x" : ""}.`
-    });
-  }
+    if (metric.soloFinds > 0) {
+      addCandidate(
+        metric.name,
+        "solo-finds",
+        `${metric.name} a été le seul à reconnaître ${metric.soloFinds} morceau${metric.soloFinds > 1 ? "x" : ""}.`
+      );
+    }
 
-  const streakLeader = [...metrics].sort((a, b) => b.streak - a.streak)[0];
-  if (streakLeader?.streak >= 3) {
-    candidates.push({ type: "streak", text: `${streakLeader.name} signe la meilleure série : ${streakLeader.streak} bonnes réponses d’affilée.` });
-  }
+    if (metric.streak >= 3) {
+      addCandidate(metric.name, "streak", `${metric.name} signe une série de ${metric.streak} bonnes réponses d’affilée.`);
+    }
 
-  const bestReaction = [...metrics]
-    .filter(metric => Number.isFinite(metric.bestTime))
-    .sort((a, b) => a.bestTime - b.bestTime)[0];
-  if (bestReaction) {
-    candidates.push({
-      type: "best-reaction",
-      text: `Réponse éclair de ${bestReaction.name}${bestReaction.bestTrack ? ` sur ${bestReaction.bestTrack}` : ""} : ${bestReaction.bestTime.toFixed(1)} s.`
-    });
-  }
+    if (Number.isFinite(metric.bestTime)) {
+      addCandidate(
+        metric.name,
+        "best-reaction",
+        `Réponse éclair de ${metric.name}${metric.bestTrack ? ` sur ${metric.bestTrack}` : ""} : ${metric.bestTime.toFixed(1)} s.`
+      );
+    }
 
-  const lastSecondLeader = [...metrics].sort((a, b) => b.lastSecond - a.lastSecond)[0];
-  if (lastSecondLeader?.lastSecond > 0) {
-    candidates.push({
-      type: "last-second",
-      text: `${lastSecondLeader.name} a sauvé ${lastSecondLeader.lastSecond} réponse${lastSecondLeader.lastSecond > 1 ? "s" : ""} dans les deux dernières secondes.`
-    });
-  }
+    if (metric.lastSecond > 0) {
+      addCandidate(
+        metric.name,
+        "last-second",
+        `${metric.name} a sauvé ${metric.lastSecond} réponse${metric.lastSecond > 1 ? "s" : ""} dans les deux dernières secondes.`
+      );
+    }
 
-  const noHintLeader = [...metrics].sort((a, b) => b.noHintCorrect - a.noHintCorrect)[0];
-  if (noHintLeader?.noHintCorrect >= 3 && noHintLeader.hintsUsed === 0) {
-    candidates.push({
-      type: "no-hints",
-      text: `${noHintLeader.name} a trouvé ${noHintLeader.noHintCorrect} titres sans utiliser un seul indice.`
-    });
-  }
+    if (metric.noHintCorrect >= 3 && metric.hintsUsed === 0) {
+      addCandidate(
+        metric.name,
+        "no-hints",
+        `${metric.name} a trouvé ${metric.noHintCorrect} titres sans utiliser un seul indice.`
+      );
+    }
+  });
 
   const seed = String(game.id || "game");
-  const varied = [...candidates].sort((a, b) => hashString(`${seed}:${a.type}`) - hashString(`${seed}:${b.type}`));
-  const insights = [...mandatory, ...varied].slice(0, 3);
+  const selected = [];
+  const usedPlayers = new Set();
 
-  return { insights, players: metrics };
+  const mandatory = candidates
+    .filter(candidate => candidate.priority === 0)
+    .sort((a, b) => hashString(`${seed}:${a.type}:${a.playerName}`) - hashString(`${seed}:${b.type}:${b.playerName}`));
+
+  for (const candidate of mandatory) {
+    if (selected.length >= targetCount || usedPlayers.has(candidate.playerName)) continue;
+    selected.push(candidate);
+    usedPlayers.add(candidate.playerName);
+  }
+
+  const varied = candidates
+    .filter(candidate => candidate.priority !== 0)
+    .sort((a, b) => hashString(`${seed}:${a.type}:${a.playerName}`) - hashString(`${seed}:${b.type}:${b.playerName}`));
+
+  for (const candidate of varied) {
+    if (selected.length >= targetCount) break;
+    if (usedPlayers.has(candidate.playerName)) continue;
+    selected.push(candidate);
+    usedPlayers.add(candidate.playerName);
+  }
+
+  const fallbackOrder = [...ranked, ...metrics]
+    .filter((metric, index, array) => metric && array.findIndex(other => other?.name === metric.name) === index)
+    .sort((a, b) => {
+      const aUsed = usedPlayers.has(a.name) ? 1 : 0;
+      const bUsed = usedPlayers.has(b.name) ? 1 : 0;
+      if (aUsed !== bUsed) return aUsed - bUsed;
+      return hashString(`${seed}:fallback:${a.name}`) - hashString(`${seed}:fallback:${b.name}`);
+    });
+
+  for (const metric of fallbackOrder) {
+    if (selected.length >= targetCount) break;
+    if (usedPlayers.has(metric.name)) continue;
+    const totalRounds = metric.attempts || game.playlist?.length || 0;
+    let text;
+    if (metric.correct > 0 && Number.isFinite(metric.averageTime)) {
+      text = `${metric.name} termine avec ${metric.correct}/${totalRounds} bonnes réponses et ${metric.averageTime.toFixed(1)} s de moyenne.`;
+    } else if (metric.correct > 0) {
+      text = `${metric.name} termine avec ${metric.correct}/${totalRounds} bonnes réponses et ${metric.score} points.`;
+    } else {
+      text = `${metric.name} termine cette partie avec ${metric.score} points.`;
+    }
+    selected.push({ playerName: metric.name, type: "player-summary", text, priority: 2 });
+    usedPlayers.add(metric.name);
+  }
+
+  return {
+    insights: selected.slice(0, targetCount).map(({ playerName, type, text }) => ({ playerName, type, text })),
+    players: metrics
+  };
 }
 
 module.exports = { buildGameSummary };
