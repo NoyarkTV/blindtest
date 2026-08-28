@@ -1,0 +1,97 @@
+name: Emergency round scoring repair v2
+
+on:
+  push:
+    branches:
+      - fix/emergency-round-scoring
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Apply repair
+        run: python scripts/emergency_round_fix.py
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        env:
+          CI: true
+        run: npm test -- --watchAll=false
+
+      - name: Build frontend
+        env:
+          CI: false
+        run: npm run build
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Validate server syntax and summary rules
+        working-directory: server
+        shell: bash
+        run: |
+          node --check index.js
+          node --check gameSummary.js
+          node --check statsStore.js
+          node <<'NODE'
+          const assert = require('assert');
+          const { buildGameSummary } = require('./gameSummary');
+
+          function makeGame(count) {
+            const names = ['Thibault', 'Margaux', 'Lucas', 'Romain'].slice(0, count);
+            const players = names.map(name => ({ name }));
+            const scores = names.map((name, i) => ({ name, score: 1000 - i * 100 }));
+            const statsHistory = [];
+            names.forEach((name, i) => {
+              for (let round = 1; round <= 5; round++) {
+                statsHistory.push({
+                  roundNumber: round,
+                  playerName: name,
+                  correctTitle: round <= (5 - i),
+                  responseTime: round <= (5 - i) ? 4 + i + round / 10 : null,
+                  timerSeconds: 30,
+                  trackTitle: `Track ${round}`,
+                  mediaHint: false,
+                  yearHint: false
+                });
+              }
+            });
+            return { id: `test-${count}`, players, scores, statsHistory, playlist: new Array(5).fill({}) };
+          }
+
+          for (const count of [1, 2, 4]) {
+            const summary = buildGameSummary(makeGame(count));
+            assert.strictEqual(summary.insights.length, Math.min(count, 3));
+            const subjects = summary.insights.map(insight => insight.playerName);
+            assert.strictEqual(new Set(subjects).size, subjects.length);
+          }
+          console.log('gameSummary rules validated');
+          NODE
+
+      - name: Commit validated repair
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/emergency-round-scoring-fix.yml .github/workflows/emergency-round-scoring-fix-v2.yml scripts/emergency_round_fix.py
+          git add -A
+          git commit -m "fix: restore reliable round scoring and varied summaries"
+          git push origin fix/emergency-round-scoring
