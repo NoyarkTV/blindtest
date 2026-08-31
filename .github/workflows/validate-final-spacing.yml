@@ -1,0 +1,19 @@
+name: Validate final spacing pass
+
+on:
+  push:
+    branches:
+      - feature/final-spacing-pass
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: CI=true npm test -- --runInBand --watchAll=false
+      - run: CI=false npm run build
