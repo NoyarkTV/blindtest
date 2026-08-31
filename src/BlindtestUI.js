@@ -232,22 +232,31 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
   const podium = hasPodium ? [scores[1], scores[0], scores[2]] : [];
   const remaining = hasPodium ? scores.slice(3) : scores;
   const podiumPlace = player => scores.findIndex(score => score.name === player.name) + 1;
+  const confettiSeed = scores.reduce(
+    (sum, player, index) => sum + (Number(player.score) || 0) * (index + 3),
+    scores.length * 97
+  ) % 997;
+  const confettiCount = hasPodium ? 38 : 52;
+  const confettiColors = ["#ff7c2c", "#c22fa4", "#b494f8", "#65dca0", "#ffd166", "#5fb8ff", "#f06a9f", "#ffffff"];
 
   return (
     <div className="popup-rep-overlay bt-end-overlay">
-      <div className="bt-end-modal">
+      <div className={`bt-end-modal ${hasPodium ? "has-podium" : "no-podium"}`}>
         <div className="bt-end-confetti" aria-hidden="true">
-          {Array.from({ length: 32 }, (_, index) => (
+          {Array.from({ length: confettiCount }, (_, index) => (
             <i
-              key={index}
+              key={`${confettiSeed}-${index}`}
+              className={`shape-${(index + confettiSeed) % 4}`}
               style={{
-                "--x": `${4 + ((index * 29) % 92)}%`,
-                "--delay": `${-((index * 0.31) % 3.7)}s`,
-                "--duration": `${3.1 + ((index * 7) % 13) / 10}s`,
-                "--drift": `${-24 + ((index * 17) % 49)}px`,
-                "--start-rotate": `${(index * 47) % 180}deg`,
-                "--w": `${5 + (index % 4)}px`,
-                "--h": `${9 + (index % 5) * 2}px`
+                "--x": `${2 + ((confettiSeed + index * 37) % 96)}%`,
+                "--delay": `${-(((confettiSeed % 19) * 0.07 + index * 0.23) % 4.8)}s`,
+                "--duration": `${2.8 + ((confettiSeed + index * 11) % 18) / 10}s`,
+                "--drift": `${-45 + ((confettiSeed + index * 23) % 91)}px`,
+                "--start-rotate": `${(confettiSeed + index * 53) % 360}deg`,
+                "--w": `${4 + ((confettiSeed + index) % 5)}px`,
+                "--h": `${7 + ((confettiSeed + index * 3) % 9)}px`,
+                "--fall-distance": hasPodium ? "650px" : "430px",
+                "--confetti": confettiColors[(index + confettiSeed) % confettiColors.length]
               }}
             />
           ))}

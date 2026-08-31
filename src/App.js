@@ -1,5 +1,4 @@
 import React from "react";
-import "./UiPolish.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./LandingPage";
 import GamePage from "./GamePage";
@@ -9,6 +8,7 @@ import GamePageDiffuseur from "./GamePageDiffuseur";
 import ConfigPage from "./ConfigPage";
 import RoomPage from "./RoomPage";
 import StatsPage from "./StatsPage";
+import "./UiPolish.css";
 
 function App() {
   return (
