@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import socket from "./socket";
-import { AppHeader } from "./BlindtestUI";
+import { AppHeader, CopyIcon, CheckIcon, CrownIcon } from "./BlindtestUI";
 
 console.log("✅ ConfigPage.js chargé !");
 
@@ -373,12 +373,12 @@ return (
       <aside className="bt-config-lobby">
         <div>
           <h3>Salle d’attente</h3>
-          <div className="bt-config-code"><code>{id}</code><button onClick={copierCode} title="Copier le code">{copied ? "✓" : "⧉"}</button></div>
+          <div className="bt-config-code"><code>{id}</code><button className={`bt-copy-code ${copied ? "copied" : ""}`} onClick={copierCode} title={copied ? "Code copié" : "Copier le code"} aria-label={copied ? "Code copié" : "Copier le code"}>{copied ? <CheckIcon /> : <CopyIcon />}</button></div>
           <div className="bt-config-players">
             {players.map(player => (
               <div className={`bt-config-player ${player.name === playerName ? "me" : ""}`} key={player.name}>
                 <span className="bt-avatar"><img src={player.photo || "/ppDefault.png"} alt="" /></span>
-                <span>{player.name}{player.name === playerName && <span className="bt-admin-crown">♛</span>}</span>
+                <span>{player.name}{player.name === playerName && <span className="bt-admin-crown" title="Organisateur"><CrownIcon /></span>}</span>
                 <i className="bt-online-dot" />
               </div>
             ))}
