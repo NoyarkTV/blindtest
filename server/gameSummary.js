@@ -36,6 +36,7 @@ function buildGameSummary(game) {
     ...scores.map(player => player.name),
     ...history.map(row => row.playerName)
   ].filter(Boolean))];
+  const roundsTotal = game.playlist?.length || 0;
 
   const soloFinds = Object.fromEntries(playerNames.map(name => [name, 0]));
   const rounds = new Map();
@@ -64,6 +65,7 @@ function buildGameSummary(game) {
       score,
       correct: correctRows.length,
       attempts: rowsForPlayer.length,
+      roundsTotal: roundsTotal || rowsForPlayer.length,
       averageTime: average(timedRows.map(row => row.responseTime)),
       bestTime: bestRow ? Number(bestRow.responseTime) : null,
       bestTrack: bestRow?.trackTitle || null,
@@ -120,7 +122,7 @@ function buildGameSummary(game) {
     addCandidate(
       winner.name,
       "solo-summary",
-      `${winner.name} a trouvé ${winner.correct} titre${winner.correct > 1 ? "s" : ""} sur ${game.playlist?.length || winner.attempts}.`,
+      `${winner.name} a trouvé ${winner.correct} titre${winner.correct > 1 ? "s" : ""} sur ${roundsTotal || winner.attempts}.`,
       0
     );
   }
@@ -208,7 +210,7 @@ function buildGameSummary(game) {
   for (const metric of fallbackOrder) {
     if (selected.length >= targetCount) break;
     if (usedPlayers.has(metric.name)) continue;
-    const totalRounds = metric.attempts || game.playlist?.length || 0;
+    const totalRounds = metric.roundsTotal || metric.attempts || 0;
     let text;
     if (metric.correct > 0 && Number.isFinite(metric.averageTime)) {
       text = `${metric.name} termine avec ${metric.correct}/${totalRounds} bonnes réponses et ${metric.averageTime.toFixed(1)} s de moyenne.`;
