@@ -1,0 +1,131 @@
+/* Final spacing pass: breathing room, alignment and continuous end-game confetti. */
+
+/* Round-end response time must stay visually centered even though it contains an SVG icon. */
+.bt-round-time {
+  width: 100%;
+  justify-content: center !important;
+  text-align: center;
+}
+
+/* Config: restore breathing room without reintroducing a forced tall frame. */
+@media (min-width: 901px) and (min-height: 720px) {
+  .bt-config-shell {
+    gap: 20px !important;
+    margin: 8px auto 12px !important;
+  }
+  .bt-config-main {
+    padding: 17px 21px !important;
+  }
+  .bt-config-heading {
+    margin-bottom: 13px !important;
+  }
+  .bt-mode-grid {
+    margin-bottom: 11px !important;
+    gap: 9px !important;
+  }
+  .bt-mode-card {
+    padding: 11px 13px !important;
+  }
+  .bt-config-controls {
+    gap: 10px !important;
+  }
+  .bt-config-control {
+    padding: 10px 11px !important;
+  }
+  .bt-composer-toggle {
+    margin-top: 10px !important;
+    padding: 10px 12px !important;
+  }
+  .bt-config-filter {
+    padding-top: 10px !important;
+    margin-top: 10px !important;
+  }
+  .bt-config-filter-head {
+    margin-bottom: 8px !important;
+  }
+  .bt-config-chips {
+    gap: 6px !important;
+  }
+  .bt-config-chip {
+    padding: 6px 9px !important;
+    font-size: .76rem !important;
+  }
+  .bt-config-lobby {
+    padding: 17px !important;
+  }
+}
+
+@media (min-width: 901px) and (min-height: 880px) {
+  .bt-config-shell {
+    margin-top: 12px !important;
+  }
+  .bt-config-main {
+    padding: 20px 23px !important;
+  }
+  .bt-config-heading {
+    margin-bottom: 15px !important;
+  }
+  .bt-mode-grid {
+    margin-bottom: 13px !important;
+  }
+  .bt-config-control {
+    padding: 11px 12px !important;
+  }
+  .bt-composer-toggle {
+    margin-top: 12px !important;
+  }
+  .bt-config-filter {
+    padding-top: 11px !important;
+    margin-top: 11px !important;
+  }
+}
+
+/* End-game modal: more air between the major visual sections. */
+.bt-end-modal {
+  padding: 30px 32px 28px !important;
+  width: min(860px, 94vw) !important;
+}
+.bt-end-modal > h2 {
+  margin-bottom: 20px !important;
+}
+.bt-podium {
+  margin-top: 26px !important;
+  margin-bottom: 24px !important;
+}
+.bt-final-board {
+  margin-top: 18px !important;
+}
+.bt-fun-facts {
+  margin-top: 20px !important;
+  gap: 12px !important;
+}
+.bt-fun-fact {
+  padding: 13px 14px !important;
+  min-height: 70px;
+}
+.bt-end-actions,
+.bt-end-modal .bt-end-actions {
+  margin-top: 22px !important;
+}
+
+/* Continuous rectangular confetti for as long as the end modal is open. */
+.bt-end-confetti i {
+  animation-name: bt-confetti-burst !important;
+  animation-duration: var(--duration, 2.8s) !important;
+  animation-timing-function: linear !important;
+  animation-delay: calc(var(--delay, 0s) - 3s) !important;
+  animation-iteration-count: infinite !important;
+  animation-fill-mode: none !important;
+  border-radius: 1px !important;
+  clip-path: none !important;
+}
+
+@media (max-width: 700px) {
+  .bt-end-modal {
+    padding: 24px 18px 22px !important;
+    width: min(94vw, 860px) !important;
+  }
+  .bt-fun-facts {
+    gap: 9px !important;
+  }
+}
