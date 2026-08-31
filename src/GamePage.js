@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
 import { isAcceptedTitle } from "./answerUtils";
+import { AppHeader, Waveform, GameScoreboard, RoundResultModal, EndGameModal } from "./BlindtestUI";
 
 function GamePage() {
   const { id } = useParams();
@@ -44,6 +45,7 @@ function GamePage() {
   const [finalScores, setFinalScores] = useState([]);
   const [showEndPopup, setShowEndPopup] = useState(false);
   const [endInsights, setEndInsights] = useState([]);
+  const [endSummaryPlayers, setEndSummaryPlayers] = useState([]);
   const [preloadedImages, setPreloadedImages] = useState({});
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
@@ -344,9 +346,15 @@ useEffect(() => {
     setShowEndPopup(true);
 
     fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
-      .then(res => res.ok ? res.json() : { insights: [] })
-      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
-      .catch(() => setEndInsights([]));
+      .then(res => res.ok ? res.json() : { insights: [], players: [] })
+      .then(data => {
+        setEndInsights(Array.isArray(data.insights) ? data.insights : []);
+        setEndSummaryPlayers(Array.isArray(data.players) ? data.players : []);
+      })
+      .catch(() => {
+        setEndInsights([]);
+        setEndSummaryPlayers([]);
+      });
     handlePause();
     return;
   }
@@ -436,9 +444,15 @@ useEffect(() => {
     setShowEndPopup(true);
 
     fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
-      .then(res => res.ok ? res.json() : { insights: [] })
-      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
-      .catch(() => setEndInsights([]));
+      .then(res => res.ok ? res.json() : { insights: [], players: [] })
+      .then(data => {
+        setEndInsights(Array.isArray(data.insights) ? data.insights : []);
+        setEndSummaryPlayers(Array.isArray(data.players) ? data.players : []);
+      })
+      .catch(() => {
+        setEndInsights([]);
+        setEndSummaryPlayers([]);
+      });
 
     fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
       method: "POST",
@@ -899,470 +913,63 @@ const handleNext = () => {
   };
 
 return (
-  <div className="app">
+  <div className="app bt-game-page">
     <SpotifyPlayer token={token} onReady={handleReady} />
+    <AppHeader onHome={() => navigate("/")} />
 
-{/* HEADER GLOBAL */}
-<header style={{
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  height: 60,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "0 20px",
-  zIndex: 20
-}}>
-  <img
-    src="/logo-line.svg"
-    alt="Logo"
-    onClick={() => navigate("/")}
-    style={{
-      height: 40,
-      cursor: "pointer"
-    }}
-  />
-</header>
+    <div className="bt-game-shell">
+      <div className="bt-game-round">ROUND {currentRound} / {playlist.length}</div>
+      <div className="bt-game-center">
+        <div className="timer bt-game-timer" style={{ "--progress": `${(timeLeft / timer) * 360}deg` }}>
+          <span>{Math.ceil(timeLeft ?? 0)}</span>
+        </div>
 
-{/* CONTENU CENTRAL */}
-<div style={{
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  height: "100vh",
-  width: "100vw",
-  overflow: "hidden"
-}}>
-  {/* TITRE ROUND */}
-  <div style={{
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
-    textTransform: "uppercase",
-    marginBottom: 20,
-    marginTop: 60 // espace sous le header
-  }}>
-    ROUND {currentRound} / {playlist.length}
-  </div>
-      {/* TIMER avec contour dégradé animé */}
-<div
-  className="timer"
-  style={{ "--progress": `${(timeLeft / timer) * 360}deg` }}
->
-  <span>{Math.ceil(timeLeft ?? 0)}</span>
-</div>
+        <Waveform active={Boolean(isTimerRunning && isPlaying && !showPopup && !showEndPopup)} />
 
-      {/* INDICES */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 40, flexWrap: "wrap" }}>
-{["media", "annee"].map((type, i) => {
-  const visible = type === "media" ? showIndiceMedia : showIndiceAnnee;
-  const toggle = type === "media" ? () => setShowIndiceMedia(true) : () => setShowIndiceAnnee(true);
-  const label = type === "media" ? "Média" : "Année";
-  const value = playlist[currentRound - 1]?.[type] || "?";
+        <div className="bt-game-hints">
+          {["media", "annee"].map(type => {
+            const visible = type === "media" ? showIndiceMedia : showIndiceAnnee;
+            const toggle = type === "media" ? () => setShowIndiceMedia(true) : () => setShowIndiceAnnee(true);
+            const label = type === "media" ? "Média" : "Année";
+            const value = currentTrack?.[type] || "?";
+            return (
+              <button className="bt-hint-button" key={type} onClick={toggle}>
+                <span className="bt-eye-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                  </svg>
+                </span>
+                <span>{visible ? value : label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-  return (
-    <button key={i} className="indice-button" onClick={toggle}>
-      <span>{label}</span>
-      <span>
-        {visible ? value : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
-            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
-          </svg>
-        )}
-      </span>
-    </button>
-  );
-})}
-      </div>
-
-      {/* BUZZER ou CHAMP RÉPONSE */}
-      <div style={{ marginBottom: 30 }}>
         {!isBuzzed ? (
-          <button className="buzz-button" onClick={handleBuzz}>BUZZ</button>
+          <button className="buzz-button bt-buzz" onClick={handleBuzz}>BUZZ</button>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-            <input
-              key={isWrongAnswer ? "wrong" : "normal"}
-              type="text"
-              placeholder="Votre réponse"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleValidate()}
-              ref={answerInputRef}
-              className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
-              style={{ width: 300 }}
-            />
-            {bonusCompositeur && (
-              <input
-                key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"}
-                type="text"
-                placeholder="Compositeur (facultatif)"
-                value={composerGuess}
-                onChange={(e) => setComposerGuess(e.target.value)}
-                className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`}
-                style={{ width: 300 }}
-              />
-            )}
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                className="btn btn-confirm"
-                onClick={handleValidate}
-                disabled={!answer && (!bonusCompositeur || !composerGuess)}
-              >
-                Valider
-              </button>
-              <button
-                className="btn btn-cancel"
-                onClick={() => {
-                  setIsBuzzed(false);
-                  setAnswer("");
-                  setComposerGuess("");
-                  setIsTimerRunning(true);
-                  handlePlay();
-                }}
-              >
-                Annuler
-              </button>
+          <div className="bt-answer-form">
+            <input key={isWrongAnswer ? "wrong" : "normal"} type="text" placeholder="Votre réponse" value={answer} onChange={event => setAnswer(event.target.value)} onKeyDown={event => event.key === "Enter" && handleValidate()} ref={answerInputRef} className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`} />
+            {bonusCompositeur && <input key={isWrongAnswer ? "wrong-composer-input" : "normal-composer-input"} type="text" placeholder="Compositeur (facultatif)" value={composerGuess} onChange={event => setComposerGuess(event.target.value)} className={`text-input ${isWrongAnswer ? "wrong-answer" : ""}`} />}
+            <div>
+              <button className="btn btn-confirm" onClick={handleValidate} disabled={!answer && (!bonusCompositeur || !composerGuess)}>Valider</button>
+              <button className="btn btn-cancel" onClick={() => { setIsBuzzed(false); setAnswer(""); setComposerGuess(""); setIsTimerRunning(true); handlePlay(); }}>Annuler</button>
             </div>
           </div>
         )}
       </div>
+      <GameScoreboard scoreboard={scoreboard} playerName={playerName} />
+    </div>
 
-      {/* SCOREBOARD */}
-{Array.isArray(scoreboard) && scoreboard.every(p => typeof p === "object" && typeof p.name === "string") && (
-  <div className="scoreboard-popup">
-    <h3>Scores</h3>
-    {scoreboard.map((p, i) => {
-      const isMe = p.name === playerName;
-      return (
-        <div
-          key={i}
-          className={`scoreboard-entry${isMe ? " me" : ""}`}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "10px",
-            padding: "6px 8px",
-            borderRadius: 8,
-            background: isMe ? "var(--gradient-main)" : "transparent",
-            color: "#fff",
-            fontWeight: isMe ? "bold" : "normal"
-          }}
-        >
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px"
-          }}>
-            <div style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "50%",
-              overflow: "hidden",
-              flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}>
-              <img
-                src={p.photo || "/ppDefault.png"}
-                alt="Avatar"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                }}
-              />
-            </div>
-            <span>{p.name}</span>
-          </div>
-          <span>{typeof p.score === "number" ? p.score : 0}</span>
-        </div>
-      );
-    })}
+    {showPopup && popupInfo && (
+      <RoundResultModal popupInfo={popupInfo} image={trackImages[currentTrack?.uri] || popupInfo.image} scoreboard={scoreboard} readyPlayersInfo={readyPlayersInfo} playerName={playerName} isAdmin={isAdmin} playersReady={playersReady} playersTotal={playersTotal || players.length} canNext={roundEndedRef.current} onNext={handleNext} />
+    )}
+
+    {showEndPopup && (
+      <EndGameModal finalScores={finalScores} summaryPlayers={endSummaryPlayers} insights={endInsights} playerName={playerName} onQuit={() => { setShowEndPopup(false); navigate("/"); }} />
+    )}
   </div>
-)}
-    </div>
-
-{showPopup && popupInfo && (
-  <div className="popup-rep-overlay">
-    <div className="popup-rep">
-      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
-
-      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
-        {popupInfo.points}
-      </h1>
-
-      {popupInfo.responseTime && (
-        <p style={{ fontSize: 16, color: "#ccc", marginBottom: 6 }}>
-          ⏱ Réponse en {popupInfo.responseTime}
-        </p>
-      )}
-
-      {trackImages[currentTrack.uri] && (
-        <img
-          src={trackImages[currentTrack.uri]}
-          alt="Pochette album"
-          style={{
-            width: 160,
-            height: 160,
-            borderRadius: 12,
-            objectFit: "cover",
-            marginBottom: 20,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-          }}
-        />
-      )}
-
-      <p style={{ fontSize: 20, fontWeight: 600, margin: 0, color: "#fff" }}>
-        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
-        {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
-      </p>
-
-      {popupInfo.compositeur && (
-        <p style={{ fontStyle: "italic", color: "#ccc", marginTop: 6 }}>
-          par {popupInfo.compositeur}
-        </p>
-      )}
-
-      {/* ✅ Résumé du round */}
-      <div style={{
-        backgroundColor: "#1e1a3a",
-        borderRadius: 8,
-        padding: "10px 16px",
-        margin: "20px 0",
-        textAlign: "left"
-      }}>
-        <h4 style={{ 
-          marginTop: 0, 
-          marginBottom: 12, 
-          color: "#b494f8", 
-          textAlign: "center", 
-          fontSize: 18, 
-          fontWeight: "bold"
-        }}>
-          Scores
-        </h4>
-
-        {scoreboard.map(player => {
-  const detail = readyPlayersInfo.find(p => p.name === player.name);
-  const currentScore = player.score;
-  const delta = detail ? (Number.isFinite(detail.pointsGained) ? detail.pointsGained : currentScore - (detail.previousScore ?? currentScore)) : null;
-  const isMe = player.name === playerName;
-
-  return (
-    <div
-      key={player.name}
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 6,
-        padding: "6px 8px",
-        background: isMe ? "var(--gradient-main)" : "transparent",
-        color: isMe ? "#fff" : "#fff",
-        borderRadius: 8,
-        fontWeight: isMe ? "bold" : "normal"
-      }}
-    >
-      {/* Nom + avatar à gauche */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{
-          width: "28px",
-          height: "28px",
-          borderRadius: "50%",
-          overflow: "hidden",
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
-          <img
-            src={player.photo || "/ppDefault.png"}
-            alt="Avatar"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-        </div>
-        <span>{player.name}</span>
-      </div>
-
-      {/* Score + bonus à droite */}
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <span>{currentScore} pts</span>
-        {detail && (
-          <span style={{
-            marginLeft: 8,
-            color: delta > 0 ? "#388e3c" : "#d32f2f",
-            fontWeight: "bold"
-          }}>
-            ({delta >= 0 ? `+${delta}` : delta})
-          </span>
-        )}
-        {detail?.responseTime && (
-          <span style={{
-            marginLeft: 8,
-            fontSize: 14,
-            color: "#ccc"
-          }}>
-            ⏱ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-})}
-
-      </div>
-
-      {/* ✅ Bouton ou attente admin */}
-{isAdmin ? (
-        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
-          Round suivant ({playersReady} / {playersTotal || players.length})
-        </button>
-      ) : (
-        <div className="btn btn-cancel" style={{
-          pointerEvents: "none",
-          background: "transparent",
-          color: "#aaa",
-          cursor: "default"
-        }}>
-          En attente de l’admin ({playersReady} / {playersTotal || players.length})
-        </div>
-      )}
-    </div>
-  </div>
-)}
-
-{showEndPopup && (
-  <div className="popup-rep-overlay">
-    <div className="popup-rep" style={{ paddingBottom: 24 }}>
-      <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
-
-      {/* Affichage du gagnant avec avatar */}
-      {finalScores.length > 0 && (
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginBottom: 20
-        }}>
-          <div style={{
-            width: "72px",
-            height: "72px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            marginBottom: 8
-          }}>
-            <img
-              src={finalScores[0].photo || "/ppDefault.png"}
-              alt="Avatar gagnant"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </div>
-          <p style={{ fontSize: 20, fontWeight: "bold", color: "#fff", margin: 0 }}>
-            Le gagnant est : {finalScores[0].name}
-          </p>
-        </div>
-      )}
-
-      {/* Liste des scores */}
-      <div style={{
-        backgroundColor: "#1e1a3a",
-        borderRadius: 12,
-        padding: "10px 16px",
-        marginBottom: 20,
-        width: "100%",
-        boxSizing: "border-box"
-      }}>
-        {finalScores.map((p, i) => {
-          const isMe = p.name === playerName;
-          return (
-            <div
-              key={p.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "6px 8px",
-                background: isMe ? "var(--gradient-main)" : "transparent",
-                borderRadius: 8,
-                fontWeight: isMe ? "bold" : "normal",
-                marginBottom: 4,
-                color: "#fff"
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }}>
-                  <img
-                    src={p.photo || "/ppDefault.png"}
-                    alt="Avatar"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </div>
-                <span>{i + 1}. {p.name}</span>
-              </div>
-              <span>{p.score} pts</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {endInsights.length > 0 && (
-        <div className="end-game-insights">
-          {endInsights.map((insight, index) => (
-            <div className="end-game-insight" key={`${insight.type || "insight"}-${index}`}>
-              <span className="end-game-insight-dot" />
-              <p>{insight.text}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <button
-        onClick={() => {
-          setShowEndPopup(false);
-          navigate("/");
-        }}
-        className="btn btn-confirm"
-        style={{ padding: "10px 18px", fontSize: 20 }}
-      >
-        Quitter
-      </button>
-    </div>
-  </div>
-)}
-
-    </div>
   );
 }
 export default GamePage;

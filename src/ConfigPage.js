@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import socket from "./socket";
+import { AppHeader } from "./BlindtestUI";
 
 console.log("✅ ConfigPage.js chargé !");
 
@@ -11,7 +12,7 @@ function ConfigPage() {
   const navigate = useNavigate();
   const [time, setTime] = useState(30);
   const [nbRounds, setNbRounds] = useState(10);
-  const [bonusCompositeur, setBonusCompositeur] = useState(false);
+  const [bonusCompositeur, setBonusCompositeur] = useState(true);
   const [anneeMin, setAnneeMin] = useState(1925);
   const [anneeMax, setAnneeMax] = useState(new Date().getFullYear());
   const [allTracks, setAllTracks] = useState([]);
@@ -282,224 +283,111 @@ const validerPartie = () => {
 };
 
 const renderCheckboxGroup = (label, list, selected, setter, cssClass = "") => (
-  <div style={{ marginTop: "15px" }}>
-    <div className="section-title" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-      <span>{label}</span>
-      <div style={{ display: "flex", gap: "6px", marginLeft: "12px" }}>
-        <button className="btn btn-orange" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([...list])}>
-          Tout sélectionner
-        </button>
-        <button className="btn btn-cancel" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => setter([])}>
-          Tout désélectionner
-        </button>
+  <div className="bt-config-filter">
+    <div className="bt-config-filter-head">
+      <strong>{label}</strong>
+      <div>
+        <button onClick={() => setter([...list])}>Tout sélectionner</button>
+        <button onClick={() => setter([])}>Tout désélectionner</button>
       </div>
     </div>
-    <div className={`checkbox-group ${cssClass}`} style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-      {list.map((item) => (
-        <div
+    <div className={`bt-config-chips ${cssClass}`}>
+      {list.map(item => (
+        <button
+          type="button"
           key={item}
-          className={`checkbox-tag ${selected.includes(item) ? "selected-orange" : ""}`}
+          className={`bt-config-chip ${selected.includes(item) ? "selected" : ""}`}
           onClick={() => toggleSelection(item, selected, setter)}
         >
           {item}
-        </div>
+        </button>
       ))}
     </div>
   </div>
 );
 
 return (
-<div className="app" style={{
-  height: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  padding: "0 10px",
-  overflow: "hidden",
-  boxSizing: "border-box"
-}}>
-    <div className="popup" style={{
-      maxWidth: "1200px",
-      width: "100%",
-      display: "flex",
-      gap: "30px",
-      flexWrap: "wrap",
-      background: "var(--color-bg-popup)",
-      borderRadius: "16px"
-    }}>
-      {/* Colonne gauche — Paramètres */}
-      <div style={{ flex: 1.2, minWidth: 0, maxWidth: "680px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div className="title2">Paramètres</div>
-
-         <div style={{ display: "flex", gap: "40px", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 220 }}>
-            <div className="title3">Nombre de rounds</div>
-            <input
-              className="text-input"
-              type="number"
-              min="1"
-              max={filteredCount}
-              value={nbRounds}
-              onChange={e => setNbRounds(Math.max(1, Math.min(+e.target.value || 1, Math.max(filteredCount, 1))))}
-              style={{ maxWidth: 80 }}
-            />
-            <div
-              style={{
-                fontSize: "0.9rem",
-                marginTop: "4px",
-                color: filteredCount === 0 ? "var(--color-red)" : "var(--color-text)"
-              }}
-            >
-              {filteredCount === 0
-                ? "Aucun morceau disponible avec ces filtres"
-                : `${filteredCount} morceaux disponibles`}
-            </div>
-          </div>
-
-          <div style={{ flex: 1, minWidth: 220 }}>
-            <div className="title3" style={{ marginBottom: "5px" }}>Temps par manche</div>
-            <input
-              type="range"
-              min="5"
-              max="60"
-              step="5"
-              value={time}
-              disabled={modeEclair}
-              onChange={e => setTime(+e.target.value)}
-            />
-            <div>{time} secondes</div>
-          </div>
+  <div className="app bt-config-page">
+    <AppHeader onHome={() => navigate("/")} />
+    <div className="bt-config-shell">
+      <section className="bt-config-main">
+        <div className="bt-config-heading">
+          <div><span>Paramètres</span><h2>Configurer le blindtest</h2></div>
+          <small className={filteredCount === 0 ? "empty" : ""}>
+            {filteredCount === 0 ? "Aucun morceau disponible" : `${filteredCount} morceaux disponibles`}
+          </small>
         </div>
 
-        <div style={{ display: "flex", gap: "20px", marginTop: "10px", flexWrap: "wrap" }}>
-          <div
-            className={`checkbox-tag ${bonusCompositeur ? "selected-orange" : ""}`}
-            onClick={() => setBonusCompositeur(!bonusCompositeur)}
-          >
-            Bonus compositeur
-          </div>
-          <div
-            className={`checkbox-tag ${modeEclair ? "selected-orange" : ""}`}
-            onClick={() => setModeEclair(!modeEclair)}
-          >
-            Mode éclair
-          </div>
-          <div
-            className={`checkbox-tag ${modeDiffusion ? "selected-orange" : ""}`}
-            onClick={() => setModeDiffusion(!modeDiffusion)}
-          >
-            Mode diffusion
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: "40px", flexWrap: "wrap", alignItems: "flex-start" }}>
-          <div style={{ flex: 1 }}>
-            {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
-          </div>
-          <div>
-            <div className="title3" style={{ marginBottom: "5px" }}>Années</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ color: "#ffffff" }}>De</span>
-              <input
-                type="number"
-                className="text-input"
-                value={anneeMin}
-                onChange={e => setAnneeMin(+e.target.value)}
-                style={{ maxWidth: 50 }}
-              />
-              <span style={{ color: "#ffffff" }}>à</span>
-              <input
-                type="number"
-                className="text-input"
-                value={anneeMax}
-                onChange={e => setAnneeMax(+e.target.value)}
-                style={{ maxWidth: 50 }}
-              />
-            </div>
-          </div>
-        </div>
-        {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
-        {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie, "categorie")}
-        {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays, "pays")}
-      </div>
-
-      {/* Colonne droite — Partie */}
-      <div style={{ flex: 0.8, minWidth: "400px", display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div className="title2">Partie</div>
-
-        <div style={{
-          background: "#1a1835",
-          padding: "10px",
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: "5px",
-          minHeight: "0",
-          borderRadius: "12px"
-        }}>
-
-{players.map((p, i) => (
-  <div
-    key={i}
-    className="player-item"
-    style={{
-      background: p.name === playerName ? "var(--gradient-main)" : "#1a1835",
-      color: "#fff",
-      fontWeight: "bold",
-      borderRadius: "12px",
-      padding: "6px 12px",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "10px",
-      height: "40px"
-    }}
-  >
-<div style={{
-  width: "28px",
-  height: "28px",
-  borderRadius: "50%",
-  overflow: "hidden",
-  flexShrink: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center"
-}}>
-  <img
-    src={p.photo || "/ppDefault.png"}
-    alt="Avatar"
-    style={{
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      display: "block",
-      transform: "translateY(40%)" // 👈 ajuste visuellement vers le bas
-    }}
-  />
-</div>
-
-    <span style={{
-      fontSize: "0.95rem",
-      lineHeight: "1"
-    }}>
-      {p.name}
-    </span>
-  </div>
-))}
-
-        </div>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          <input className="text-input" value={id} readOnly style={{ fontSize: "1rem", fontWeight: "bold", flex: 1, maxWidth: 250 }} />
-          <button className="btn btn-orange" onClick={copierCode} style={{ whiteSpace: "nowrap" }}>
-            {copied ? "Copié !" : "Copier"}
+        <div className="bt-mode-grid">
+          <button className={`bt-mode-card ${!modeEclair && !modeDiffusion ? "selected" : ""}`} onClick={() => { setModeEclair(false); setModeDiffusion(false); }}>
+            <strong>Classique</strong><small>Le mode principal du blindtest</small>
+          </button>
+          <button className={`bt-mode-card ${modeEclair ? "selected" : ""}`} onClick={() => { setModeEclair(true); setModeDiffusion(false); }}>
+            <strong>Éclair</strong><small>Réponses très rapides</small>
+          </button>
+          <button className={`bt-mode-card ${modeDiffusion ? "selected" : ""}`} onClick={() => { setModeDiffusion(true); setModeEclair(false); }}>
+            <strong>Diffusion</strong><small>Un diffuseur, plusieurs joueurs</small>
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn btn-cancel" style={{ flex: 1 }} onClick={() => navigate("/")}>Annuler</button>
-          <button className="btn btn-confirm" style={{ flex: 1 }} onClick={validerPartie} disabled={filteredCount === 0 || nbRounds < 1 || nbRounds > filteredCount}>Lancer la partie</button>
+        <div className="bt-config-top-controls">
+          <div className="bt-config-control">
+            <label>Nombre de rounds</label>
+            <div className="bt-round-stepper">
+              <button onClick={() => setNbRounds(value => Math.max(1, value - 1))}>−</button>
+              <input
+                type="number"
+                min="1"
+                max={Math.max(filteredCount, 1)}
+                value={nbRounds}
+                onChange={event => setNbRounds(Math.max(1, Math.min(+event.target.value || 1, Math.max(filteredCount, 1))))}
+              />
+              <button onClick={() => setNbRounds(value => Math.min(Math.max(filteredCount, 1), value + 1))}>+</button>
+            </div>
+          </div>
+          <div className="bt-config-control">
+            <label>Temps par manche</label>
+            <input type="range" min="5" max="60" step="5" value={time} disabled={modeEclair} onChange={event => setTime(+event.target.value)} />
+            <div className="bt-range-caption"><span>5 s</span><strong>{modeEclair ? "0.5 seconde" : `${time} secondes`}</strong><span>60 s</span></div>
+          </div>
+          <div className="bt-config-control">
+            <label>Années</label>
+            <div className="bt-year-range">
+              <span>De</span><input type="number" value={anneeMin} onChange={event => setAnneeMin(+event.target.value)} />
+              <span>à</span><input type="number" value={anneeMax} onChange={event => setAnneeMax(+event.target.value)} />
+            </div>
+          </div>
         </div>
-      </div>
+
+        <button className={`bt-composer-toggle ${bonusCompositeur ? "selected" : ""}`} onClick={() => setBonusCompositeur(value => !value)}>
+          <span className="bt-switch"><i /></span>
+          <span><strong>Bonus compositeur</strong><small>Permet de gagner des points supplémentaires en trouvant le compositeur.</small></span>
+        </button>
+
+        {renderCheckboxGroup("Médias", media, selectedMedia, setSelectedMedia, "media")}
+        {renderCheckboxGroup("Difficulté", difficulte, selectedDifficulte, setSelectedDifficulte, "difficulte")}
+        {renderCheckboxGroup("Catégories", categorie, selectedCategorie, setSelectedCategorie, "categorie")}
+        {renderCheckboxGroup("Pays", pays, selectedPays, setSelectedPays, "pays")}
+      </section>
+
+      <aside className="bt-config-lobby">
+        <div>
+          <h3>Salle d’attente</h3>
+          <div className="bt-config-code"><code>{id}</code><button onClick={copierCode} title="Copier le code">{copied ? "✓" : "⧉"}</button></div>
+          <div className="bt-config-players">
+            {players.map(player => (
+              <div className={`bt-config-player ${player.name === playerName ? "me" : ""}`} key={player.name}>
+                <span className="bt-avatar"><img src={player.photo || "/ppDefault.png"} alt="" /></span>
+                <span>{player.name}{player.name === playerName && <span className="bt-admin-crown">♛</span>}</span>
+                <i className="bt-online-dot" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <button className="btn btn-confirm bt-launch-game" onClick={validerPartie} disabled={filteredCount === 0 || nbRounds < 1 || nbRounds > filteredCount}>
+          Lancer la partie
+        </button>
+      </aside>
     </div>
   </div>
 );
