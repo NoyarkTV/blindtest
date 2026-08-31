@@ -236,31 +236,28 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
     (sum, player, index) => sum + (Number(player.score) || 0) * (index + 3),
     scores.length * 97
   ) % 997;
-  const confettiCount = hasPodium ? 38 : 52;
   const confettiColors = ["#ff7c2c", "#c22fa4", "#b494f8", "#65dca0", "#ffd166", "#5fb8ff", "#f06a9f", "#ffffff"];
 
   return (
     <div className="popup-rep-overlay bt-end-overlay">
+      <div className="bt-end-confetti" aria-hidden="true">
+        {Array.from({ length: 64 }, (_, index) => (
+          <i
+            key={`${confettiSeed}-${index}`}
+            style={{
+              "--x": `${1 + ((confettiSeed + index * 37) % 98)}%`,
+              "--delay": `${((confettiSeed + index * 17) % 55) / 100}s`,
+              "--duration": `${2.25 + ((confettiSeed + index * 11) % 95) / 100}s`,
+              "--drift": `${-75 + ((confettiSeed + index * 23) % 151)}px`,
+              "--start-rotate": `${(confettiSeed + index * 53) % 360}deg`,
+              "--w": `${5 + ((confettiSeed + index) % 5)}px`,
+              "--h": `${10 + ((confettiSeed + index * 3) % 9)}px`,
+              "--confetti": confettiColors[(index + confettiSeed) % confettiColors.length]
+            }}
+          />
+        ))}
+      </div>
       <div className={`bt-end-modal ${hasPodium ? "has-podium" : "no-podium"}`}>
-        <div className="bt-end-confetti" aria-hidden="true">
-          {Array.from({ length: confettiCount }, (_, index) => (
-            <i
-              key={`${confettiSeed}-${index}`}
-              className={`shape-${(index + confettiSeed) % 4}`}
-              style={{
-                "--x": `${2 + ((confettiSeed + index * 37) % 96)}%`,
-                "--delay": `${-(((confettiSeed % 19) * 0.07 + index * 0.23) % 4.8)}s`,
-                "--duration": `${2.8 + ((confettiSeed + index * 11) % 18) / 10}s`,
-                "--drift": `${-45 + ((confettiSeed + index * 23) % 91)}px`,
-                "--start-rotate": `${(confettiSeed + index * 53) % 360}deg`,
-                "--w": `${4 + ((confettiSeed + index) % 5)}px`,
-                "--h": `${7 + ((confettiSeed + index * 3) % 9)}px`,
-                "--fall-distance": hasPodium ? "650px" : "430px",
-                "--confetti": confettiColors[(index + confettiSeed) % confettiColors.length]
-              }}
-            />
-          ))}
-        </div>
         <h2>Fin de la partie !</h2>
 
         {hasPodium && (

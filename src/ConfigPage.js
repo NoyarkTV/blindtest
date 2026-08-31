@@ -372,7 +372,10 @@ return (
 
       <aside className="bt-config-lobby">
         <div>
-          <h3>Salle d’attente</h3>
+          <div className="bt-config-lobby-heading">
+            <h3>Salle d’attente</h3>
+            <span>{players.length} {players.length > 1 ? "joueurs" : "joueur"}</span>
+          </div>
           <div className="bt-config-code"><code>{id}</code><button className={`bt-copy-code ${copied ? "copied" : ""}`} onClick={copierCode} title={copied ? "Code copié" : "Copier le code"} aria-label={copied ? "Code copié" : "Copier le code"}>{copied ? <CheckIcon /> : <CopyIcon />}</button></div>
           <div className="bt-config-players">
             {players.map(player => (
