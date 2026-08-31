@@ -221,7 +221,7 @@ useEffect(() => {
   };
 
 return (
-  <div className="app" style={{
+  <div className="app bt-landing-page" style={{
   height: "100vh",
   display: "flex",
   flexDirection: "column",
@@ -245,7 +245,7 @@ return (
       marginTop: "40px"
     }}>
 {/* Profil joueur */}
-<div className="popup" style={{
+<div className="popup bt-landing-profile" style={{
   width: "240px",
   alignItems: "center",
   gap: "12px",
@@ -354,7 +354,7 @@ return (
   {/* Bouton de déconnexion */}
 {spotifyToken && (
   <button
-    className="btn btn"
+    className="btn bt-disconnect"
     onClick={() => {
       localStorage.removeItem("spotify_token");
       setSpotifyToken(null);
@@ -460,7 +460,7 @@ return (
 )}
 
       {/* Zone de jeu */}
-        <div style={{
+        <div className="bt-landing-play" style={{
           width: "340px",
           gap: "20px",
           display: "flex",

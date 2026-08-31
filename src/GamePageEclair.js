@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import SpotifyPlayer from "./SpotifyPlayer";
 import socket from "./socket";
 import { isAcceptedTitle } from "./answerUtils";
+import { RoundResultModal, EndGameModal } from "./BlindtestUI";
 
 function GamePageEclair() {
   const { id } = useParams();
@@ -44,6 +45,7 @@ function GamePageEclair() {
   const [finalScores, setFinalScores] = useState([]);
   const [showEndPopup, setShowEndPopup] = useState(false);
   const [endInsights, setEndInsights] = useState([]);
+  const [endSummaryPlayers, setEndSummaryPlayers] = useState([]);
   const [preloadedImages, setPreloadedImages] = useState({});
   const [trackImages, setTrackImages] = useState({});
   const responseTimesRef = useRef([]);
@@ -344,9 +346,15 @@ useEffect(() => {
     setShowEndPopup(true);
 
     fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
-      .then(res => res.ok ? res.json() : { insights: [] })
-      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
-      .catch(() => setEndInsights([]));
+      .then(res => res.ok ? res.json() : { insights: [], players: [] })
+      .then(data => {
+        setEndInsights(Array.isArray(data.insights) ? data.insights : []);
+        setEndSummaryPlayers(Array.isArray(data.players) ? data.players : []);
+      })
+      .catch(() => {
+        setEndInsights([]);
+        setEndSummaryPlayers([]);
+      });
     handlePause();
     return;
   }
@@ -436,9 +444,15 @@ useEffect(() => {
     setShowEndPopup(true);
 
     fetch(`https://blindtest-69h7.onrender.com/game-summary/${id}`)
-      .then(res => res.ok ? res.json() : { insights: [] })
-      .then(data => setEndInsights(Array.isArray(data.insights) ? data.insights : []))
-      .catch(() => setEndInsights([]));
+      .then(res => res.ok ? res.json() : { insights: [], players: [] })
+      .then(data => {
+        setEndInsights(Array.isArray(data.insights) ? data.insights : []);
+        setEndSummaryPlayers(Array.isArray(data.players) ? data.players : []);
+      })
+      .catch(() => {
+        setEndInsights([]);
+        setEndSummaryPlayers([]);
+      });
 
     fetch("https://blindtest-69h7.onrender.com/update-profile-stats", {
       method: "POST",
@@ -910,275 +924,10 @@ return (
     </div>
 
 {showPopup && popupInfo && (
-  <div className="popup-rep-overlay">
-    <div className="popup-rep">
-      <h2 style={{ fontSize: 26 }}>{popupInfo.title}</h2>
-
-      <h1 style={{ fontSize: 48, color: popupInfo.points === "+0 point" ? "#d32f2f" : "#388e3c" }}>
-        {popupInfo.points}
-      </h1>
-
-      {popupInfo.responseTime && (
-        <p style={{ fontSize: 16, color: "#ccc", marginBottom: 6 }}>
-          ⏱ Réponse en {popupInfo.responseTime}
-        </p>
-      )}
-
-      {trackImages[currentTrack.uri] && (
-        <img
-          src={trackImages[currentTrack.uri]}
-          alt="Pochette album"
-          style={{
-            width: 160,
-            height: 160,
-            borderRadius: 12,
-            objectFit: "cover",
-            marginBottom: 20,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-          }}
-        />
-      )}
-
-      <p style={{ fontSize: 20, fontWeight: 600, margin: 0, color: "#fff" }}>
-        {popupInfo.theme ? `${popupInfo.theme} - ` : ""}
-        {popupInfo.titre} {popupInfo.annee ? `(${popupInfo.annee})` : ""}
-      </p>
-
-      {popupInfo.compositeur && (
-        <p style={{ fontStyle: "italic", color: "#ccc", marginTop: 6 }}>
-          par {popupInfo.compositeur}
-        </p>
-      )}
-
-      {/* ✅ Résumé du round */}
-      <div style={{
-        backgroundColor: "#1e1a3a",
-        borderRadius: 8,
-        padding: "10px 16px",
-        margin: "20px 0",
-        textAlign: "left"
-      }}>
-        <h4 style={{ 
-          marginTop: 0, 
-          marginBottom: 12, 
-          color: "#b494f8", 
-          textAlign: "center", 
-          fontSize: 18, 
-          fontWeight: "bold"
-        }}>
-          Scores
-        </h4>
-
-        {scoreboard.map(player => {
-  const detail = readyPlayersInfo.find(p => p.name === player.name);
-  const currentScore = player.score;
-  const delta = detail ? (Number.isFinite(detail.pointsGained) ? detail.pointsGained : currentScore - (detail.previousScore ?? currentScore)) : null;
-  const isMe = player.name === playerName;
-
-  return (
-    <div
-      key={player.name}
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 6,
-        padding: "6px 8px",
-        background: isMe ? "var(--gradient-main)" : "transparent",
-        color: isMe ? "#fff" : "#fff",
-        borderRadius: 8,
-        fontWeight: isMe ? "bold" : "normal"
-      }}
-    >
-      {/* Nom + avatar à gauche */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{
-          width: "28px",
-          height: "28px",
-          borderRadius: "50%",
-          overflow: "hidden",
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
-          <img
-            src={player.photo || "/ppDefault.png"}
-            alt="Avatar"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-        </div>
-        <span>{player.name}</span>
-      </div>
-
-      {/* Score + bonus à droite */}
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <span>{currentScore} pts</span>
-        {detail && (
-          <span style={{
-            marginLeft: 8,
-            color: delta > 0 ? "#388e3c" : "#d32f2f",
-            fontWeight: "bold"
-          }}>
-            ({delta >= 0 ? `+${delta}` : delta})
-          </span>
-        )}
-        {detail?.responseTime && (
-          <span style={{
-            marginLeft: 8,
-            fontSize: 14,
-            color: "#ccc"
-          }}>
-            ⏱ {detail.responseTime === "-" ? "-" : `${parseFloat(detail.responseTime).toFixed(1)}s`}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-})}
-
-      </div>
-
-      {/* ✅ Bouton ou attente admin */}
-{isAdmin ? (
-        <button className="btn btn-confirm" onClick={handleNext} disabled={!roundEndedRef.current}>
-          Round suivant ({playersReady} / {playersTotal || players.length})
-        </button>
-      ) : (
-        <div className="btn btn-cancel" style={{
-          pointerEvents: "none",
-          background: "transparent",
-          color: "#aaa",
-          cursor: "default"
-        }}>
-          En attente de l’admin ({playersReady} / {playersTotal || players.length})
-        </div>
-      )}
-    </div>
-  </div>
+  <RoundResultModal popupInfo={popupInfo} image={trackImages[currentTrack?.uri] || popupInfo.image} scoreboard={scoreboard} readyPlayersInfo={readyPlayersInfo} playerName={playerName} isAdmin={isAdmin} playersReady={playersReady} playersTotal={playersTotal || players.length} canNext={roundEndedRef.current} onNext={handleNext} />
 )}
-
 {showEndPopup && (
-  <div className="popup-rep-overlay">
-    <div className="popup-rep" style={{ paddingBottom: 24 }}>
-      <h2 style={{ fontSize: 28, marginBottom: 6 }}>Fin de la partie !</h2>
-
-      {/* Affichage du gagnant avec avatar */}
-      {finalScores.length > 0 && (
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginBottom: 20
-        }}>
-          <div style={{
-            width: "72px",
-            height: "72px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            marginBottom: 8
-          }}>
-            <img
-              src={finalScores[0].photo || "/ppDefault.png"}
-              alt="Avatar gagnant"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </div>
-          <p style={{ fontSize: 20, fontWeight: "bold", color: "#fff", margin: 0 }}>
-            Le gagnant est : {finalScores[0].name}
-          </p>
-        </div>
-      )}
-
-      {/* Liste des scores */}
-      <div style={{
-        backgroundColor: "#1e1a3a",
-        borderRadius: 12,
-        padding: "10px 16px",
-        marginBottom: 20,
-        width: "100%",
-        boxSizing: "border-box"
-      }}>
-        {finalScores.map((p, i) => {
-          const isMe = p.name === playerName;
-          return (
-            <div
-              key={p.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "6px 8px",
-                background: isMe ? "var(--gradient-main)" : "transparent",
-                borderRadius: 8,
-                fontWeight: isMe ? "bold" : "normal",
-                marginBottom: 4,
-                color: "#fff"
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }}>
-                  <img
-                    src={p.photo || "/ppDefault.png"}
-                    alt="Avatar"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </div>
-                <span>{i + 1}. {p.name}</span>
-              </div>
-              <span>{p.score} pts</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {endInsights.length > 0 && (
-        <div className="end-game-insights">
-          {endInsights.map((insight, index) => (
-            <div className="end-game-insight" key={`${insight.type || "insight"}-${index}`}>
-              <span className="end-game-insight-dot" />
-              <p>{insight.text}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <button
-        onClick={() => {
-          setShowEndPopup(false);
-          navigate("/");
-        }}
-        className="btn btn-confirm"
-        style={{ padding: "10px 18px", fontSize: 20 }}
-      >
-        Quitter
-      </button>
-    </div>
-  </div>
+  <EndGameModal finalScores={finalScores} summaryPlayers={endSummaryPlayers} insights={endInsights} playerName={playerName} onQuit={() => { setShowEndPopup(false); navigate("/"); }} />
 )}
 
     </div>
