@@ -86,56 +86,80 @@
   100% { transform: scale(1); }
 }
 
-/* Config interactive controls */
+/* Config interactions: restrained, with motion only where it communicates state. */
 .bt-config-chip {
-  position: relative;
-  overflow: hidden;
-  transition: transform .16s ease, background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease !important;
+  transition: background .14s ease, border-color .14s ease, color .14s ease !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
-.bt-config-chip:hover {
-  transform: translateY(-2px);
-  border-color: rgba(180,148,248,.72) !important;
-  color: #fff !important;
+.bt-config-chip:hover,
+.bt-config-chip:active {
+  transform: none !important;
+  box-shadow: none !important;
 }
-.bt-config-chip:active { transform: scale(.96); }
-.bt-config-chip.selected {
-  animation: bt-chip-select .24s ease;
-  box-shadow: 0 5px 16px rgba(180,148,248,.10);
+.bt-config-chip:not(.selected):hover {
+  border-color: #736f8d !important;
+  color: #b9b5c7 !important;
 }
-@keyframes bt-chip-select {
-  0% { transform: scale(.92); }
-  65% { transform: scale(1.04); }
-  100% { transform: scale(1); }
+.bt-config-chip.selected:hover {
+  border-color: #fff !important;
+  color: #151133 !important;
 }
 
 .bt-composer-toggle {
-  transition: transform .18s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease !important;
+  transform: none !important;
+  box-shadow: none !important;
+  transition: background .16s ease, border-color .16s ease !important;
 }
-.bt-composer-toggle:hover {
-  transform: translateY(-2px);
-  border-color: rgba(180,148,248,.42) !important;
-  box-shadow: 0 9px 24px rgba(7,4,30,.18);
+.bt-composer-toggle:hover,
+.bt-composer-toggle:active {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(255,255,255,.10) !important;
 }
-.bt-composer-toggle:active { transform: scale(.985); }
-.bt-switch,
+.bt-switch {
+  position: relative !important;
+  display: block !important;
+  justify-content: initial !important;
+  transition: background .2s ease !important;
+}
 .bt-switch i {
-  transition: background .22s ease, transform .24s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease !important;
+  position: absolute !important;
+  left: 3px;
+  top: 3px;
+  transform: translateX(0);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1) !important;
 }
 .bt-composer-toggle.selected .bt-switch {
-  box-shadow: 0 0 0 4px rgba(255,124,44,.08);
+  box-shadow: none !important;
+}
+.bt-composer-toggle.selected .bt-switch i {
+  transform: translateX(17px);
 }
 
-.bt-mode-card,
 .bt-round-stepper button,
 .bt-config-filter-head button {
-  transition: transform .16s ease, background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.bt-round-stepper button:hover,
+.bt-round-stepper button:active,
+.bt-config-filter-head button:hover,
+.bt-config-filter-head button:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+.bt-mode-card {
+  transition: background .16s ease, border-color .16s ease !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 .bt-mode-card:hover,
-.bt-round-stepper button:hover,
-.bt-config-filter-head button:hover { transform: translateY(-2px); }
-.bt-mode-card:active,
-.bt-round-stepper button:active,
-.bt-config-filter-head button:active { transform: scale(.96); }
+.bt-mode-card:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
 
 /* SVG icon treatment */
 .bt-admin-crown,
@@ -203,23 +227,24 @@
   height: var(--h, 13px);
   border-radius: 2px;
   background: var(--confetti, #ff7c2c);
+  will-change: transform, opacity;
   transform: rotate(var(--start-rotate, 0deg));
   animation: bt-confetti-fall var(--duration, 3.8s) linear var(--delay, 0s) infinite;
   box-shadow: 0 0 8px rgba(255,255,255,.05);
 }
-.bt-end-confetti i:nth-child(7n+1){--confetti:#ff7c2c}
-.bt-end-confetti i:nth-child(7n+2){--confetti:#c22fa4}
-.bt-end-confetti i:nth-child(7n+3){--confetti:#b494f8}
-.bt-end-confetti i:nth-child(7n+4){--confetti:#65dca0}
-.bt-end-confetti i:nth-child(7n+5){--confetti:#ffd166}
-.bt-end-confetti i:nth-child(7n+6){--confetti:#5fb8ff}
-.bt-end-confetti i:nth-child(7n){--confetti:#f06a9f}
 @keyframes bt-confetti-fall {
   0% { transform: translate3d(0,-18px,0) rotate(var(--start-rotate,0deg)); opacity: 0; }
   8% { opacity: 1; }
   45% { transform: translate3d(var(--drift, 14px), 210px,0) rotate(calc(var(--start-rotate,0deg) + 190deg)); }
-  100% { transform: translate3d(calc(var(--drift,14px) * -0.5), 590px,0) rotate(calc(var(--start-rotate,0deg) + 520deg)); opacity: .15; }
+  100% { transform: translate3d(calc(var(--drift,14px) * -0.5), var(--fall-distance,590px),0) rotate(calc(var(--start-rotate,0deg) + 520deg)); opacity: .12; }
 }
+
+
+.bt-end-confetti i.shape-0 { border-radius: 2px; }
+.bt-end-confetti i.shape-1 { border-radius: 999px; }
+.bt-end-confetti i.shape-2 { clip-path: polygon(50% 0, 100% 100%, 0 100%); border-radius: 0; }
+.bt-end-confetti i.shape-3 { border-radius: 1px; transform-origin: center; }
+.bt-end-modal.no-podium .bt-end-confetti { opacity: 1; }
 
 /* Avatar selector refresh */
 .avatar-modal-overlay {
@@ -299,4 +324,34 @@
   .avatar-grid { grid-template-columns: repeat(auto-fill, minmax(60px,1fr)); gap: 10px !important; }
   .avatar-grid img, .avatar-modal .avatar-grid img { width: 60px !important; height: 60px !important; }
   .bt-round-score-detail { font-size: .78rem; }
+}
+
+
+/* Desktop config: fit the available viewport without document scrolling. */
+@media (min-width: 901px) and (min-height: 720px) {
+  .bt-config-page {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+    padding-top: 60px !important;
+  }
+  .bt-config-shell {
+    height: calc(100vh - 68px) !important;
+    min-height: 0 !important;
+    margin: 4px auto !important;
+  }
+  .bt-config-main {
+    overflow: hidden !important;
+    padding: 14px 18px !important;
+  }
+  .bt-config-heading { margin-bottom: 10px !important; }
+  .bt-mode-grid { margin-bottom: 8px !important; }
+  .bt-mode-card { padding: 10px 12px !important; }
+  .bt-config-control { padding: 9px 10px !important; }
+  .bt-composer-toggle { margin-top: 8px !important; padding: 8px 11px !important; }
+  .bt-config-filter { padding-top: 8px !important; margin-top: 8px !important; }
+  .bt-config-filter-head { margin-bottom: 6px !important; }
+  .bt-config-chips { gap: 5px !important; }
+  .bt-config-chip { padding: 5px 8px !important; font-size: .74rem !important; }
 }
