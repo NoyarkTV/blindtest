@@ -493,7 +493,7 @@ useEffect(() => {
     }
 
     setPopupInfo({
-      title: "⏱ Temps écoulé",
+      title: "Temps écoulé",
       points: "+0 point",
       theme: currentTrack.theme || "",
       titre: currentTrack.oeuvre || currentTrack.titre || "",

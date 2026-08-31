@@ -1,5 +1,34 @@
 import React from "react";
 
+function SvgIcon({ name, className = "", size = 18 }) {
+  const common = { className: `bt-icon ${className}`.trim(), width: size, height: size, viewBox: "0 0 24 24", "aria-hidden": true };
+
+  const paths = {
+    copy: <><rect x="8" y="8" width="11" height="11" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>,
+    check: <path d="m5 12 4 4L19 6" />,
+    crown: <><path d="m3 7 4.5 4L12 5l4.5 6L21 7l-2 11H5L3 7Z" /><path d="M6 21h12" /></>,
+    clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+    trophy: <><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z" /><path d="M12 12v5M8 21h8M10 17h4M6 6H3v1a4 4 0 0 0 4 4M18 6h3v1a4 4 0 0 1-4 4" /></>,
+    headphones: <><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><path d="M4 14h3v6H5a1 1 0 0 1-1-1v-5ZM20 14h-3v6h2a1 1 0 0 0 1-1v-5Z" /></>,
+    zap: <path d="M13 2 4 14h7l-1 8 10-13h-7V2Z" />,
+    target: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /><path d="M15 9 21 3M17 3h4v4" /></>,
+    flame: <path d="M12 22c4 0 7-2.8 7-6.5 0-2.8-1.6-5.3-4.4-7.5.2 2-1 3.3-2.3 4.2.2-3.7-1.8-6.6-5-9.2.3 3.5-2.3 5.2-2.3 9.7C5 17.9 8 22 12 22Z" />,
+    rocket: <><path d="M14 5c3-2 5-2 7-2 0 2 0 4-2 7l-5 5-5-5 5-5Z" /><path d="M9 10 5 11l-2 3 5 1M14 15l-1 4-3 2-1-5M15 8h.01" /></>,
+    hourglass: <><path d="M6 3h12M6 21h12M7 3c0 5 2 6 5 9-3 3-5 4-5 9M17 3c0 5-2 6-5 9 3 3 5 4 5 9" /></>,
+    brain: <><path d="M9.5 4.5A3 3 0 0 0 6 7.4 3 3 0 0 0 5 13a3.5 3.5 0 0 0 4.5 5.4V4.5ZM14.5 4.5A3 3 0 0 1 18 7.4a3 3 0 0 1 1 5.6 3.5 3.5 0 0 1-4.5 5.4V4.5Z" /><path d="M9.5 9H7M14.5 9H17M9.5 14H7.5M14.5 14h2" /></>,
+    music: <><path d="M9 18V5l10-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="16" cy="16" r="3" /></>,
+    film: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 5v14M17 5v14M3 9h4M17 9h4M3 15h4M17 15h4" /></>,
+    sparkles: <><path d="m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2L12 3Z" /><path d="m18 13 .8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8L18 13ZM6 13l.7 1.8 1.8.7-1.8.7L6 18l-.7-1.8-1.8-.7 1.8-.7L6 13Z" /></>,
+    arrowUp: <><path d="M12 19V5" /><path d="m6 11 6-6 6 6" /></>,
+  };
+
+  return <svg {...common}>{paths[name] || paths.sparkles}</svg>;
+}
+
+export const CopyIcon = () => <SvgIcon name="copy" />;
+export const CheckIcon = () => <SvgIcon name="check" />;
+export const CrownIcon = () => <SvgIcon name="crown" />;
+
 export function AppHeader({ onHome }) {
   return (
     <header className="bt-header">
@@ -112,7 +141,7 @@ export function RoundResultModal({
         <h2 className="bt-round-status">{popupInfo.title}</h2>
         <div className={`bt-round-points ${pointLabel.numeric > 0 ? "positive" : "zero"}`}>{pointLabel.label}</div>
         {popupInfo.responseTime && popupInfo.responseTime !== "-" && (
-          <div className="bt-round-time">⏱ Réponse en {String(popupInfo.responseTime).replace(/\s*sec(?:onde)?s?$/i, " sec")}</div>
+          <div className="bt-round-time"><SvgIcon name="clock" /> Réponse en {String(popupInfo.responseTime).replace(/\s*sec(?:onde)?s?$/i, " sec")}</div>
         )}
 
         {image && <img className="bt-round-cover" src={image} alt="Pochette du morceau" />}
@@ -134,11 +163,11 @@ export function RoundResultModal({
                 <PlayerAvatar player={player} size={28} />
                 <div className="bt-round-player-name">
                   <span>{player.name}</span>
-                  {movedUp && <span className="bt-rank-up">↑</span>}
+                  {movedUp && <span className="bt-rank-up" title="Gagne une place"><SvgIcon name="arrowUp" /></span>}
                 </div>
                 {detail ? (
                   <div className="bt-round-score-detail">
-                    {player.score} pts <span className={delta > 0 ? "gain" : "zero"}>({delta >= 0 ? `+${delta}` : delta})</span> ⏱ {formatResponseTime(detail.responseTime)}
+                    {player.score} pts <span className={delta > 0 ? "gain" : "zero"}>({delta >= 0 ? `+${delta}` : delta})</span> <SvgIcon name="clock" /> {formatResponseTime(detail.responseTime)}
                   </div>
                 ) : (
                   <WaitingDots />
@@ -179,19 +208,20 @@ function metricLabel(metric) {
   };
 }
 
-function insightEmoji(type, index) {
+function InsightIcon({ type, index }) {
   const known = {
-    "winner-reason": "🏆",
-    "solo-summary": "🎧",
-    "average-speed": "⚡",
-    "fastest": "⚡",
-    "solo-finds": "🎯",
-    "streak": "🔥",
-    "best-reaction": "🚀",
-    "last-second": "⏳",
-    "no-hints": "🧠"
+    "winner-reason": "trophy",
+    "solo-summary": "headphones",
+    "average-speed": "zap",
+    "fastest": "zap",
+    "solo-finds": "target",
+    "streak": "flame",
+    "best-reaction": "rocket",
+    "last-second": "hourglass",
+    "no-hints": "brain"
   };
-  return known[type] || ["✨", "🎵", "🎬"][index % 3];
+  const fallback = ["sparkles", "music", "film"];
+  return <span className="bt-fact-icon"><SvgIcon name={known[type] || fallback[index % fallback.length]} /></span>;
 }
 
 export function EndGameModal({ finalScores, summaryPlayers, insights, playerName, onQuit }) {
@@ -205,10 +235,23 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
 
   return (
     <div className="popup-rep-overlay bt-end-overlay">
-      <div className="bt-end-confetti" aria-hidden="true">
-        {Array.from({ length: 8 }, (_, index) => <i key={index} />)}
-      </div>
       <div className="bt-end-modal">
+        <div className="bt-end-confetti" aria-hidden="true">
+          {Array.from({ length: 32 }, (_, index) => (
+            <i
+              key={index}
+              style={{
+                "--x": `${4 + ((index * 29) % 92)}%`,
+                "--delay": `${-((index * 0.31) % 3.7)}s`,
+                "--duration": `${3.1 + ((index * 7) % 13) / 10}s`,
+                "--drift": `${-24 + ((index * 17) % 49)}px`,
+                "--start-rotate": `${(index * 47) % 180}deg`,
+                "--w": `${5 + (index % 4)}px`,
+                "--h": `${9 + (index % 5) * 2}px`
+              }}
+            />
+          ))}
+        </div>
         <h2>Fin de la partie !</h2>
 
         {hasPodium && (
@@ -220,7 +263,7 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
                 <div className={`bt-podium-card place-${place}`} key={player.name}>
                   <div className="bt-podium-avatar-wrap">
                     <PlayerAvatar player={player} size={58} />
-                    {place === 1 && <span className="bt-winner-crown">♛</span>}
+                    {place === 1 && <span className="bt-winner-crown"><CrownIcon /></span>}
                   </div>
                   <strong>{player.name}</strong>
                   <span className="bt-podium-score">{Number(player.score) || 0} pts</span>
@@ -255,7 +298,7 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
           <div className={`bt-fun-facts count-${Math.min(insights.length, 3)}`}>
             {insights.map((insight, index) => (
               <div className="bt-fun-fact" key={`${insight.type || "insight"}-${index}`}>
-                <span>{insightEmoji(insight.type, index)}</span>
+                <InsightIcon type={insight.type} index={index} />
                 <p>{insight.text}</p>
               </div>
             ))}

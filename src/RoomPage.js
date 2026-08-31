@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import socket from "./socket";
-import { AppHeader, WaitingDots } from "./BlindtestUI";
+import { AppHeader, WaitingDots, CopyIcon, CheckIcon, CrownIcon } from "./BlindtestUI";
 
 function RoomPage() {
   const { id } = useParams();
@@ -111,7 +111,7 @@ return (
         <div className="bt-room-code-row">
           <code>{id}</code>
           <button
-            className="bt-copy-code"
+            className={`bt-copy-code ${copied ? "copied" : ""}`}
             onClick={() => {
               navigator.clipboard.writeText(id).then(() => {
                 setCopied(true);
@@ -120,7 +120,7 @@ return (
             }}
             title="Copier le code de la salle"
           >
-            {copied ? "✓" : "⧉"}
+            {copied ? <CheckIcon /> : <CopyIcon />}
           </button>
         </div>
         <div className="bt-room-players">
@@ -130,7 +130,7 @@ return (
               <span className="bt-avatar"><img src={player.photo || "/ppDefault.png"} alt="" /></span>
               <span className="bt-room-player-name">
                 {player.name}
-                {player.name === game.admin && <span className="bt-admin-crown">♛</span>}
+                {player.name === game.admin && <span className="bt-admin-crown" title="Organisateur"><CrownIcon /></span>}
               </span>
               <span className="bt-online-dot" />
             </div>
