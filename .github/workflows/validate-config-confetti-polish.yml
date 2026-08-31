@@ -33,7 +33,7 @@ jobs:
         run: CI=true npm test -- --runInBand --watchAll=false
 
       - name: Build production frontend
-        run: npm run build
+        run: CI=false npm run build
 
       - name: Commit validated polish
         run: |
