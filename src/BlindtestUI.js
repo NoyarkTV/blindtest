@@ -172,7 +172,7 @@ function summaryMetric(summaryPlayers, name) {
 
 function metricLabel(metric) {
   if (!metric) return { correct: "-", time: "-" };
-  const total = metric.attempts || 0;
+  const total = metric.roundsTotal || metric.attempts || 0;
   return {
     correct: `${metric.correct || 0}/${total}`,
     time: Number.isFinite(Number(metric.averageTime)) ? `${Number(metric.averageTime).toFixed(1)} s` : "-"
@@ -201,7 +201,6 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
   const hasPodium = scores.length >= 3;
   const podium = hasPodium ? [scores[1], scores[0], scores[2]] : [];
   const remaining = hasPodium ? scores.slice(3) : scores;
-
   const podiumPlace = player => scores.findIndex(score => score.name === player.name) + 1;
 
   return (
@@ -211,7 +210,8 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
       </div>
       <div className="bt-end-modal">
         <h2>Fin de la partie !</h2>
-        {hasPodium ? (
+
+        {hasPodium && (
           <div className="bt-podium">
             {podium.map(player => {
               const place = podiumPlace(player);
@@ -229,12 +229,6 @@ export function EndGameModal({ finalScores, summaryPlayers, insights, playerName
                 </div>
               );
             })}
-          </div>
-        ) : (
-          <div className="bt-small-game-winner">
-            <PlayerAvatar player={scores[0]} size={64} />
-            <strong>{scores[0].name}</strong>
-            <span>{scores[0].score} pts</span>
           </div>
         )}
 
