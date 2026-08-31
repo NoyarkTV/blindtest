@@ -9,6 +9,7 @@ import ConfigPage from "./ConfigPage";
 import RoomPage from "./RoomPage";
 import StatsPage from "./StatsPage";
 import "./UiPolish.css";
+import "./UiFinalSpacing.css";
 
 function App() {
   return (
