@@ -1,0 +1,70 @@
+name: Validate UI polish
+
+on:
+  push:
+    branches:
+      - feature/ui-polish-icons
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Apply polish patch
+        run: python .github/ui_polish_patch.py
+
+      - name: Check visible icon cleanup
+        shell: bash
+        run: |
+          ! grep -F '♛' src/BlindtestUI.js src/ConfigPage.js src/RoomPage.js
+          ! grep -F '⧉' src/BlindtestUI.js src/ConfigPage.js src/RoomPage.js
+          ! grep -F '🏆' src/BlindtestUI.js
+          ! grep -F '🎧' src/BlindtestUI.js
+          ! grep -F '⚡' src/BlindtestUI.js
+          ! grep -F '🎯' src/BlindtestUI.js
+          ! grep -F '🔥' src/BlindtestUI.js
+          ! grep -F '🚀' src/BlindtestUI.js
+          ! grep -F '⏳' src/BlindtestUI.js
+          ! grep -F '🧠' src/BlindtestUI.js
+          ! grep -F '✨' src/BlindtestUI.js
+          ! grep -F '🎵' src/BlindtestUI.js
+          ! grep -F '🎬' src/BlindtestUI.js
+          ! grep -F '⏱' src/BlindtestUI.js
+          ! grep -F 'title: "⏱ Temps écoulé"' src/GamePage.js
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        env:
+          CI: true
+        run: npm test -- --watchAll=false
+
+      - name: Build production frontend
+        env:
+          CI: false
+        run: npm run build
+
+      - name: Commit validated polish
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/ui_polish_patch.py .github/workflows/validate-ui-polish.yml
+          git add src/App.js src/BlindtestUI.js src/ConfigPage.js src/RoomPage.js src/GamePage.js src/UiPolish.css
+          git commit -m "fix: polish icons avatars and interactions"
+          git push origin feature/ui-polish-icons
